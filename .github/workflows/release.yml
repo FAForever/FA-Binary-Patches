@@ -1,42 +1,42 @@
 name: Release
-
 on:
   workflow_dispatch:
     inputs:
       version:
         description: 'Release Version'
         required: true
-
 jobs:
   build:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}
+        shell: bash
+    env:
+      PATCHER_VERSION: v0
+      MINGW_VERSION: 8.1.0
     steps:
       - uses: actions/checkout@v2
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: mingw-w64-x86_64-toolchain
-          
+
+      - name: Check MinGW Version
+        run: |
+          if ! g++ --version | grep $MINGW_VERSION; then
+            choco install mingw --version $MINGW_VERSION -y -f;
+          fi
+
       - name: Download Patcher
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          repo: "FAForever/FA_Patcher"
-          version: "tags/v0"
-          file: "FaPatcher.exe"
-          target: "FaPatcher.exe"
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: curl -L "https://github.com/FAForever/FA_Patcher/releases/download/$PATCHER_VERSION/FaPatcher.exe" -o FaPatcher.exe
           
       - name: Download Baseline
-        run: |
-          curl https://content.test.faforever.com/ForgedAlliance_base.exe -o ForgedAlliance_base.exe
-          
+        run: curl -L https://content.test.faforever.com/ForgedAlliance_base.exe -o ForgedAlliance_base.exe
+
       - name: Patch Binary
+        run: ./FaPatcher.exe 6
+        
+      - name: Get MD5
+        id: md5
         run: |
-            ./FaPatcher.exe 6
+          MD5SUM=$(md5sum ForgedAlliance_exxt.exe)
+          echo ::set-output name=EXE_MD5SUM::${MD5SUM}
             
       - name: Create Draft Release
         id: create_release
@@ -46,16 +46,6 @@ jobs:
         with:
           tag_name: v${{ github.event.inputs.version }}
           release_name: v${{ github.event.inputs.version }}
+          body: Created with Patcher ${{ env.PATCHER_VERSION }}; EXE_MD5 = ${{ steps.md5.outputs.EXE_MD5SUM }}
           draft: true
           prerelease: true
-
-      - name: Upload Patcher exe
-        id: upload-exe
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ForgedAlliance_exxt.exe
-          asset_name: test
-          asset_content_type: application/vnd.microsoft.portable-executable

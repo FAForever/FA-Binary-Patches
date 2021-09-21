@@ -27,7 +27,7 @@ LIBRARY_PATHS = -L ../lib
 # -Wl,-subsystem,windows gets rid of the console window 
 ifeq ($(detected_OS),Windows)
 COMPILER_FLAGS = -fleading-underscore
-LD_FLAGS = --image-base 0x128A000
+LD_FLAGS = --image-base 0x128A000 -m i386pe
 
 else
 LD_FLAGS = -Ttext-segment 0x128D000 -m elf_i386
