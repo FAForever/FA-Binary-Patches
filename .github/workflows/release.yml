@@ -24,7 +24,7 @@ jobs:
           fi
 
       - name: Download Patcher
-        run: curl -L "https://github.com/FAForever/FA_Patcher/releases/download/$PATCHER_VERSION/FaPatcher.exe" -o FaPatcher.exe
+        run: curl -L "https://github.com/FAForever/FA_Patcher/releases/download/$PATCHER_VERSION/FaP.exe" -o FaPatcher.exe
           
       - name: Download Baseline
         run: curl -L https://content.test.faforever.com/ForgedAlliance_base.exe -o ForgedAlliance_base.exe
