@@ -3,6 +3,13 @@
 char SalemWaterOnlyBp[1536];
 char SalemDefaultBp[4];
 
+// This patch allows to turn off Salem's amphibious ability to exclude accidental land moves
+// We take default Salem's blueprint and copy it to `SalemWaterOnlyBp`
+// Then change 2 values in it: MinWaterDepth = 1.5 and OccupancyCaps = 8
+// Only these 2 do matter in movement calculations, other bp values stay the same
+// Then we just change a pointer to blueprint in unit object depending on what mode should be activated
+// Amphibious mode ON: SalemDefaultBp, amphibious mode OFF: SalemWaterOnlyBp.
+
 void luaSimGetStat()
 {
 	__asm__
@@ -13,9 +20,14 @@ void luaSimGetStat()
         "jne EXIT \n "
         "push eax \n"
         "push ebx \n"
+        "mov eax, %[SalemDefaultBp] \n"
+        "cmp eax, 0x0 \n"
+        "je UpdateBlueprints \n "
+        "cmp byte ptr [eax + 0xDA], 0x9 \n"         // Check if SalemDefaultBp pointer is still valid (OccupancyCaps = 9 means it is)
+        "mov eax, %[SalemWaterOnlyBp] \n"           // and if not then update both blueprints (prevents crashes on simulation restart)           
+        "je dummyExists \n "
+        "UpdateBlueprints: \n"
         "mov eax, %[SalemWaterOnlyBp] \n"
-        "cmp byte ptr [eax], 0x0 \n"
-        "jne dummyExists \n "
         "push ebx \n"
         "push ecx \n"
         "push edx \n"
