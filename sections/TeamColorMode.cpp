@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
 char ColorsArray[128];
-char FakeBool[8];
 
 // Basically what we do here is parsing colors from string in lua function TeamColorMode() (originally it supports only bool)
 // then store them in array and then use it instead of one created from GameColors.lua
@@ -18,9 +17,17 @@ void TeamColorMode()
         "push ebx \n"
         "push ecx \n"
         "push edx \n"
+        "mov eax, dword ptr [esi+0x4] \n"
+        "mov ecx, dword ptr [esi] \n"
+        "mov edx, dword ptr [ecx] \n"
+        "push eax \n"
+        "push edx \n"
+        "call 0x0090C740 \n"                   //returns object index in eax, 1=bool, 4=string
+        "cmp eax, 0x1 \n"
+        "pop edx \n"
+        "pop eax \n"
+        "je EXIT \n"
         "mov ebx, dword ptr [ecx+0xC] \n"
-        "cmp byte ptr [ebx], 0x4 \n"           //4 = string, 1 = bool
-        "jne EXIT \n"                          
         "mov ecx, dword ptr [ebx+0x4] \n"
         "cmp byte ptr [ecx+0x14], 0x28 \n"     // string starts with "("
         "jne EXIT \n"
@@ -277,10 +284,8 @@ void TeamColorMode()
         "pop ecx \n"
         "pop ebx \n"
         "pop eax \n"
-        "lea eax, %[FakeBool] \n"
-        "mov dword ptr [ecx+0xc], eax \n"
-        "mov eax, 0x1 \n"
-        "jmp 0x00847E59 \n"
+        "mov byte ptr [edi+0x4E9], 0x1 \n"
+        "jmp 0x00847E64 \n"
         
         "EXIT: \n"
         "pop edx \n"
@@ -289,7 +294,7 @@ void TeamColorMode()
         "pop eax \n"
         "jmp 0x00847E59 \n"
         :
-        : [ColorsArray] "i" (ColorsArray), [FakeBool] "m" (FakeBool)
+        : [ColorsArray] "i" (ColorsArray)
         :
 	);
 }
