@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 char ColorsArray[128];
 
 // Basically what we do here is parsing colors from string in lua function TeamColorMode() (originally it supports only bool)
