@@ -32,16 +32,16 @@ void TeamColorMode()
 
         "HexStart:;"
         "movsx edi, BYTE PTR [eax+ecx];"
+        
+        //Digit
         "lea ebx, [edi-48];"
         "cmp ebx, 9;"
         "jbe Sym;"
 
-        //Digit
+        //Upper
         "lea ebx, [edi-65];"
         "cmp ebx, 5;"
         "ja Lower;"
-
-        //Upper
         "lea ebx, [edi-55];"
         "jmp Sym;"
 
