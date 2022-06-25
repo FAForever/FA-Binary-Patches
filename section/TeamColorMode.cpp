@@ -1,316 +1,84 @@
-char ColorsArray[128];
+int Colors[32];
 
 // Basically what we do here is parsing colors from string in lua function TeamColorMode() (originally it supports only bool)
 // then store them in array and then use it instead of one created from GameColors.lua
-// the string should contains colors in hex format like that: "(ffffffff,ffffffff,ffffffff,ffffffff,ffffffff)"
-// it starts with "(" , ends with ")", colors separated by commas, no spaces, all letters should be lowercase
+// the string should contains colors in hex format like that: "ffffffff,ffffffff,ffffffff,ffffffff,ffffffff"
+// colors separated by commas, no spaces
 // then stored colors will be applied to armies according to their indexes.
 
 void TeamColorMode()
 {
-	__asm__
-	(
+    asm(
         "mov dword ptr [esp+0xC], 0x1;"
-        "push eax;"
-        "push ebx;"
+        "push 1;"
         "push ecx;"
-        "push edx;"
-        "mov eax, dword ptr [esi+0x4];"
-        "mov ecx, dword ptr [esi];"
-        "mov edx, dword ptr [ecx];"
-        "push eax;"
-        "push edx;"
-        "call 0x0090C740;"                   //returns object index in eax, 1=bool, 4=string
+        "call 0x90C740;" //lua_type
+        "add esp,0x8;"
         "cmp eax, 0x1;"
-        "pop edx;"
-        "pop eax;"
-        "je EXIT;"
-        "mov ebx, dword ptr [ecx+0xC];"
-        "mov ecx, dword ptr [ebx+0x4];"
-        "cmp byte ptr [ecx+0x14], 0x28;"     // string starts with "("
-        "jne EXIT;"
-        "add ecx, 0x15;"
-        
-        // Parse hex colors from string and store them to array
-        "cmp byte ptr [ecx], 0x29;"
-        "je EXIT;"
-        "mov eax, 0x1F;"
-        "mov edx, 0x0;"
-        "mov ebx, %[ColorsArray];"
-        
-        "START:;"
-        "cmp eax, 0xFFFFFFFF;"
-        "jne Parse;"
-        "mov dword ptr [ebx], edx;"
-        "add ebx, 0x4;"
-        "mov edx, 0x0;"
-        "mov eax, 0x1F;"
-        
-        "Parse:;"
-        "cmp byte ptr [ecx], 0x2C;"          // ","
-        "jne NotComma;"
-        "add ecx, 0x1;"
-        "NotComma:;"
-        "cmp byte ptr [ecx], 0x29;"          // ")"
-        "je ExitAferString;"
-        
-        "cmp byte ptr [ecx], 0x30;"
-        "jne L1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L1:;"
-        "cmp byte ptr [ecx], 0x31;"
-        "jne L2;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L2:;"
-        "cmp byte ptr [ecx], 0x32;"
-        "jne L3;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L3:;"
-        "cmp byte ptr [ecx], 0x33;"
-        "jne L4;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L4:;"
-        "cmp byte ptr [ecx], 0x34;"
-        "jne L5;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L5:;"
-        "cmp byte ptr [ecx], 0x35;"
-        "jne L6;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L6:;"
-        "cmp byte ptr [ecx], 0x36;"
-        "jne L7;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L7:;"
-        "cmp byte ptr [ecx], 0x37;"
-        "jne L8;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L8:;"
-        "cmp byte ptr [ecx], 0x38;"
-        "jne L9;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "L9:;"
-        "cmp byte ptr [ecx], 0x39;"
-        "jne LA;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "LA:;"
-        "cmp byte ptr [ecx], 0x61;"
-        "jne LB;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "LB:;"
-        "cmp byte ptr [ecx], 0x62;"
-        "jne LC;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "LC:;"
-        "cmp byte ptr [ecx], 0x63;"
-        "jne LD;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "LD:;"
-        "cmp byte ptr [ecx], 0x64;"
-        "jne PLE;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "PLE:;"
-        "cmp byte ptr [ecx], 0x65;"
-        "jne LF;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "btr edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "LF:;"
-        "cmp byte ptr [ecx], 0x66;"
-        "jne EXIT;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "bts edx, eax;"
-        "sub eax, 0x1;"
-        "add ecx, 0x1;"
-        "jmp START;"
-        
-        "ExitAferString:;"
-        "pop edx;"
-        "pop ecx;"
-        "pop ebx;"
-        "pop eax;"
-        "mov byte ptr [edi+0x4E9], 0x1;"
-        "jmp 0x00847E64;"
-        
-        "EXIT:;"
-        "pop edx;"
-        "pop ecx;"
-        "pop ebx;"
-        "pop eax;"
-        "jmp 0x00847E59;"
-        :
-        : [ColorsArray] "i" (ColorsArray)
-        :
-	);
-}
+        "je 0x847E59;" //Return if bool
+        "push 1;"
+        "push ecx;"
+        "call 0x90CA90;" //lua_tostring
+        "add esp,0x8;"
 
+        // Parse hex colors from string and store them to array
+        "mov esi, %[Colors];"
+        "xor ecx, ecx;"
+
+        "Start:;"
+        "cmp byte ptr [eax+ecx], 0;"
+        "je 0x847E64;" //Return if string done
+        "xor edx, edx;"
+
+        "HexStart:;"
+        "movsx edi, BYTE PTR [eax+ecx];"
+        "lea ebx, [edi-48];"
+        "cmp ebx, 9;"
+        "jbe Sym;"
+
+        //Digit
+        "lea ebx, [edi-65];"
+        "cmp ebx, 5;"
+        "ja Lower;"
+
+        //Upper
+        "lea ebx, [edi-55];"
+        "jmp Sym;"
+
+        "Lower:;"
+        "lea ebx, [edi-97];"
+        "cmp ebx, 5;"
+        "ja Store;"
+        "lea ebx, [edi-87];"
+
+        "Sym:;"
+        "sal edx, 4;"
+        "inc ecx;"
+        "add edx, ebx;"
+        "jmp HexStart;"
+
+        "Store:;"
+        "mov DWORD PTR [esi], edx;"
+        "inc ecx;"
+        "add esi, 4;"
+        "jmp Start;"
+        :
+        : [Colors] "i" (Colors)
+        :
+    );
+}
 
 void TeamColorModeRenderer()
 {
-    const char* colors = ColorsArray;
-	__asm__
-	(
+    asm(
         "push eax;"
         "mov ecx, dword ptr [edx];"
-        "mov eax, %[colors];"
+        "mov eax, %[Colors];"
         "mov ecx, dword ptr [eax+ecx*0x4];"
         "pop eax;"
-        "jmp 0x0085DB77;"
+        "jmp 0x85DB77;"
         :
-        : [colors] "i" (colors)
+        : [Colors] "i" (Colors)
         :
-	);
+    );
 }
