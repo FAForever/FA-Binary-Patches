@@ -45,7 +45,7 @@ int _thiscall HeightCylinders(void *this_)
                     *reinterpret_cast<float **>(0x7EE336 + 0x4) = &MAX_HEIGHT;
                     VirtualProtect(reinterpret_cast<void *>(0x7EE336 + 0x4), sizeof(float), oldProt, &oldProt);
 
-                    uintptr_t this__ = *reinterpret_cast<uintptr_t *>(0x10C7C28) + 0x37C; // 0x10C7C28 -> main wxWindow
+                    auto this__ = *reinterpret_cast<uintptr_t *>(0x10C7C28) + 0x37C; // 0x10C7C28 -> main wxWindow
                     reinterpret_cast<void(__thiscall *)(uintptr_t)>(0x7EDFE0)(this__);    // call generate_ring_cylinders(this)
                 }
             }
