@@ -3,9 +3,9 @@
 float MAX_HEIGHT = 256.0;
 float MIN_HEIGHT = -256.0;
 
-int _thiscall HeightCylinders(void *this_)
+int __thiscall HeightCylinders(void *this_)
 {
-    int result = reinterpret_cast<int(__thiscall *)(void *)>(0x7433B0)(this_); // call original
+    int result = reinterpret_cast<int(__thiscall *)(void *)>(0x7433B0)(this_); // call start_game
 
     if (auto SIM = *reinterpret_cast<uintptr_t *>(0x10A63F0); SIM != NULL)
     {
@@ -31,7 +31,7 @@ int _thiscall HeightCylinders(void *this_)
                                 minCalculated = height;
                         }
                     }
-                    MIN_HEIGHT = std::ceil(minCalculated - 1);
+                    MIN_HEIGHT = std::round(minCalculated - 1);
                     MAX_HEIGHT = std::ceil(maxCalculated + 1);
                     auto GetModuleHandle = *reinterpret_cast<void *(__stdcall **)(const char *)>(0xC0F378);
                     auto GetProcAddress = *reinterpret_cast<void *(__stdcall **)(void *, const char *)>(0xC0F48C);
