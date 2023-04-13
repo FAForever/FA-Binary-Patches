@@ -1,5 +1,3 @@
-char Blocks[1];
-
 // Change unit:GiveNukeSiloAmmo(int) behaviour to be able to set work progress manually
 // this way we can save half done missiles after unit transfer (works with SMLs and SMDs)
 //
@@ -12,15 +10,18 @@ char Blocks[1];
 // for standard SML there will be 450000/1500*10 = 3000 blocks
 //
 // so 3000 blocks is 100%. Then if you need to set, let say, 35% just send 1050 (integer) as first argument and True\False\whatever as second. Example:
-// unit:GiveNukeSiloAmmo(1050, True)
+// unit:GiveNukeSiloAmmo(1050, true)
+
+char Blocks[1];
 
 void SiloAmmoCheckArgs()
 {
     asm(
         "mov %[Blocks], 0;"
+        "cmp eax, 2;"
         "je 0x6CED8B;"
         "cmp eax, 3;" //change blocks if third arg exists
-        "jne 0x6CED7C;"
+        "jne 0x6CED79;"
         "mov %[Blocks], 1;"
         "jmp 0x6CED8B;"
         :
@@ -34,18 +35,15 @@ void SiloAmmoSetBlocks()
     asm(
         "cmp %[Blocks], 0;"
         "je Finish;"
-        "add ebx, 72;"
-        "mov dword ptr [ebx], eax;" //here we set the number of blocks. This value is used by Moho::CAiSiloBuildImpl::SiloTick for calculations
-        "sub ebx, 72;"
-        "mov eax, 0;"
-        
-        
+        "mov [ebx+0x48], eax;" //here we set the number of blocks. This value is used by Moho::CAiSiloBuildImpl::SiloTick for calculations
+        "jmp 0x6CEDFA;"
+
         //default code
         "Finish:;"
-        "mov edx, dword ptr [edi];"
+        "mov edx, [edi];"
         "push eax;"
         "push 1;"
-        "jmp 0x6CEDF6"
+        "jmp 0x6CEDF6;"
         :
         : [Blocks] "m" (Blocks)
         :
