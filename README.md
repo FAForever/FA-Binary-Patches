@@ -61,6 +61,9 @@ This are just the patch files for this game. I decided to separate them from pat
     - hooks/LuaMessages.cpp
 
 ## Additions
+- Adds new category 'OBSTRUCTSBUILDING' for props to block buildings from being build on top of those
+    - hooks/Reclaimable.cpp
+    - section/Reclaimable.cpp
 - Allows changing army of ACUs
     - hooks/HTransferACUs.cpp
 - Allows customize colors for team color mode
