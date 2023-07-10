@@ -646,8 +646,12 @@ struct CUnitCommand
 	string unk5;
 	// at 0x98
 	uint32_t Order;
+    // at 0xA0
+    uint32_t targetId; //entityId = (targetId & 1FFFFF)
 	// at 0xA4
 	Vector4f Pos1;
+    // at 0x120
+    //Unit Target; // -0xC
 	// at 0x128
 	Vector3f Pos2;
 	// at 0x160
