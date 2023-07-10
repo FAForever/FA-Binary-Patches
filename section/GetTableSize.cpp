@@ -148,15 +148,11 @@ void lua_createtable(/*lua_State *l, int narr, int nhash*/)
 
 int _CreateTable(lua_State *l)
 {
-    int narr = luaL_checknumber(l, 1);
-    int nhash = 0;
-    if (lua_isnumber(l, 2))
-    {
-        nhash = lua_tonumber(l, 2);
-    }
+    int narr = static_cast<int>(luaL_checknumber(l, 1));
+    int nhash = static_cast<int>(luaL_optnumber(l, 2, 0.0f));
     reinterpret_cast<void (*)(lua_State *, int, int)>(&lua_createtable)(l,
-                                                                        narr > 0 ? narr : 0,
-                                                                        nhash > 0 ? nhash : 0);
+                                                                        ((narr > 0) ? narr : 0),
+                                                                        ((nhash > 0) ? nhash : 0));
     return 1;
 }
 
