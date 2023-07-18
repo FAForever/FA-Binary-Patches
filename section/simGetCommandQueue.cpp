@@ -1,5 +1,7 @@
 #include "include/moho.h"
 #include "include/LuaAPI.h"
+#include <stdint.h>
+#include <stdio.h>
 
 int commandType;
 int targetId;
@@ -7,6 +9,7 @@ char* bpId;
 float x;
 float y;
 float z;
+char tgtIdAsString[11];
 
 LuaState* LuaS;
 LuaObject* O;
@@ -23,7 +26,19 @@ void SimGetCommandQueueCpp()
     
     if (targetId != -1)
     {
-        CLuaObject::SetInteger(&SubTable, "targetId", targetId);
+        int i = 0;
+        int i2 = 0;
+        char temp[10];
+        do {
+            temp[i++] = '0' + (targetId % 10);
+            targetId /= 10;
+            } while (targetId > 0);
+        
+        while(i > 0)
+            tgtIdAsString[i2++] = temp[--i];
+        tgtIdAsString[i2] = '\0';
+
+        CLuaObject::SetString(&SubTable, "targetId", tgtIdAsString);
     }
     
     CLuaObject::SetString(&SubTable, "blueprintId", bpId);
