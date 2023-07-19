@@ -10,6 +10,9 @@ This are just the patch files for this game. I decided to separate them from pat
 
 # Change List
 ## Fixes
+- Fix `Unit:SetStat` function, crashed before. Now returns true if value must be set.
+    - hooks/SetStatFix.cpp
+    - section/SetStatFix.cpp
 - Upgrade Progress Fix
     - hooks/HUpgradeProgressFix.cpp
     - section/UpgradeProgressFix.cpp
