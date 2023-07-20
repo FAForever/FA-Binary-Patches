@@ -10,6 +10,8 @@ This are just the patch files for this game. I decided to separate them from pat
 
 # Change List
 ## Fixes
+- Fix args num check in UserUnit:GetCustomName
+    - hooks/UserUnitGetCustomNameFix.cpp
 - Upgrade Progress Fix
     - hooks/HUpgradeProgressFix.cpp
     - section/UpgradeProgressFix.cpp
