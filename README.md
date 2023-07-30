@@ -10,6 +10,12 @@ This are just the patch files for this game. I decided to separate them from pat
 
 # Change List
 ## Fixes
+- Fix `ForkThread` function. Allow only lua function to be passed as first argument.
+    - hooks/ForkThreadFix.cpp
+    - section/ForkThreadFix.cpp
+- Fix `Unit:SetStat` function, crashed before. Now returns true if value must be set.
+    - hooks/SetStatFix.cpp
+    - section/SetStatFix.cpp
 - Upgrade Progress Fix
     - hooks/HUpgradeProgressFix.cpp
     - section/UpgradeProgressFix.cpp
@@ -61,6 +67,9 @@ This are just the patch files for this game. I decided to separate them from pat
     - hooks/LuaMessages.cpp
 
 ## Additions
+- Adds the commandType, position, targetId and blueprintId to sim unit:GetCommandQueue
+    - hooks/SimGetCommandQueue.cpp
+    - section/SimGetCommandQueue.cpp
 - Adds new category 'CANLANDONWATER' for air units to be able to land on water
     - hooks/CanLandOnWater.cpp
     - section/Categories.cpp
