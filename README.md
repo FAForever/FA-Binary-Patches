@@ -12,6 +12,9 @@ This are just the patch files for this game. I decided to separate them from pat
 ## Fixes
 - Fix args num check in UserUnit:GetCustomName
     - hooks/UserUnitGetCustomNameFix.cpp
+- Fix `ForkThread` function. Allow only lua function to be passed as first argument.
+    - hooks/ForkThreadFix.cpp
+    - section/ForkThreadFix.cpp
 - Fix `Unit:SetStat` function, crashed before. Now returns true if value must be set.
     - hooks/SetStatFix.cpp
     - section/SetStatFix.cpp
@@ -64,14 +67,20 @@ This are just the patch files for this game. I decided to separate them from pat
     - hooks/WayPointArrive.cpp
 - Improvements to lua messages
     - hooks/LuaMessages.cpp
+- Stops reclaim if unit is paused (similar to 'build', 'assist' etc.)
+    - hooks/StopReclaimWhenPaused.cpp
+    - section/StopReclaimWhenPaused.cpp
 
 ## Additions
 - Adds the commandType, position, targetId and blueprintId to sim unit:GetCommandQueue
     - hooks/SimGetCommandQueue.cpp
     - section/SimGetCommandQueue.cpp
+- Adds new category 'CANLANDONWATER' for air units to be able to land on water
+    - hooks/CanLandOnWater.cpp
+    - section/Categories.cpp
 - Adds new category 'OBSTRUCTSBUILDING' for props to block buildings from being build on top of those
     - hooks/Reclaimable.cpp
-    - section/Reclaimable.cpp
+    - section/Categories.cpp
 - Allows changing army of ACUs
     - hooks/HTransferACUs.cpp
 - Allows customize colors for team color mode

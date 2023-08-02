@@ -151,6 +151,247 @@ VALIDATE_SIZE(TObject, 8)
   class LuaObject
   {// 0x14 bytes
     public:
+      LuaObject() {
+        ((__thiscall LuaObject* (*)(LuaObject*))0x9072a0)(this);
+      }
+      LuaObject(LuaState* state) {
+        ((__thiscall LuaObject* (*)(LuaObject*, LuaState*))0x908970)(this, state);
+      }
+      LuaObject(LuaState* state, int index) {
+        ((__thiscall LuaObject* (*)(LuaObject*, LuaState*, int))0x9089c0)(this, state, index);
+      }
+      LuaObject(const LuaObject* obj) {
+        ((__thiscall LuaObject* (*)(LuaObject*, const LuaObject*))0x908a40)(this, obj);
+      }
+      LuaObject(const LuaStackObject* stack) {
+        ((__thiscall LuaObject* (*)(LuaObject*, const LuaStackObject*))0x908a70)(this, stack);
+      }
+      LuaObject(LuaState* state, const TObject* obj) {
+        ((__thiscall LuaObject* (*)(LuaObject*, LuaState*, const TObject*))0x9089f0)(this, state, obj);
+      }
+      ~LuaObject() {
+        ((__thiscall void (*)(LuaObject*))0x9075d0)(this);
+      }
+      LuaObject* operator=(const LuaObject* obj) {
+        return ((__thiscall LuaObject* (*)(LuaObject*, const LuaObject*))0x908ab0)(this, obj);
+      }
+      LuaObject* operator=(const LuaStackObject* stack) {
+        return ((__thiscall LuaObject* (*)(LuaObject*, const LuaStackObject*))0x908b00)(this, stack);
+      }
+      LuaObject operator[](int key) {
+        LuaObject out;
+        ((__thiscall void (*)(LuaObject*, LuaObject*, int))0x9091e0)(this, &out, key);
+        return out;
+      }
+      LuaObject operator[](const char* key) {
+        LuaObject out;
+        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*))0x908f60)(this, &out, key);
+        return out;
+      }
+      bool GetBoolean() {
+        return ((__thiscall bool (*)(LuaObject*))0x907c90)(this);
+      }
+      bool IsBoolean() {
+        return ((__thiscall bool (*)(LuaObject*))0x9078d0)(this);
+      }
+      bool IsConvertibleToString() {
+        return ((__thiscall bool (*)(LuaObject*))0x9077c0)(this);
+      }
+      bool IsFunction() {
+        return ((__thiscall bool (*)(LuaObject*))0x907810)(this);
+      }
+      bool IsInteger() {
+        return ((__thiscall bool (*)(LuaObject*))0x907350)(this);
+      }
+      bool IsNil() {
+        return ((__thiscall bool (*)(LuaObject*))0x9072f0)(this);
+      }
+      bool IsNumber() {
+        return ((__thiscall bool (*)(LuaObject*))0x907360)(this);
+      }
+      bool IsString() {
+        return ((__thiscall bool (*)(LuaObject*))0x907370)(this);
+      }
+      bool IsTable() {
+        return ((__thiscall bool (*)(LuaObject*))0x907310)(this);
+      }
+      bool IsUserData() {
+        return ((__thiscall bool (*)(LuaObject*))0x907320)(this);
+      }
+      void Clone(LuaObject* out) {
+        ((__thiscall void (*)(LuaObject*,  LuaObject*))0x90a180)(this, out);
+      }
+      void CreateTable(LuaObject* out, const char* key, int narray, int lnhash) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*, int, int))0x908c10)(this, out, key, narray, lnhash);
+      }
+      void CreateTable(LuaObject* out, int key, int narray, int lnhash) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*, int, int, int))0x908ca0)(this, out, key, narray, lnhash);
+      }
+      void GetByIndex(LuaObject* out, int index) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*, int))0x908df0)(this, out, index);
+      }
+      void GetByName(LuaObject* out, const char* name) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*))0x90a160)(this, out, name);
+      }
+      void GetByObject(LuaObject* out, const LuaObject* obj) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*, const LuaObject*))0x908e70)(this, out, obj);
+      }
+      void GetMetaTable(LuaObject* out) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*))0x908ba0)(this, out);
+      }
+      void Lookup(LuaObject* out, const char* key) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*))0x9093b0)(this, out, key);
+      }
+      void PushStack(LuaStackObject* out, LuaState* state) {
+        ((__thiscall void (*)(LuaObject*, LuaStackObject*, LuaState*))0x907d80)(this, out, state);
+      }
+      void PushStack(lua_State* L) {
+        ((__thiscall void (*)(LuaObject*, lua_State*))0x907d10)(this, L);
+      }
+      LuaState* GetActiveState() {
+        return ((__thiscall LuaState* (*)(LuaObject*))0x9072b0)(this);
+      }
+      const char* GetString() {
+        return ((__thiscall const char* (*)(LuaObject*))0x907a90)(this);
+      }
+      const char* ToString() {
+        return ((__thiscall const char* (*)(LuaObject*))0x9073e0)(this);
+      }
+      const char* TypeName() {
+        return ((__thiscall const char* (*)(LuaObject*))0x908b50)(this);
+      }
+      lua_Number GetNumber() {
+        return ((__thiscall float (*)(LuaObject*))0x907970)(this);
+      }
+      lua_Number GetDouble() { //Same as GetNumber
+        return ((__thiscall float (*)(LuaObject*))0x907a30)(this);
+      }
+      lua_Number ToNumber() {
+        return ((__thiscall float (*)(LuaObject*))0x9073b0)(this);
+      }
+      void AssignNewUserData(RRef* out, LuaState* state, const RRef* rRef) {
+        ((__thiscall void (*)(LuaObject*, RRef*, LuaState*, const RRef*))0x909840)(this, out, state, rRef);
+      }
+      void AssignNewUserData(RRef* out, LuaState* state, const RType* rType) {
+        ((__thiscall void (*)(LuaObject*, RRef*, LuaState*, const RType*))0x9097d0)(this, out, state, rType);
+      }
+      void GetUserData(RRef* out) {
+        ((__thiscall void (*)(LuaObject*, RRef*))0x907bc0)(this, out);
+      }
+      int GetCount() {
+        return ((__thiscall int (*)(LuaObject*))0x907f50)(this);
+      }
+      int GetInteger() {
+        return ((__thiscall int (*)(LuaObject*))0x907910)(this);
+      }
+      int GetN() {
+        return ((__thiscall int (*)(LuaObject*))0x907e50)(this);
+      }
+      int GetTableCount() {
+        return ((__thiscall int (*)(LuaObject*))0x90a410)(this);
+      }
+      int IsPassed() {
+        return ((__thiscall int (*)(LuaObject*))0x907440)(this);
+      }
+      int Type() {
+        return ((__thiscall int (*)(LuaObject*))0x9076d0)(this);
+      }
+      lua_State* GetActiveCState() {
+        return ((__thiscall lua_State* (*)(LuaObject*))0x9072c0)(this);
+      }
+      void AssignBoolean(LuaState* state, bool value) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, bool))0x909600)(this, state, value);
+      }
+      void AssignInteger(LuaState* state, int value) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, int))0x909650)(this, state, value);
+      }
+      void AssignNewTable(LuaState* state, int narray, int lnhash) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, int, int))0x909940)(this, state, narray, lnhash);
+      }
+      void AssignNil(LuaState* state) {
+        ((__thiscall void (*)(LuaObject*, LuaState*))0x9095c0)(this, state);
+      }
+      void AssignNumber(LuaState* state, float value) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, float))0x9096a0)(this, state, value);
+      }
+      void AssignString(LuaState* state, const char* value) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, const char*))0x909750)(this, state, value);
+      }
+      void AssignTObject(LuaState* state, const TObject* value) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, const TObject*))0x9099b0)(this, state, value);
+      }
+      void AssignThread(LuaState* state) {
+        ((__thiscall void (*)(LuaObject*, LuaState*))0x9096f0)(this, state);
+      }
+      void Insert(LuaObject* value) {
+        ((__thiscall void (*)(LuaObject*, LuaObject*))0x909af0)(this, value);
+      }
+      void Insert(int key, LuaObject* value) {
+        ((__thiscall void (*)(LuaObject*, int, LuaObject*))0x909ce0)(this, key, value);
+      }
+      void Register(const char* name, lua_CFunction func, int nupvalues) {
+        ((__thiscall void (*)(LuaObject*, const char*, lua_CFunction, int))0x907630)(this, name, func, nupvalues);
+      }
+      void Reset() {
+        ((__thiscall void (*)(LuaObject*))0x9075f0)(this);
+      }
+      void SetBoolean(const char* key, bool value) {
+        ((__thiscall void (*)(LuaObject*, const char*, bool))0x9080c0)(this, key, value);
+      }
+      void SetInteger(const char* key, int value) {
+        ((__thiscall void (*)(LuaObject*, const char*, int))0x9081f0)(this, key, value);
+      }
+      void SetInteger(int key, int value) {
+        ((__thiscall void (*)(LuaObject*, int, int))0x908240)(this, key, value);
+      }
+      void SetMetaTable(const LuaObject* value) {
+        ((__thiscall void (*)(LuaObject*, const LuaObject*))0x907e00)(this, value);
+      }
+      void SetN(int n) {
+        ((__thiscall void (*)(LuaObject*, int))0x907ed0)(this, n);
+      }
+      void SetNil(const char* key) {
+        ((__thiscall void (*)(LuaObject*, const char*))0x907fa0)(this, key);
+      }
+      void SetNil(int key) {
+        ((__thiscall void (*)(LuaObject*, int))0x907ff0)(this, key);
+      }
+      void SetNumber(const char* key, float value) {
+        ((__thiscall void (*)(LuaObject*, const char*, float))0x908320)(this, key, value);
+      }
+      void SetNumber(int key, float value) {
+        ((__thiscall void (*)(LuaObject*, int, float))0x908370)(this, key, value);
+      }
+      void SetObject(const LuaObject* key, const LuaObject* value) {
+        ((__thiscall void (*)(LuaObject*, const LuaObject*, const LuaObject*))0x908810)(this, key, value);
+      }
+      void SetObject(const char* key, const LuaObject* value) {
+        ((__thiscall void (*)(LuaObject*, const char*, const LuaObject*))0x908760)(this, key, value);
+      }
+      void SetObject(int key, const LuaObject* value) {
+        ((__thiscall void (*)(LuaObject*, int, const LuaObject*))0x9087a0)(this, key, value);
+      }
+      void SetString(const char* key, const char* value) {
+        ((__thiscall void (*)(LuaObject*, const char*, const char*))0x908450)(this, key, value);
+      }
+      void SetString(int key, const char* value) {
+        ((__thiscall void (*)(LuaObject*, int, const char*))0x9084e0)(this, key, value);
+      }
+      void TypeError(const char* msg) {
+        ((__thiscall void (*)(LuaObject*, const char*))0x9072d0)(this, msg);
+      }
+
+    //private
+      void AddToUsedList(LuaState* state) {
+        ((__thiscall void (*)(LuaObject*, LuaState*))0x908890)(this, state);
+      }
+      void AddToUsedList(LuaState* state, const TObject* obj) {
+        ((__thiscall void (*)(LuaObject*, LuaState*, const TObject*))0x9088e0)(this, state, obj);
+      }
+      void SetTableHelper(const char* key, const TObject* value) {
+        ((__thiscall void (*)(LuaObject*, const char*, const TObject*))0x9074b0)(this, key, value);
+      }
+
       LuaObject* m_next;
       LuaObject* m_prev;
       LuaState* m_state;
@@ -158,95 +399,53 @@ VALIDATE_SIZE(TObject, 8)
   };
   VALIDATE_SIZE(LuaObject, 0x14)
 
-  namespace CLuaObject
-  {
-    //public
-      FDecl(0x9072a0, CLuaObject, __thiscall LuaObject (*)(LuaObject* this_))
-      FDecl(0x908970, CLuaObject2, __thiscall LuaObject (*)(LuaObject* this_, LuaState*))
-      FDecl(0x9089c0, CLuaObject3, __thiscall LuaObject (*)(LuaObject* this_, LuaState*, int))
-      FDecl(0x908a40, CLuaObject4, __thiscall LuaObject (*)(LuaObject* this_, const LuaObject&))
-      FDecl(0x908a70, CLuaObject5, __thiscall LuaObject (*)(LuaObject* this_, const LuaStackObject&))
-      FDecl(0x9089f0, CLuaObject6, __thiscall LuaObject (*)(LuaObject* this_, LuaState*, const TObject*))
-      FDecl(0x9075d0, DLuaObject, __thiscall void (*)(LuaObject* this_))
-      FDecl(0x908ab0, EQ, __thiscall LuaObject& (*)(LuaObject* this_, const LuaObject&))
-      FDecl(0x908b00, EQ2, __thiscall LuaObject& (*)(LuaObject* this_, const LuaStackObject&))
-      FDecl(0x9091e0, Get, __thiscall LuaObject (*)(LuaObject* this_, int))
-      FDecl(0x908f60, Get2, __thiscall LuaObject (*)(LuaObject* this_, const char*))
-      FDecl(0x907c90, GetBoolean, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x9078d0, IsBoolean, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x9077c0, IsConvertibleToString, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x907810, IsFunction, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x907350, IsInteger, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x9072f0, IsNil, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x907360, IsNumber, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x907370, IsString, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x907310, IsTable, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x907320, IsUserData, __thiscall bool (*)(LuaObject* this_))
-      FDecl(0x90a180, Clone, __thiscall LuaObject (*)(LuaObject* this_))
-      FDecl(0x908c10, CreateTable, __thiscall LuaObject (*)(LuaObject* this_, const char*, int, int))
-      FDecl(0x908ca0, CreateTable2, __thiscall LuaObject (*)(LuaObject* this_, int, int, int))
-      FDecl(0x908df0, GetByIndex, __thiscall LuaObject (*)(LuaObject* this_, int))
-      FDecl(0x90a160, GetByName, __thiscall LuaObject (*)(LuaObject* this_, const char*))
-      FDecl(0x908e70, GetByObject, __thiscall LuaObject (*)(LuaObject* this_, const LuaObject&))
-      FDecl(0x908ba0, GetMetaTable, __thiscall LuaObject (*)(LuaObject* this_))
-      FDecl(0x9093b0, Lookup, __thiscall LuaObject (*)(LuaObject* this_, const char*))
-      FDecl(0x907d80, PushStack, __thiscall void (*)(LuaObject* this_, LuaStackObject* out, LuaState*))
-      FDecl(0x907d10, PushStack2, __thiscall void (*)(LuaObject* this_, lua_State*))
-      FDecl(0x9072b0, GetActiveState, __thiscall LuaState* (*)(LuaObject* this_))
-      FDecl(0x907a90, GetString, __thiscall const char* (*)(LuaObject* this_))
-      FDecl(0x9073e0, ToString, __thiscall const char* (*)(LuaObject* this_))
-      FDecl(0x908b50, TypeName, __thiscall const char* (*)(LuaObject* this_))
-      FDecl(0x907970, GetNumber, __thiscall float (*)(LuaObject* this_))
-      FDecl(0x907a30, GetNumber2, __thiscall float (*)(LuaObject* this_))
-      FDecl(0x9073b0, ToNumber, __thiscall float (*)(LuaObject* this_))
-      FDecl(0x909840, AssignNewUserData, __thiscall RRef (*)(LuaObject* this_, LuaState*, const RRef&))
-      FDecl(0x9097d0, AssignNewUserData2, __thiscall RRef (*)(LuaObject* this_, LuaState*, const RType*))
-      FDecl(0x907bc0, GetUserData, __thiscall RRef (*)(LuaObject* this_))
-      FDecl(0x907f50, GetCount, __thiscall int (*)(LuaObject* this_))
-      FDecl(0x907910, GetInteger, __thiscall int (*)(LuaObject* this_))
-      FDecl(0x907e50, GetN, __thiscall int (*)(LuaObject* this_))
-      FDecl(0x90a410, GetTableCount, __thiscall int (*)(LuaObject* this_))
-      FDecl(0x907440, IsPassed, __thiscall int (*)(LuaObject* this_))
-      FDecl(0x9076d0, Type, __thiscall int (*)(LuaObject* this_))
-      FDecl(0x9072c0, GetActiveCState, __thiscall lua_State* (*)(LuaObject* this_))
-      FDecl(0x908890, AddToUsedList, __thiscall void (*)(LuaObject* this_, LuaState*))
-      FDecl(0x9088e0, AddToUsedList2, __thiscall void (*)(LuaObject* this_, LuaState*, const TObject&))
-      FDecl(0x909600, AssignBoolean, __thiscall void (*)(LuaObject* this_, LuaState*, bool))
-      FDecl(0x909650, AssignInteger, __thiscall void (*)(LuaObject* this_, LuaState*, int))
-      FDecl(0x909940, AssignNewTable, __thiscall void (*)(LuaObject* this_, LuaState*, int, int))
-      FDecl(0x9095c0, AssignNil, __thiscall void (*)(LuaObject* this_, LuaState*))
-      FDecl(0x9096a0, AssignNumber, __thiscall void (*)(LuaObject* this_, LuaState*, float))
-      FDecl(0x909750, AssignString, __thiscall void (*)(LuaObject* this_, LuaState*, const char*))
-      FDecl(0x9099b0, AssignTObject, __thiscall void (*)(LuaObject* this_, LuaState*, const TObject*))
-      FDecl(0x9096f0, AssignThread, __thiscall void (*)(LuaObject* this_, LuaState*))
-      FDecl(0x909af0, Insert, __thiscall void (*)(LuaObject* this_, LuaObject*))
-      FDecl(0x909ce0, Insert2, __thiscall void (*)(LuaObject* this_, int, LuaObject*))
-      FDecl(0x907630, Register, __thiscall void (*)(LuaObject* this_, const char*, int (__cdecl*)(lua_State*), int))
-      FDecl(0x9075f0, Reset, __thiscall void (*)(LuaObject* this_))
-      FDecl(0x9080c0, SetBoolean, __thiscall void (*)(LuaObject* this_, const char*, bool))
-      FDecl(0x9081f0, SetInteger, __thiscall void (*)(LuaObject* this_, const char*, int))
-      FDecl(0x908240, SetInteger2, __thiscall void (*)(LuaObject* this_, int, int))
-      FDecl(0x907e00, SetMetaTable, __thiscall void (*)(LuaObject* this_, const LuaObject&))
-      FDecl(0x907ed0, SetN, __thiscall void (*)(LuaObject* this_, int))
-      FDecl(0x907fa0, SetNil, __thiscall void (*)(LuaObject* this_, const char*))
-      FDecl(0x907ff0, SetNil2, __thiscall void (*)(LuaObject* this_, int))
-      FDecl(0x908320, SetNumber, __thiscall void (*)(LuaObject* this_, const char*, float))
-      FDecl(0x908370, SetNumber2, __thiscall void (*)(LuaObject* this_, int, float))
-      FDecl(0x908810, SetObject, __thiscall void (*)(LuaObject* this_, const LuaObject&, const LuaObject&))
-      FDecl(0x908760, SetObject2, __thiscall void (*)(LuaObject* this_, const char*, const LuaObject&))
-      FDecl(0x9087a0, SetObject3, __thiscall void (*)(LuaObject* this_, int, const LuaObject&))
-      FDecl(0x908450, SetString, __thiscall void (*)(LuaObject* this_, const char*, const char*))
-      FDecl(0x9084e0, SetString2, __thiscall void (*)(LuaObject* this_, int, const char*))
-      FDecl(0x9072d0, TypeError, __thiscall void (*)(LuaObject* this_, const char*))
-      FDecl(0x90c1d0, Error, __cdecl int (*)(LuaObject* this_, const char*, ...))
-
-    //protected
-      FDecl(0x9074b0, SetTableHelper, __thiscall void (*)(LuaObject* this_, const char*, const TObject&))
-  }
-
   class LuaState
   {// 0x34 bytes
     public:
+      enum StandardLibraries {LIB_NONE, LIB_BASE, LIB_OSIO};
+
+      LuaState(enum StandardLibraries libs) {
+        ((__thiscall LuaState* (*)(LuaState*, enum StandardLibraries))0x90ac10)(this, libs);
+      }
+      LuaState(LuaState* parentState) {
+        ((__thiscall LuaState* (*)(LuaState*, LuaState*))0x90a520)(this, parentState);
+      }
+      LuaState(int Unused) {
+        ((__thiscall LuaState* (*)(LuaState*, int))0x90a5d0)(this, Unused);
+      }
+      ~LuaState() {
+        ((__thiscall void (*)(LuaState*))0x90a600)(this);
+      }
+      void GetGlobal(LuaObject* out, const char* key) {
+        ((__thiscall void (*)(LuaState*, LuaObject*, const char*))0x4579d0)(this, out, key);
+      }
+      void GetGlobals(LuaObject* out) {
+        ((__thiscall void (*)(LuaState*, LuaObject*))0x90a690)(this, out);
+      }
+      LuaState* GetActiveState() {
+        return ((__thiscall LuaState* (*)(LuaState*))0x90bee0)(this);
+      }
+      const char* CheckString(int narg) {
+        return ((__thiscall const char* (*)(LuaState*, int))0x912d10)(this, narg);
+      }
+      int ArgError(int narg, const char* msg) {
+        return ((__thiscall int (*)(LuaState*, int, const char*))0x90bf70)(this, narg, msg);
+      }
+      __attribute__((noinline)) __cdecl int Error(const char* fmt, ...) {
+        asm("jmp 0x90c1d0;");
+      }
+      lua_State* GetActiveCState() {
+        return ((__thiscall lua_State* (*)(LuaState*))0x90bef0)(this);
+      }
+      void CheckAny(int narg) {
+        ((__thiscall void (*)(LuaState*, int))0x923f20)(this, narg);
+      }
+
+    //private
+      void Init(enum StandardLibraries libs) {
+        ((__thiscall void (*)(LuaState*, enum StandardLibraries))0x90aad0)(this, libs);
+      }
+
       lua_State* m_state;
       void* ForMultipleThreads;
       bool m_ownState;
@@ -258,27 +457,6 @@ VALIDATE_SIZE(TObject, 8)
       } m_headObject,  m_tailObject;
   };
   VALIDATE_SIZE(LuaState, 0x34)
-
-  namespace CLuaState
-  {
-    //public
-      enum StandardLibraries {LIB_NONE, LIB_BASE, LIB_OSIO};
-
-      FDecl(0x90ac10, CLuaState, __thiscall LuaState (*)(LuaState* this_, enum StandardLibraries))
-      FDecl(0x90a520, CLuaState2, __thiscall LuaState (*)(LuaState* this_, LuaState*))
-      FDecl(0x90a5d0, CLuaState3, __thiscall LuaState (*)(LuaState* this_, int Unused))
-      FDecl(0x90a600, DLuaState, __thiscall void (*)(LuaState* this_))
-      FDecl(0x4579d0, GetGlobal, __thiscall LuaObject (*)(LuaState* this_, const char*))
-      FDecl(0x90a690, GetGlobals, __thiscall LuaObject (*)(LuaState* this_))
-      FDecl(0x90bee0, GetActiveState, __thiscall LuaState* (*)(LuaState* this_))
-      FDecl(0x912d10, CheckString, __thiscall const char* (*)(LuaState* this_, int))
-      FDecl(0x90bf70, ArgError, __thiscall int (*)(LuaState* this_, int, const char*))
-      FDecl(0x90bef0, GetActiveCState, __thiscall lua_State* (*)(LuaState* this_))
-      FDecl(0x923f20, CheckAny, __thiscall void (*)(LuaState* this_, int))
-
-    //private
-      FDecl(0x90aad0, Init, __thiscall void (*)(LuaState* this_, enum StandardLibraries))
-  }
 
 FDecl(0x90a6b0, LuaPlusH_next, bool __cdecl (*)(LuaState*, const LuaObject*, LuaObject*, LuaObject*))
 FDecl(0x90ca40, lua_toboolean, bool __cdecl (*)(lua_State*, int))

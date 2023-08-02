@@ -94,9 +94,20 @@ void IsTableEmpty()
     );
 }
 
+#include "include/LuaAPI.h"
+int TableClone(lua_State* L)
+{
+    LuaObject obj{L->LuaState, 1};
+    LuaObject cloned{};
+    obj.Clone(&cloned);
+    cloned.PushStack(L);
+    return 1;
+}
+
 int RegTableFuncsDesc[] = {"getsize2",&GetTableSize,
                            "empty2",&IsTableEmpty,
                            "getn2",0x00927C20,
+                           "clone", &TableClone,
                            0,0};
 
 void RegTableFuncs()

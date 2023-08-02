@@ -3,28 +3,28 @@
 
 void __thiscall SimGetCommandQueueInsert(LuaObject *this_, LuaObject *obj)
 {
-    auto unit = reinterpret_cast<uintptr_t>(obj) - 0x20;
-    CLuaObject::SetInteger(obj, "commandType", *reinterpret_cast<int*>(unit + 0x98));
-    CLuaObject::SetNumber(obj, "x", *reinterpret_cast<float*>(unit + 0xA4));
-    CLuaObject::SetNumber(obj, "y", *reinterpret_cast<float*>(unit + 0xA8));
-    CLuaObject::SetNumber(obj, "z", *reinterpret_cast<float*>(unit + 0xAC));
-    auto targetId = *reinterpret_cast<unsigned long*>(unit + 0xA0);
+    auto unitCmd = reinterpret_cast<uintptr_t>(obj) - 0x20;
+    obj->SetInteger("commandType", *reinterpret_cast<int*>(unitCmd + 0x98));
+    obj->SetNumber("x", *reinterpret_cast<float*>(unitCmd + 0xA4));
+    obj->SetNumber("y", *reinterpret_cast<float*>(unitCmd + 0xA8));
+    obj->SetNumber("z", *reinterpret_cast<float*>(unitCmd + 0xAC));
+    auto targetId = *reinterpret_cast<unsigned long*>(unitCmd + 0xA0);
     if (targetId != 0xF0000000) {
         char buf[16];
         sprintf_s(buf, sizeof(buf), "%d", targetId);  //like game doing entityId with std::string
-        CLuaObject::SetString(obj, "targetId", buf);
+        obj->SetString("targetId", buf);
     }
-    auto v3 = *reinterpret_cast<uintptr_t*>(unit + 0x60);
+    auto v3 = *reinterpret_cast<uintptr_t*>(unitCmd + 0x60);
     if (v3) //like in sub_842770
     {
         const char* bpId;
-        if ( *(int *)(v3 + 32) < 0x10u ) 
+        if ( *(int *)(v3 + 32) < 0x10u )
             bpId = (const char *)(v3 + 12);
         else
             bpId = *(const char **)(v3 + 12);
-        CLuaObject::SetString(obj, "blueprintId", bpId);
+        obj->SetString("blueprintId", bpId);
     }
-    CLuaObject::Insert(this_, obj);
+    this_->Insert(obj);
 }
 
 /* Commands

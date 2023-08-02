@@ -646,8 +646,11 @@ struct CUnitCommand
 	string unk5;
 	// at 0x98
 	uint32_t Order;
-	// at 0xA4
+	// at 0xA0
+	uint32_t TargetID;
 	Vector4f Pos1;
+	// at 0x120
+	Entity Target; //-0x4
 	// at 0x128
 	Vector3f Pos2;
 	// at 0x160
@@ -725,7 +728,7 @@ struct Unit : WeakObject
 	// at 0x50
 	void* self1;
 	// at 0x70
-	int UnitID;
+	uint32_t UnitID;
 	RUnitBlueprint *Blueprint;
 	uint32_t CreationIndex; // ?
 	void *unk1;
@@ -814,12 +817,15 @@ struct UserEntity : WeakObject
 	// at 0x68
 	float curHealth;
 	float maxHealth;
-	// at 0x74
+	// at 0x70
+	bool isBeingBuilt;
 	Vector4f rot1;
 	Vector3f pos1;
 	// at 0x90
 	Vector4f rot2;
 	Vector4f pos2;
+	// at 0xB0
+	float fractionComplete;
 	// at 0xD0
 	//float x1,y1,x2,y2;
 	// at 0x100
@@ -832,7 +838,7 @@ struct UserEntity : WeakObject
 struct UserUnit : UserEntity
 {//0x008B8601, 0x3E8 bytes
 	// at 0x44
-	int UnitID;
+	uint32_t UnitID;
 	RUnitBlueprint *blueprint;
 	// at 0x1B0
 	bool Paused;
