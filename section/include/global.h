@@ -33,6 +33,9 @@ Get debugging info about a Lua call:
 #define VALIDATE_SIZE(struc, size) \
   static_assert(sizeof(struc) == size, "Invalid structure size of " #struc);
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 #define g_CSimDriver			GDecl(0x10C4F50, CSimDriver*)
 #define g_SWldSessionInfo		GDecl(0x10C4F58, SWldSessionInfo*)
 #define g_CWldSession			GDecl(0x10A6470, CWldSession*)
