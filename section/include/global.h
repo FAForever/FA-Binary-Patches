@@ -21,6 +21,8 @@ Get debugging info about a Lua call:
 [[[CallInfo]-4]+18] = Proto       //lua.org/source/5.0/lobject.h.html#Proto
 [[CallInfo+0C]-[Proto+0C]+[Proto+14]] = currentline
 */
+#define DebugLog(_s) LogF("%s", (_s))
+
 #define GDecl(addr, type) \
   (*(type*)addr)
 
