@@ -31,14 +31,14 @@ void *GetCObject(lua_State *l, int index)
     lua_pop(l, 1);
     return nullptr;
 }
-
+template<typename T>
 struct Result
 {
-    void *object = nullptr;
+    T *object = nullptr;
     const char *reason = nullptr;
 
-    constexpr static Result Fail(const char *reason) { return {nullptr, reason}; }
-    constexpr static Result Success(void *data) { return {data, nullptr}; }
+    constexpr static Result<T> Fail(const char *reason) { return {nullptr, reason}; }
+    constexpr static Result<T> Success(void *data) { return {(T*)data, nullptr}; }
 };
 
 RRef CastObj(void *obj)
@@ -71,16 +71,17 @@ class CMAUIBitmap : public CScriptClass<0x10C7704, 0xF832F4>
 };
 
 template <class CScriptType>
-Result GetCScriptObject(lua_State *l, int index)
+Result<CScriptType> GetCScriptObject(lua_State *l, int index)
 {
+    using TResult = Result<CScriptType>;
     void **obj = GetCObject(l, index);
     if (obj == nullptr)
     {
-        return Result::Fail("Expected a game object. (Did you call with '.' instead of ':'?)");
+        return TResult::Fail("Expected a game object. (Did you call with '.' instead of ':'?)");
     }
     if (*obj == nullptr)
     {
-        return Result::Fail("Game object has been destroyed");
+        return TResult::Fail("Game object has been destroyed");
     }
     RRef o = CastObj(*obj);
 
@@ -92,13 +93,7 @@ Result GetCScriptObject(lua_State *l, int index)
     RRef p = REF_UpcastPtr(&o, *type_);
     if (p.d == nullptr)
     {
-        return Result::Fail("Incorrect type of game object.  (Did you call with '.' instead of ':'?)");
+        return TResult::Fail("Incorrect type of game object.  (Did you call with '.' instead of ':'?)");
     }
-    return Result::Success(p.d);
-}
-
-void test()
-{
-    lua_State *l;
-    GetCScriptObject<CPlatoon>(l, -1);
+    return TResult::Success(p.d);
 }
