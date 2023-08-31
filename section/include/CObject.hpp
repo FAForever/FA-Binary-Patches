@@ -5,16 +5,10 @@ void *GetCScriptType()
     return reinterpret_cast<void *(*)()>(0x4C8530)();
 }
 
-struct Ptr
+RRef REF_UpcastPtr(RRef *ref, void *sctype)
 {
-    void *a;
-    void *b;
-};
-
-Ptr REF_UpcastPtr(RRef *ref, void *sctype)
-{
-    Ptr p;
-    reinterpret_cast<void *(__cdecl *)(Ptr *, RRef *, void *)>(0x8D9590)(&p, ref, sctype);
+    RRef p;
+    reinterpret_cast<void *(__cdecl *)(RRef *, RRef *, void *)>(0x8D9590)(&p, ref, sctype);
     return p;
 }
 
@@ -30,9 +24,9 @@ void *GetCObject(lua_State *l, int index)
     {
         RRef udata = lua_touserdata(l, -1);
         void *sctype = GetCScriptType();
-        Ptr p = REF_UpcastPtr(&udata, sctype);
+        RRef p = REF_UpcastPtr(&udata, sctype);
         lua_pop(l, 1);
-        return p.a;
+        return p.d;
     }
     lua_pop(l, 1);
     return nullptr;
@@ -47,16 +41,10 @@ struct Result
     constexpr static Result Success(void *data) { return {data, nullptr}; }
 };
 
-struct Obj
+RRef CastObj(void *obj)
 {
-    void *a;
-    char *b;
-};
-
-Obj CastObj(void *obj)
-{
-    Obj res;
-    reinterpret_cast<void *(__cdecl *)(Obj *, void *)>(0x4C9030)(&res, obj);
+    RRef res;
+    reinterpret_cast<void *(__cdecl *)(RRef *, void *)>(0x4C9030)(&res, obj);
     return res;
 }
 
@@ -94,19 +82,19 @@ Result GetCScriptObject(lua_State *l, int index)
     {
         return Result::Fail("Game object has been destroyed");
     }
-    Obj o = CastObj(*obj);
+    RRef o = CastObj(*obj);
 
     void **type_ = (void **)CScriptType::Type;
     if (!*type_)
     {
         *type_ = LookupRType((void *)CScriptType::Info);
     }
-    Ptr p = REF_UpcastPtr((RRef *)&o, *type_);
-    if (p.a == nullptr)
+    RRef p = REF_UpcastPtr(&o, *type_);
+    if (p.d == nullptr)
     {
         return Result::Fail("Incorrect type of game object.  (Did you call with '.' instead of ':'?)");
     }
-    return Result::Success(p.a);
+    return Result::Success(p.d);
 }
 
 void test()
