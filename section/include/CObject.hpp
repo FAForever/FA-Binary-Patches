@@ -71,8 +71,7 @@ public:
 
 using CPlatoon = CScriptClass<0x10C6FCC, 0xF6A1FC>;
 using CUserUnit = CScriptClass<0x10C77AC, 0xF881E0>;
-using CMAUIBitmap = CScriptClass<0x10C77AC, 0xF881E0>;
-
+using CMAUIBitmap = CScriptClass<0x10C7704, 0xF832F4>;
 
 template <class CScriptClass>
 Result GetCScriptObject(lua_State *l, int index)
@@ -99,7 +98,7 @@ Result GetCScriptObject(lua_State *l, int index)
     {
         return {nullptr, "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"};
     }
-    return p.a;
+    return {p.a, nullptr};
 }
 
 void test()
