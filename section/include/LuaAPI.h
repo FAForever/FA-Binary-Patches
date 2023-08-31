@@ -470,7 +470,12 @@ FDecl(0x90eb70, luaL_checknumber, float __cdecl (*)(lua_State*, int))
 FDecl(0x90ebf0, luaL_optnumber, float __cdecl (*)(lua_State*, int, float))
 FDecl(0x90c9f0, lua_tonumber, float __cdecl (*)(lua_State*, int))
 FDecl(0x90d7e0, lua_newuserdata, void __cdecl (*)(RRef *ret, lua_State*, const RType*))
-FDecl(0x90cbb0, lua_touserdata, void __cdecl (*)(RRef *ret, lua_State*, int))
+RRef lua_touserdata(lua_State *l, int index)
+{
+    RRef ref;
+    reinterpret_cast<void*(__cdecl*)(RRef*, lua_State*, int)>(0x90cbb0)(&ref, l, index);
+    return ref;
+}
 FDecl(0x90e900, luaL_argerror, int __cdecl (*)(lua_State*, int, const char*))
 FDecl(0x90dda0, luaL_callmeta, int __cdecl (*)(lua_State*, int, const char*))
 FDecl(0x90dbf0, luaL_error, int __cdecl (*)(lua_State*, const char*, ...))
