@@ -40,8 +40,11 @@ void *GetCObject(lua_State *l, int index)
 
 struct Result
 {
-    void *object = nullptr;
-    char *reason = nullptr;
+    const void *object = nullptr;
+    const char *reason = nullptr;
+
+    constexpr static Result Fail(const char *reason) { return {nullptr, reason}; }
+    constexpr static Result Success(const void *data) { return {data, nullptr}; }
 };
 
 struct Obj
@@ -79,11 +82,11 @@ Result GetCScriptObject(lua_State *l, int index)
     void **obj = GetCObject(l, index);
     if (obj == nullptr)
     {
-        return {nullptr, "Expected a game object. (Did you call with '.' instead of ':'?)"};
+        return Result::Fail("Expected a game object. (Did you call with '.' instead of ':'?)");
     }
     if (*obj == nullptr)
     {
-        return {nullptr, "Game object has been destroyed"};
+        return Result::Fail("Game object has been destroyed");
     }
     Obj o = CastObj(*obj);
 
@@ -95,9 +98,9 @@ Result GetCScriptObject(lua_State *l, int index)
     Ptr p = REF_UpcastPtr((RRef *)&o, *type_);
     if (p.a == nullptr)
     {
-        return {nullptr, "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"};
+        return Result::Fail("Incorrect type of game object.  (Did you call with '.' instead of ':'?)");
     }
-    return {p.a, nullptr};
+    return Result::Success(p.a);
 }
 
 void test()
