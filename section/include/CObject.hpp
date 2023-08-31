@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 void *GetCScriptType()
 {
@@ -73,10 +73,9 @@ using CPlatoon = CScriptClass<0x10C6FCC, 0xF6A1FC>;
 using CUserUnit = CScriptClass<0x10C77AC, 0xF881E0>;
 using CMAUIBitmap = CScriptClass<0x10C7704, 0xF832F4>;
 
-template <class CScriptClass>
+template <class CScriptType>
 Result GetCScriptObject(lua_State *l, int index)
 {
-
     void **obj = GetCObject(l, index);
     if (obj == nullptr)
     {
@@ -88,10 +87,10 @@ Result GetCScriptObject(lua_State *l, int index)
     }
     Obj o = CastObj(*obj);
 
-    void **type_ = *(void ***)CScriptClass::Type;
-    if (!type_)
+    void **type_ = (void **)CScriptType::Type;
+    if (!*type_)
     {
-        *type_ = LookupRType((void *)CScriptClass::Info);
+        *type_ = LookupRType((void *)CScriptType::Info);
     }
     Ptr p = REF_UpcastPtr((RRef *)&o, *type_);
     if (p.a == nullptr)
