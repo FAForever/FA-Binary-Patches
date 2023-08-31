@@ -85,15 +85,15 @@ typedef struct luaL_reg {
 
 #define lua_pushcfunction(L,f)  lua_pushcclosure(L, f, 0)
 
-#define lua_isnoneornil(L,n)    (lua_type(L,n) <= 0)
-#define lua_isnone(L,n)         (lua_type(L,n) == LUA_TNONE)
-#define lua_isnil(L,n)          (lua_type(L,n) == LUA_TNIL)
-#define lua_isboolean(L,n)      (lua_type(L,n) == LUA_TBOOLEAN)
-#define lua_islightuserdata(L,n)(lua_type(L,n) == LUA_TLIGHTUSERDATA)
-#define lua_istable(L,n)        (lua_type(L,n) == LUA_TTABLE)
-#define lua_isfunction(L,n)     (lua_type(L,n) == LUA_TFUNCTION)
-#define lua_isuserdata(L,n)     (lua_type(L,n) == LUA_TUSERDATA)
-#define lua_isthread(L,n)       (lua_type(L,n) == LUA_TTHREAD)
+#define lua_iscfunction(L, n) (lua_type(L, n) == LUA_CFUNCTION)
+#define lua_isfunction(L, n) (lua_type(L, n) == LUA_TFUNCTION)
+#define lua_istable(L, n) (lua_type(L, n) == LUA_TTABLE)
+#define lua_islightuserdata(L, n) (lua_type(L, n) == LUA_TLIGHTUSERDATA)
+#define lua_isuserdata(L, n) (lua_type(L, n) == LUA_TUSERDATA)
+#define lua_isnil(L, n) (lua_type(L, n) == LUA_TNIL)
+#define lua_isboolean(L, n) (lua_type(L, n) == LUA_TBOOLEAN)
+#define lua_isnone(L, n) (lua_type(L, n) == LUA_TNONE)
+#define lua_isnoneornil(L, n) (lua_type(L, n) <= 0)
 
 #define lua_pushliteral(L, s) \
   lua_pushlstring(L, "" s, (sizeof(s)/sizeof(char))-1)
@@ -478,7 +478,12 @@ FDecl(0x90eb70, luaL_checknumber, float __cdecl (*)(lua_State*, int))
 FDecl(0x90ebf0, luaL_optnumber, float __cdecl (*)(lua_State*, int, float))
 FDecl(0x90c9f0, lua_tonumber, float __cdecl (*)(lua_State*, int))
 FDecl(0x90d7e0, lua_newuserdata, void __cdecl (*)(RRef *ret, lua_State*, const RType*))
-FDecl(0x90cbb0, lua_touserdata, void __cdecl (*)(RRef *ret, lua_State*, int))
+RRef lua_touserdata(lua_State *l, int index)
+{
+    RRef ref;
+    reinterpret_cast<void*(__cdecl*)(RRef*, lua_State*, int)>(0x90cbb0)(&ref, l, index);
+    return ref;
+}
 FDecl(0x90e900, luaL_argerror, int __cdecl (*)(lua_State*, int, const char*))
 FDecl(0x90dda0, luaL_callmeta, int __cdecl (*)(lua_State*, int, const char*))
 FDecl(0x90dbf0, luaL_error, int __cdecl (*)(lua_State*, const char*, ...))
