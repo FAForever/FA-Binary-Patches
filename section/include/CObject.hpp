@@ -1,3 +1,4 @@
+#pragma once
 #include "moho.h"
 
 void *GetCScriptType()
@@ -31,14 +32,14 @@ void *GetCObject(lua_State *l, int index)
     lua_pop(l, 1);
     return nullptr;
 }
-template<typename T>
+template <typename T>
 struct Result
 {
     T *object = nullptr;
     const char *reason = nullptr;
 
     constexpr static Result<T> Fail(const char *reason) { return {nullptr, reason}; }
-    constexpr static Result<T> Success(void *data) { return {(T*)data, nullptr}; }
+    constexpr static Result<T> Success(void *data) { return {(T *)data, nullptr}; }
 };
 
 RRef CastObj(void *obj)
@@ -52,28 +53,25 @@ void *LookupRType(void *typeinfo)
 {
     return reinterpret_cast<void *(__cdecl *)(void *)>(0x8E0750)(typeinfo);
 }
-template <int T, int TInfo>
-class CScriptClass
+
+struct CPlatoon : CScriptObject
 {
-public:
-    const static int Type = T;
-    const static int Info = TInfo;
+    using Type = ObjectType<0x10C6FCC, 0xF6A1FC>;
+};
+struct CUserUnit : CScriptObject
+{
+    using Type = ObjectType<0x10C77AC, 0xF881E0>;
+};
+struct CMAUIBitmap : CMauiControl
+{
+    using Type = ObjectType<0x10C7704, 0xF832F4>;
 };
 
-class CPlatoon : public CScriptClass<0x10C6FCC, 0xF6A1FC>
+template <class CScriptClass>
+Result<CScriptClass> GetCScriptObject(lua_State *l, int index)
 {
-};
-class CUserUnit : public CScriptClass<0x10C77AC, 0xF881E0>
-{
-};
-class CMAUIBitmap : public CScriptClass<0x10C7704, 0xF832F4>
-{
-};
-
-template <class CScriptType>
-Result<CScriptType> GetCScriptObject(lua_State *l, int index)
-{
-    using TResult = Result<CScriptType>;
+    using CScriptType = typename CScriptClass::Type;
+    using TResult = Result<CScriptClass>;
     void **obj = GetCObject(l, index);
     if (obj == nullptr)
     {

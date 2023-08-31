@@ -134,6 +134,13 @@ struct RObject
 	void *vtable;
 };
 
+template <int T, int TInfo>
+struct ObjectType
+{
+public:
+    const static int Type = T;
+    const static int Info = TInfo;
+};
 struct CScriptObject : RObject
 {//0x004C6F8A, 0x3C bytes
 };
@@ -196,6 +203,7 @@ struct Camera // : RCamCamera
 
 struct CMauiControl : CScriptObject
 {//0x004C6F8A, 0x11C bytes
+	using Type = ObjectType<0x10C7700, 0xF83314>;
 };
 
 struct CWldSession;
