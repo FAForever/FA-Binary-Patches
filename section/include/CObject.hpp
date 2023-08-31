@@ -54,15 +54,15 @@ void *LookupRType(void *typeinfo)
     return reinterpret_cast<void *(__cdecl *)(void *)>(0x8E0750)(typeinfo);
 }
 
-struct CPlatoon : CScriptObject
+struct CPlatoon : public CScriptObject
 {
     using Type = ObjectType<0x10C6FCC, 0xF6A1FC>;
 };
-struct CUserUnit : CScriptObject
+struct CUserUnit : public CScriptObject
 {
     using Type = ObjectType<0x10C77AC, 0xF881E0>;
 };
-struct CMAUIBitmap : CMauiControl
+struct CMAUIBitmap : public CMauiControl
 {
     using Type = ObjectType<0x10C7704, 0xF832F4>;
 };
