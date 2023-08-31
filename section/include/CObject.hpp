@@ -40,11 +40,11 @@ void *GetCObject(lua_State *l, int index)
 
 struct Result
 {
-    const void *object = nullptr;
+    void *object = nullptr;
     const char *reason = nullptr;
 
     constexpr static Result Fail(const char *reason) { return {nullptr, reason}; }
-    constexpr static Result Success(const void *data) { return {data, nullptr}; }
+    constexpr static Result Success(void *data) { return {data, nullptr}; }
 };
 
 struct Obj
@@ -72,9 +72,15 @@ public:
     const static int Info = TInfo;
 };
 
-using CPlatoon = CScriptClass<0x10C6FCC, 0xF6A1FC>;
-using CUserUnit = CScriptClass<0x10C77AC, 0xF881E0>;
-using CMAUIBitmap = CScriptClass<0x10C7704, 0xF832F4>;
+class CPlatoon : public CScriptClass<0x10C6FCC, 0xF6A1FC>
+{
+};
+class CUserUnit : public CScriptClass<0x10C77AC, 0xF881E0>
+{
+};
+class CMAUIBitmap : public CScriptClass<0x10C7704, 0xF832F4>
+{
+};
 
 template <class CScriptType>
 Result GetCScriptObject(lua_State *l, int index)
