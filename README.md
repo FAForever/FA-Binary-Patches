@@ -70,6 +70,9 @@ This are just the patch files for this game. I decided to separate them from pat
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
+- Adds 5th argumnet for `IssueMobileBuild` as flag whether to pick all units for build order
+    - hooks/IssueMobileBuild.cpp
+    - section/IssueMobileBuild.cpp
 - Adds GetProcessAffinityMask, SetProcessAffinityMask, SetProcessPriority to "init.lua"
     - hooks/OnCreateInitLuaState.cpp
     - section/OnCreateInitLuaState.cpp
