@@ -1,8 +1,6 @@
 void IssueBuildMobileFix()
 {
     asm(
-        "mov     esi, [ebp+0x8];"
-        "mov     esi, [esi];"
         "push    5;"
         "push    esi;"
         "call    0x90CA40;" // lua_toboolean
