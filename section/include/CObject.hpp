@@ -1,5 +1,6 @@
 #pragma once
 #include "moho.h"
+#include "strings.h"
 
 void *GetCScriptType()
 {
@@ -75,11 +76,11 @@ Result<CScriptClass> GetCScriptObject(lua_State *l, int index)
     void **obj = GetCObject(l, index);
     if (obj == nullptr)
     {
-        return TResult::Fail("Expected a game object. (Did you call with '.' instead of ':'?)");
+        return TResult::Fail(s_ExpectedAGameObject);
     }
     if (*obj == nullptr)
     {
-        return TResult::Fail("Game object has been destroyed");
+        return TResult::Fail(s_GameObjectHasBeenDestroyed);
     }
     RRef o = CastObj(*obj);
 
@@ -91,7 +92,7 @@ Result<CScriptClass> GetCScriptObject(lua_State *l, int index)
     RRef p = REF_UpcastPtr(&o, *type_);
     if (p.d == nullptr)
     {
-        return TResult::Fail("Incorrect type of game object.  (Did you call with '.' instead of ':'?)");
+        return TResult::Fail(s_IncorrectTypeOfGameObject);
     }
     return TResult::Success(p.d);
 }
