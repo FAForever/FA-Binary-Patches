@@ -5,3 +5,7 @@
 #define s_Global CSTRINGCAST(0x00E00D90) // "<global>"
 #define s_CMauiBitmap CSTRINGCAST(0xE37438) // "CMauiBitmap"
 #define s_UserUnit CSTRINGCAST(0xE4D090) // "UserUnit"
+
+#define s_ExpectedAGameObject CSTRINGCAST(0xE09860) // "Expected a game object. (Did you call with '.' instead of ':'?)"
+#define s_GameObjectHasBeenDestroyed CSTRINGCAST(0xE098A0) // "Game object has been destroyed"
+#define s_IncorrectTypeOfGameObject CSTRINGCAST(0xE098C0) // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
