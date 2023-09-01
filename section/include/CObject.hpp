@@ -1,6 +1,7 @@
 #pragma once
 #include "moho.h"
 #include "strings.h"
+#include "result.hpp"
 
 void *GetCScriptType()
 {
@@ -33,15 +34,6 @@ void *GetCObject(lua_State *l, int index)
     lua_pop(l, 1);
     return nullptr;
 }
-template <typename T>
-struct Result
-{
-    T *object = nullptr;
-    const char *reason = nullptr;
-
-    constexpr static Result<T> Fail(const char *reason) { return {nullptr, reason}; }
-    constexpr static Result<T> Success(void *data) { return {(T *)data, nullptr}; }
-};
 
 RRef CastObj(void *obj)
 {
