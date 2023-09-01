@@ -63,7 +63,7 @@ struct CUserUnit : public CScriptObject
 {
     using Type = ObjectType<0x10C77AC, 0xF881E0>;
 };
-struct CMAUIBitmap : public CMauiControl
+struct CMauiBitmap : public CMauiControl
 {
     using Type = ObjectType<0x10C7704, 0xF832F4>;
 };
