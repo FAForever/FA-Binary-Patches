@@ -50,13 +50,15 @@ int GetInterpolatedPosition(lua_State *l)
         l->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 1, lua_gettop(l));
     }
     Result<CUserUnit> r = GetCScriptObject<CUserUnit>(l, 1);
-    void *unit = r.object;
-    if (unit == nullptr)
+    if (r.IsFail())
     {
         lua_pushstring(l, r.reason);
         lua_error(l);
         return 0;
     }
+    void *unit = r.object;
+    if (unit == nullptr)
+        return 0;
     float *mesh = (float *)Moho::UserUnit::GetMeshInstance(unit);
     if (mesh == nullptr)
         return 0;
@@ -82,13 +84,15 @@ int GetFractionComplete(lua_State *l)
 
     Result<CUserUnit> r = GetCScriptObject<CUserUnit>(l, 1);
 
-    void *unit = r.object;
-    if (unit == nullptr)
+    if (r.IsFail())
     {
         lua_pushstring(l, r.reason);
         lua_error(l);
         return 0;
     }
+    void *unit = r.object;
+    if (unit == nullptr)
+        return 0;
     lua_pushnumber(l, Moho::UserUnit::GetFractionComplete(unit));
     return 1;
 }
@@ -97,8 +101,7 @@ int GetFractionComplete(lua_State *l)
 // UI_Lua LOG(GetSelectedUnits()[1]:GetFractionComplete())
 // UI_Lua LOG(GetSelectedUnits()[1].GetFractionComplete{})
 
-
-//PatcherList_UIFuncRegs_UUserUnitGetInterpolatedPosition
+// PatcherList_UIFuncRegs_UUserUnitGetInterpolatedPosition
 luaFuncDescReg UUserUnitGetInterpolatedPosition = {0x00E4DA64,
                                                    "GetInterpolatedPosition",
                                                    s_UserUnit,
@@ -107,8 +110,7 @@ luaFuncDescReg UUserUnitGetInterpolatedPosition = {0x00E4DA64,
                                                    GetInterpolatedPosition,
                                                    0x00F8D89C};
 
-
-//PatcherList_UIFuncRegs_UUserUnitGetFractionComplete
+// PatcherList_UIFuncRegs_UUserUnitGetFractionComplete
 luaFuncDescReg UUserUnitGetFractionComplete = {0x00E4DA64,
                                                "GetFractionComplete",
                                                s_UserUnit,
