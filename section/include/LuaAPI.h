@@ -136,6 +136,25 @@ typedef struct {
 } TObject;
 VALIDATE_SIZE(TObject, 8)
 
+typedef unsigned char lu_byte;
+class Table
+{
+public:
+    char _pad[4];
+    int pad4;
+    lu_byte tt;
+    lu_byte lsizenode; /* log2 of size of `node' array */
+    lu_byte marked; /* 1<<p means tagmethod(p) is not present */
+    lu_byte flags;  
+    struct Table *metatable;
+    TObject *array; /* array part */
+    int pad1;
+    int pad2;
+    int pad3;
+    int sizearray; /* size of `array' array */
+};
+VALIDATE_SIZE(Table, 0x24)
+
 //namespace gpg
   class RRef {public: void* d; void* t;};
   class RType {};
