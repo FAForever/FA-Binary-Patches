@@ -137,14 +137,15 @@ int ProjectMultiple(lua_State *l)
     }
 
     Result<CUIWorldView> r = GetCScriptObject<CUIWorldView>(l, 1);
-    void *worldview = r.object;
-    if (worldview == nullptr)
+    if (r.IsFail())
     {
         lua_pushstring(l, r.reason);
         lua_error(l);
         return 0;
     }
-
+    void *worldview = r.object;
+    if (worldview == nullptr)
+        return 0;
     void *camera = (void *)(*(int(__thiscall **)(int))(*(int *)((int)worldview + 284) + 12))((int)worldview + 284);
     if (camera == nullptr)
         return 0;
@@ -160,11 +161,11 @@ int ProjectMultiple(lua_State *l)
 // UI_Lua reprsl(import("/lua/ui/game/worldview.lua").viewLeft.ProjectMultiple())
 // UI_Lua reprsl(import("/lua/ui/game/worldview.lua").viewLeft.ProjectMultiple({},{}))
 
-//PatcherList_UIFuncRegs_UWorldViewProjectMultiple
+// PatcherList_UIFuncRegs_UWorldViewProjectMultiple
 luaFuncDescReg UWorldViewProjectMultiple = {0x00E491E8,
-                                               "ProjectMultiple",
-                                               "CUIWorldView",
-                                               "WorldView:ProjectMultiple(vectors)",
-                                               0x00000000,
-                                               ProjectMultiple,
-                                               0x00F8D88C};
+                                            "ProjectMultiple",
+                                            "CUIWorldView",
+                                            "WorldView:ProjectMultiple(vectors)",
+                                            0x00000000,
+                                            ProjectMultiple,
+                                            0x00F8D88C};
