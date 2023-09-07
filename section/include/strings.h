@@ -9,3 +9,4 @@
 #define s_GameObjectHasBeenDestroyed CSTRINGCAST(0xE098A0) // "Game object has been destroyed"
 #define s_IncorrectTypeOfGameObject CSTRINGCAST(0xE098C0)  // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
 #define s_UnknownColor CSTRINGCAST(0x4B2D54)               // "Unknown color: %s"
+#define s_c_object CSTRINGCAST(0xE016DC)               // "_c_object"
