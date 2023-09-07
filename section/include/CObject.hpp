@@ -20,7 +20,7 @@ void *GetCObject(lua_State *l, int index)
     lua_pushvalue(l, index);
     if (lua_istable(l, -1))
     {
-        lua_pushstring(l, "_c_object");
+        lua_pushstring(l, s_c_object);
         lua_rawget(l, -2);
     }
     if (lua_isuserdata(l, -1))
