@@ -210,6 +210,7 @@ struct CWldSession;
 
 struct CUIWorldView : CMauiControl
 {//0x004C6F8A, 0x2A8 bytes
+	using Type = ObjectType<0x10C77E4, 0xF8A71C>;
 	// at 0x120
 	Camera *camera;
 	// at 0x208
