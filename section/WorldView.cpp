@@ -112,8 +112,9 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
-    int size = lua_getn(l, index);
-    lua_createtable(l, size); // result table
+
+    Table* t = (Table*)lua_topointer(l , index);
+    lua_createtable(l, t->sizearray, t->lsizenode); // result table
     lua_pushvalue(l, index);  // input vectors
     lua_pushnil(l);
     while (lua_next(l, -2)) // -1 = value, -2 =  key, -3 = table, -4 = result table
