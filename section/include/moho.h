@@ -217,6 +217,7 @@ struct CUIWorldView : CMauiControl
 	void *unk1; // If shift pressed
 };
 
+
 struct RBlueprint;
 
 struct RRuleGameRules
@@ -890,7 +891,7 @@ struct UserEntity : WeakObject
 	Vector4f pos3;
 };
 
-struct UserUnit : UserEntity
+struct CUserUnit : UserEntity
 {//0x008B8601, 0x3E8 bytes
 	using Type = ObjectType<0x10C77AC, 0xF881E0>;
 	// at 0x44

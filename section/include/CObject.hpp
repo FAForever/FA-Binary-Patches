@@ -47,19 +47,6 @@ void *LookupRType(void *typeinfo)
     return reinterpret_cast<void *(__cdecl *)(void *)>(0x8E0750)(typeinfo);
 }
 
-struct CPlatoon : public CScriptObject
-{
-    using Type = ObjectType<0x10C6FCC, 0xF6A1FC>;
-};
-struct CUserUnit : public CScriptObject
-{
-    using Type = ObjectType<0x10C77AC, 0xF881E0>;
-};
-struct CMauiBitmap : public CMauiControl
-{
-    using Type = ObjectType<0x10C7704, 0xF832F4>;
-};
-
 template <class CScriptClass>
 Result<CScriptClass> GetCScriptObject(lua_State *l, int index)
 {
