@@ -72,7 +72,6 @@ Vector3f ToVector(lua_State *l, int index)
 void PushVector(lua_State *l, Vector3f v)
 {
     lua_createtable(l, 3);
-    // lua_newtable(l);
     lua_pushnumber(l, v.x);
     lua_rawseti(l, -2, 1);
     lua_pushnumber(l, v.y);
@@ -84,7 +83,6 @@ void PushVector(lua_State *l, Vector3f v)
 void PushVector(lua_State *l, Vector2f v)
 {
     lua_createtable(l, 2);
-    // lua_newtable(l);
     lua_pushnumber(l, v.x);
     lua_rawseti(l, -2, 1);
     lua_pushnumber(l, v.z);
@@ -105,7 +103,6 @@ void Project(float *camera, const Vector3f *v, Vector2f *result)
 
 Vector2f ProjectVec(const Vector3f &v, float *camera)
 {
-    // LogF("%.3f\t%.3f\t%.3f", v.x, v.y, v.z);
     Vector2f res;
     Project(camera, &v, &res);
     return res;
