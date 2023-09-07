@@ -46,7 +46,9 @@ void lua_createtable(lua_State *l, int narr, int nhash = 0)
         "add     dword ptr [esi+8], 8;"
         "RETURN:"
         :
-        : NON_GENERAL_REG(l), NON_GENERAL_REG(narr), NON_GENERAL_REG(nhash)
+        : NON_GENERAL_REG(l),
+          NON_GENERAL_REG(narr),
+          NON_GENERAL_REG(nhash)
         : "edx", "ecx", "eax", "edi", "esi");
 }
 
@@ -111,8 +113,8 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
     int size = lua_getn(l, index);
-    lua_createtable(l, size);// result table
-    lua_pushvalue(l, index); // input vectors
+    lua_createtable(l, size); // result table
+    lua_pushvalue(l, index);  // input vectors
     lua_pushnil(l);
     while (lua_next(l, -2)) // -1 = value, -2 =  key, -3 = table, -4 = result table
     {
