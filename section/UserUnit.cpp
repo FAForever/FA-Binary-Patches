@@ -106,7 +106,7 @@ luaFuncDescReg UUserUnitGetInterpolatedPosition = {0x00E4DA64,
                                                    "GetInterpolatedPosition",
                                                    s_UserUnit,
                                                    "UserUnit:GetInterpolatedPosition()",
-                                                   &USIMMBRegDesc,
+                                                   0x00000000,
                                                    GetInterpolatedPosition,
                                                    0x00F8D89C};
 
@@ -115,6 +115,6 @@ luaFuncDescReg UUserUnitGetFractionComplete = {0x00E4DA64,
                                                "GetFractionComplete",
                                                s_UserUnit,
                                                "UserUnit:GetFractionComplete()",
-                                               &UUserUnitGetInterpolatedPosition,
+                                               0x00000000,
                                                GetFractionComplete,
                                                0x00F8D89C};
