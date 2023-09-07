@@ -64,7 +64,7 @@ Result<CScriptClass> GetCScriptObject(lua_State *l, int index)
     RRef o = CastObj(*obj);
 
     void **type_ = (void **)CScriptType::Type;
-    if (!*type_)
+    if (*type_ == nullptr)
     {
         *type_ = LookupRType((void *)CScriptType::Info);
     }
