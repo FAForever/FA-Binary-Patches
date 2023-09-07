@@ -217,6 +217,7 @@ struct CUIWorldView : CMauiControl
 	void *unk1; // If shift pressed
 };
 
+
 struct RBlueprint;
 
 struct RRuleGameRules
@@ -890,8 +891,9 @@ struct UserEntity : WeakObject
 	Vector4f pos3;
 };
 
-struct UserUnit : UserEntity
+struct CUserUnit : UserEntity
 {//0x008B8601, 0x3E8 bytes
+	using Type = ObjectType<0x10C77AC, 0xF881E0>;
 	// at 0x44
 	uint32_t UnitID;
 	RUnitBlueprint *blueprint;
@@ -903,6 +905,16 @@ struct UserUnit : UserEntity
 	string customUnitName;
 	// at 0x290
 	UserUnitWeapon *weapons;
+};
+
+struct CPlatoon : public CScriptObject
+{
+    using Type = ObjectType<0x10C6FCC, 0xF6A1FC>;
+};
+
+struct CMauiBitmap : public CMauiControl
+{
+    using Type = ObjectType<0x10C7704, 0xF832F4>;
 };
 
 struct ReconBlip : Entity
