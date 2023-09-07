@@ -3,3 +3,12 @@
 define.h
 patch.ld
 section.cpp
+
+// ida files
+*.ida
+*.id0
+*.id1
+*.id2
+*.i64
+*.til
+*.nam
