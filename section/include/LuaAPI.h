@@ -54,9 +54,10 @@ typedef struct luaL_reg {
 #define LUA_TNUMBER		3
 #define LUA_TSTRING		4
 #define LUA_TTABLE		5
-#define LUA_TFUNCTION		6
-#define LUA_TUSERDATA		7
-#define LUA_TTHREAD		8
+#define LUA_CFUNCTION		6
+#define LUA_TFUNCTION		7
+#define LUA_TUSERDATA		8
+#define LUA_TTHREAD		9
 
 #define LUA_HOOKCALL	0
 #define LUA_HOOKRET	1
