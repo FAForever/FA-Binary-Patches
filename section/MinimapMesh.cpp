@@ -8,9 +8,8 @@ void minimapMesh()
 {
 	asm(
         "cmp dword ptr [0x00F57A88], 0x0;"
-        "jne MeshRenderON;"
-        "jmp 0x007D1B02;"
-        "MeshRenderON:;"
+        "je 0x007D1B02;"
+        // MeshRender ON
         "push ebp;"
         "push ecx;"
         "mov ecx, dword ptr [esp+0xA8];"
