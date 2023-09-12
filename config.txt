@@ -3,3 +3,4 @@ newfile ForgedAlliance_exxt.exe
 newsect .exxt
 sectsize 0x80000
 cflags -pipe -m32 -Os -nostartfiles -w -fpermissive -masm=intel -std=c++17 -march=core2 -mfpmath=both
+addressmapping 1

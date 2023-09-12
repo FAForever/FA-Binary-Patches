@@ -23,7 +23,7 @@
     const auto name = (type)addr;
 
 #define VALIDATE_SIZE(struc, size) \
-    static_assert(sizeof(struc) == size, "Invalid structure size of " #struc)
+    static_assert(sizeof(struc) == size, "Invalid structure size of " #struc);
 
 #define g_CSimDriver GDecl(0x10C4F50, CSimDriver *)
 #define g_SWldSessionInfo GDecl(0x10C4F58, SWldSessionInfo *)
