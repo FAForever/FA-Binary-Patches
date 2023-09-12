@@ -2,36 +2,42 @@
 
 #include "global.h"
 
-#define LUA_IDSIZE	60
+#define LUA_IDSIZE 60
 
-struct lua_Debug {
-  int event;
-  const char *name;		// (n)
-  const char *namewhat;		// (n) 'global', 'local', 'field', 'method'
-  const char *what;		// (S) 'Lua', 'C', 'main', 'tail'
-  const char *source;		// (S)
-  int currentline;		// (l)
-  int nups;			// (u) number of upvalues
-  int linedefined;		// (S)
-  char short_src[LUA_IDSIZE];	// (S)
-  /* private part */
-  int i_ci;  // active function
+struct lua_Debug
+{
+    int event;
+    const char *name;           // (n)
+    const char *namewhat;       // (n) 'global', 'local', 'field', 'method'
+    const char *what;           // (S) 'Lua', 'C', 'main', 'tail'
+    const char *source;         // (S)
+    int currentline;            // (l)
+    int nups;                   // (u) number of upvalues
+    int linedefined;            // (S)
+    char short_src[LUA_IDSIZE]; // (S)
+    /* private part */
+    int i_ci; // active function
 };
 
 class LuaState;
-//lua.org/source/5.0/lstate.h.html#lua_State
-typedef struct {uint8_t pad[0x44]; LuaState* LuaState;} lua_State;
+// lua.org/source/5.0/lstate.h.html#lua_State
+typedef struct
+{
+    uint8_t pad[0x44];
+    LuaState *LuaState;
+} lua_State;
 
 typedef struct luaL_Buffer luaL_Buffer;
-typedef const char* (*lua_Chunkreader)(lua_State *L, void *data, size_t *size);
-typedef void (*lua_Hook) (lua_State *L, lua_Debug *ar);
-typedef void (*userGCFunction)(void*);
+typedef const char *(*lua_Chunkreader)(lua_State *L, void *data, size_t *size);
+typedef void (*lua_Hook)(lua_State *L, lua_Debug *ar);
+typedef void (*userGCFunction)(void *);
 typedef int (*lua_CFunction)(lua_State *L);
 typedef float lua_Number;
 
-typedef struct luaL_reg {
-  const char *name;
-  lua_CFunction func;
+typedef struct luaL_reg
+{
+    const char *name;
+    lua_CFunction func;
 } luaL_reg;
 
 #define LUA_MULTRET	(-1)
@@ -102,465 +108,354 @@ typedef struct luaL_reg {
 #define lua_isupvalue(L,n)      (lua_type(L,n) == LUA_TUPVALUE)
 
 #define lua_pushliteral(L, s) \
-  lua_pushlstring(L, "" s, (sizeof(s)/sizeof(char))-1)
+    lua_pushlstring(L, "" s, (sizeof(s) / sizeof(char)) - 1)
 
-#define lua_getregistry(L)      lua_pushvalue(L, LUA_REGISTRYINDEX)
-#define lua_setglobal(L,s) \
-  (lua_pushstring(L, s), lua_insert(L, -2), lua_settable(L, LUA_GLOBALSINDEX))
-#define lua_getglobal(L,s) \
-  (lua_pushstring(L, s), lua_gettable(L, LUA_GLOBALSINDEX))
+#define lua_getregistry(L) lua_pushvalue(L, LUA_REGISTRYINDEX)
+#define lua_setglobal(L, s) \
+    (lua_pushstring(L, s), lua_insert(L, -2), lua_settable(L, LUA_GLOBALSINDEX))
+#define lua_getglobal(L, s) \
+    (lua_pushstring(L, s), lua_gettable(L, LUA_GLOBALSINDEX))
 
-#define lua_ref(L,lock) ((lock) ? luaL_ref(L, LUA_REGISTRYINDEX) : \
-  (lua_pushstring(L, "unlocked references are obsolete"), lua_error(L), 0))
-#define lua_unref(L,ref)        luaL_unref(L, LUA_REGISTRYINDEX, (ref))
-#define lua_getref(L,ref)       lua_rawgeti(L, LUA_REGISTRYINDEX, ref)
+#define lua_ref(L, lock) ((lock) ? luaL_ref(L, LUA_REGISTRYINDEX) : (lua_pushstring(L, "unlocked references are obsolete"), lua_error(L), 0))
+#define lua_unref(L, ref) luaL_unref(L, LUA_REGISTRYINDEX, (ref))
+#define lua_getref(L, ref) lua_rawgeti(L, LUA_REGISTRYINDEX, ref)
 
-typedef union {
-  void *p;
-  float n;
-  int b;
+typedef union
+{
+    void *p;
+    float n;
+    int b;
 } Value;
 
-//lua.org/source/5.0/lobject.h.html#TObject
-typedef struct {
-  int tt;
-  Value value;
+// lua.org/source/5.0/lobject.h.html#TObject
+typedef struct
+{
+    int tt;
+    Value value;
 } TObject;
-VALIDATE_SIZE(TObject, 8)
+VALIDATE_SIZE(TObject, 8);
 
-//namespace gpg
-  class RRef {public: void* d; void* t;};
-  class RType {};
+typedef unsigned char lu_byte;
+class Table
+{
+public:
+    int pad0;
+    int pad1;
+    lu_byte tt;
+    lu_byte lsizenode; /* log2 of size of `node' array */
+    lu_byte marked;    /* 1<<p means tagmethod(p) is not present */
+    lu_byte flags;
+    struct Table *metatable;
+    TObject *array; /* array part */
+    int pad2;
+    int pad3;
+    int pad4;
+    int sizearray; /* size of `array' array */
+};
+VALIDATE_SIZE(Table, 0x24);
 
-//namespace LuaPlus
-  class LuaState;
+// namespace gpg
+class RRef
+{
+public:
+    void *d;
+    void *t;
+};
+class RType
+{
+};
 
-  class LuaStackObject {
-    public:
-      LuaState* m_state;
-      int m_stackIndex;
-  };
-  VALIDATE_SIZE(LuaStackObject, 8)
+// namespace LuaPlus
+class LuaState;
 
-  class LuaObject
-  {// 0x14 bytes
-    public:
-      LuaObject() {
-        ((__thiscall LuaObject* (*)(LuaObject*))0x9072a0)(this);
-      }
-      LuaObject(LuaState* state) {
-        ((__thiscall LuaObject* (*)(LuaObject*, LuaState*))0x908970)(this, state);
-      }
-      LuaObject(LuaState* state, int index) {
-        ((__thiscall LuaObject* (*)(LuaObject*, LuaState*, int))0x9089c0)(this, state, index);
-      }
-      LuaObject(const LuaObject* obj) {
-        ((__thiscall LuaObject* (*)(LuaObject*, const LuaObject*))0x908a40)(this, obj);
-      }
-      LuaObject(const LuaStackObject* stack) {
-        ((__thiscall LuaObject* (*)(LuaObject*, const LuaStackObject*))0x908a70)(this, stack);
-      }
-      LuaObject(LuaState* state, const TObject* obj) {
-        ((__thiscall LuaObject* (*)(LuaObject*, LuaState*, const TObject*))0x9089f0)(this, state, obj);
-      }
-      ~LuaObject() {
-        ((__thiscall void (*)(LuaObject*))0x9075d0)(this);
-      }
-      LuaObject* operator=(const LuaObject* obj) {
-        return ((__thiscall LuaObject* (*)(LuaObject*, const LuaObject*))0x908ab0)(this, obj);
-      }
-      LuaObject* operator=(const LuaStackObject* stack) {
-        return ((__thiscall LuaObject* (*)(LuaObject*, const LuaStackObject*))0x908b00)(this, stack);
-      }
-      LuaObject operator[](int key) {
+class LuaStackObject
+{
+public:
+    LuaState *m_state;
+    int m_stackIndex;
+};
+VALIDATE_SIZE(LuaStackObject, 8);
+
+class LuaObject
+{ // 0x14 bytes
+public:
+    __thiscall LuaObject() ADDR(0x9072a0);
+    __thiscall LuaObject(LuaState *state) ADDR(0x908970);
+    __thiscall LuaObject(LuaState *state, int index) ADDR(0x9089c0);
+    __thiscall LuaObject(const LuaObject *obj) ADDR(0x908a40);
+    __thiscall LuaObject(const LuaStackObject *stack) ADDR(0x908a70);
+    __thiscall LuaObject(LuaState *state, const TObject *obj) ADDR(0x9089f0);
+    __thiscall ~LuaObject() ADDR(0x9075d0);
+
+    LuaObject *operator=(const LuaObject *obj)
+    {
+        return ((__thiscall LuaObject * (*)(LuaObject *, const LuaObject *))0x908ab0)(this, obj);
+    }
+    LuaObject *operator=(const LuaStackObject *stack)
+    {
+        return ((__thiscall LuaObject * (*)(LuaObject *, const LuaStackObject *))0x908b00)(this, stack);
+    }
+    LuaObject operator[](int key)
+    {
         LuaObject out;
-        ((__thiscall void (*)(LuaObject*, LuaObject*, int))0x9091e0)(this, &out, key);
+        ((__thiscall void (*)(LuaObject *, LuaObject *, int))0x9091e0)(this, &out, key);
         return out;
-      }
-      LuaObject operator[](const char* key) {
+    }
+    LuaObject operator[](const char *key)
+    {
         LuaObject out;
-        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*))0x908f60)(this, &out, key);
+        ((__thiscall void (*)(LuaObject *, LuaObject *, const char *))0x908f60)(this, &out, key);
         return out;
-      }
-      bool GetBoolean() {
-        return ((__thiscall bool (*)(LuaObject*))0x907c90)(this);
-      }
-      bool IsBoolean() {
-        return ((__thiscall bool (*)(LuaObject*))0x9078d0)(this);
-      }
-      bool IsConvertibleToString() {
-        return ((__thiscall bool (*)(LuaObject*))0x9077c0)(this);
-      }
-      bool IsFunction() {
-        return ((__thiscall bool (*)(LuaObject*))0x907810)(this);
-      }
-      bool IsInteger() {
-        return ((__thiscall bool (*)(LuaObject*))0x907350)(this);
-      }
-      bool IsNil() {
-        return ((__thiscall bool (*)(LuaObject*))0x9072f0)(this);
-      }
-      bool IsNumber() {
-        return ((__thiscall bool (*)(LuaObject*))0x907360)(this);
-      }
-      bool IsString() {
-        return ((__thiscall bool (*)(LuaObject*))0x907370)(this);
-      }
-      bool IsTable() {
-        return ((__thiscall bool (*)(LuaObject*))0x907310)(this);
-      }
-      bool IsUserData() {
-        return ((__thiscall bool (*)(LuaObject*))0x907320)(this);
-      }
-      void Clone(LuaObject* out) {
-        ((__thiscall void (*)(LuaObject*,  LuaObject*))0x90a180)(this, out);
-      }
-      void CreateTable(LuaObject* out, const char* key, int narray, int lnhash) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*, int, int))0x908c10)(this, out, key, narray, lnhash);
-      }
-      void CreateTable(LuaObject* out, int key, int narray, int lnhash) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*, int, int, int))0x908ca0)(this, out, key, narray, lnhash);
-      }
-      void GetByIndex(LuaObject* out, int index) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*, int))0x908df0)(this, out, index);
-      }
-      void GetByName(LuaObject* out, const char* name) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*))0x90a160)(this, out, name);
-      }
-      void GetByObject(LuaObject* out, const LuaObject* obj) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*, const LuaObject*))0x908e70)(this, out, obj);
-      }
-      void GetMetaTable(LuaObject* out) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*))0x908ba0)(this, out);
-      }
-      void Lookup(LuaObject* out, const char* key) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*, const char*))0x9093b0)(this, out, key);
-      }
-      void PushStack(LuaStackObject* out, LuaState* state) {
-        ((__thiscall void (*)(LuaObject*, LuaStackObject*, LuaState*))0x907d80)(this, out, state);
-      }
-      void PushStack(lua_State* L) {
-        ((__thiscall void (*)(LuaObject*, lua_State*))0x907d10)(this, L);
-      }
-      LuaState* GetActiveState() {
-        return ((__thiscall LuaState* (*)(LuaObject*))0x9072b0)(this);
-      }
-      const char* GetString() {
-        return ((__thiscall const char* (*)(LuaObject*))0x907a90)(this);
-      }
-      const char* ToString() {
-        return ((__thiscall const char* (*)(LuaObject*))0x9073e0)(this);
-      }
-      const char* TypeName() {
-        return ((__thiscall const char* (*)(LuaObject*))0x908b50)(this);
-      }
-      lua_Number GetNumber() {
-        return ((__thiscall float (*)(LuaObject*))0x907970)(this);
-      }
-      lua_Number GetDouble() { //Same as GetNumber
-        return ((__thiscall float (*)(LuaObject*))0x907a30)(this);
-      }
-      lua_Number ToNumber() {
-        return ((__thiscall float (*)(LuaObject*))0x9073b0)(this);
-      }
-      void AssignNewUserData(RRef* out, LuaState* state, const RRef* rRef) {
-        ((__thiscall void (*)(LuaObject*, RRef*, LuaState*, const RRef*))0x909840)(this, out, state, rRef);
-      }
-      void AssignNewUserData(RRef* out, LuaState* state, const RType* rType) {
-        ((__thiscall void (*)(LuaObject*, RRef*, LuaState*, const RType*))0x9097d0)(this, out, state, rType);
-      }
-      void GetUserData(RRef* out) {
-        ((__thiscall void (*)(LuaObject*, RRef*))0x907bc0)(this, out);
-      }
-      int GetCount() {
-        return ((__thiscall int (*)(LuaObject*))0x907f50)(this);
-      }
-      int GetInteger() {
-        return ((__thiscall int (*)(LuaObject*))0x907910)(this);
-      }
-      int GetN() {
-        return ((__thiscall int (*)(LuaObject*))0x907e50)(this);
-      }
-      int GetTableCount() {
-        return ((__thiscall int (*)(LuaObject*))0x90a410)(this);
-      }
-      int IsPassed() {
-        return ((__thiscall int (*)(LuaObject*))0x907440)(this);
-      }
-      int Type() {
-        return ((__thiscall int (*)(LuaObject*))0x9076d0)(this);
-      }
-      lua_State* GetActiveCState() {
-        return ((__thiscall lua_State* (*)(LuaObject*))0x9072c0)(this);
-      }
-      void AssignBoolean(LuaState* state, bool value) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, bool))0x909600)(this, state, value);
-      }
-      void AssignInteger(LuaState* state, int value) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, int))0x909650)(this, state, value);
-      }
-      void AssignNewTable(LuaState* state, int narray, int lnhash) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, int, int))0x909940)(this, state, narray, lnhash);
-      }
-      void AssignNil(LuaState* state) {
-        ((__thiscall void (*)(LuaObject*, LuaState*))0x9095c0)(this, state);
-      }
-      void AssignNumber(LuaState* state, float value) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, float))0x9096a0)(this, state, value);
-      }
-      void AssignString(LuaState* state, const char* value) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, const char*))0x909750)(this, state, value);
-      }
-      void AssignTObject(LuaState* state, const TObject* value) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, const TObject*))0x9099b0)(this, state, value);
-      }
-      void AssignThread(LuaState* state) {
-        ((__thiscall void (*)(LuaObject*, LuaState*))0x9096f0)(this, state);
-      }
-      void Insert(LuaObject* value) {
-        ((__thiscall void (*)(LuaObject*, LuaObject*))0x909af0)(this, value);
-      }
-      void Insert(int key, LuaObject* value) {
-        ((__thiscall void (*)(LuaObject*, int, LuaObject*))0x909ce0)(this, key, value);
-      }
-      void Register(const char* name, lua_CFunction func, int nupvalues) {
-        ((__thiscall void (*)(LuaObject*, const char*, lua_CFunction, int))0x907630)(this, name, func, nupvalues);
-      }
-      void Reset() {
-        ((__thiscall void (*)(LuaObject*))0x9075f0)(this);
-      }
-      void SetBoolean(const char* key, bool value) {
-        ((__thiscall void (*)(LuaObject*, const char*, bool))0x9080c0)(this, key, value);
-      }
-      void SetInteger(const char* key, int value) {
-        ((__thiscall void (*)(LuaObject*, const char*, int))0x9081f0)(this, key, value);
-      }
-      void SetInteger(int key, int value) {
-        ((__thiscall void (*)(LuaObject*, int, int))0x908240)(this, key, value);
-      }
-      void SetMetaTable(const LuaObject* value) {
-        ((__thiscall void (*)(LuaObject*, const LuaObject*))0x907e00)(this, value);
-      }
-      void SetN(int n) {
-        ((__thiscall void (*)(LuaObject*, int))0x907ed0)(this, n);
-      }
-      void SetNil(const char* key) {
-        ((__thiscall void (*)(LuaObject*, const char*))0x907fa0)(this, key);
-      }
-      void SetNil(int key) {
-        ((__thiscall void (*)(LuaObject*, int))0x907ff0)(this, key);
-      }
-      void SetNumber(const char* key, float value) {
-        ((__thiscall void (*)(LuaObject*, const char*, float))0x908320)(this, key, value);
-      }
-      void SetNumber(int key, float value) {
-        ((__thiscall void (*)(LuaObject*, int, float))0x908370)(this, key, value);
-      }
-      void SetObject(const LuaObject* key, const LuaObject* value) {
-        ((__thiscall void (*)(LuaObject*, const LuaObject*, const LuaObject*))0x908810)(this, key, value);
-      }
-      void SetObject(const char* key, const LuaObject* value) {
-        ((__thiscall void (*)(LuaObject*, const char*, const LuaObject*))0x908760)(this, key, value);
-      }
-      void SetObject(int key, const LuaObject* value) {
-        ((__thiscall void (*)(LuaObject*, int, const LuaObject*))0x9087a0)(this, key, value);
-      }
-      void SetString(const char* key, const char* value) {
-        ((__thiscall void (*)(LuaObject*, const char*, const char*))0x908450)(this, key, value);
-      }
-      void SetString(int key, const char* value) {
-        ((__thiscall void (*)(LuaObject*, int, const char*))0x9084e0)(this, key, value);
-      }
-      void TypeError(const char* msg) {
-        ((__thiscall void (*)(LuaObject*, const char*))0x9072d0)(this, msg);
-      }
+    }
+    bool __thiscall GetBoolean() ADDR(0x907c90);
 
-    //private
-      void AddToUsedList(LuaState* state) {
-        ((__thiscall void (*)(LuaObject*, LuaState*))0x908890)(this, state);
-      }
-      void AddToUsedList(LuaState* state, const TObject* obj) {
-        ((__thiscall void (*)(LuaObject*, LuaState*, const TObject*))0x9088e0)(this, state, obj);
-      }
-      void SetTableHelper(const char* key, const TObject* value) {
-        ((__thiscall void (*)(LuaObject*, const char*, const TObject*))0x9074b0)(this, key, value);
-      }
+    bool __thiscall IsBoolean() ADDR(0x9078d0);
 
-      LuaObject* m_next;
-      LuaObject* m_prev;
-      LuaState* m_state;
-      TObject m_object;
-  };
-  VALIDATE_SIZE(LuaObject, 0x14)
+    bool __thiscall IsConvertibleToString() ADDR(0x9077c0);
 
-  class LuaState
-  {// 0x34 bytes
-    public:
-      enum StandardLibraries {LIB_NONE, LIB_BASE, LIB_OSIO};
+    bool __thiscall IsFunction() ADDR(0x907810);
 
-      LuaState(enum StandardLibraries libs) {
-        ((__thiscall LuaState* (*)(LuaState*, enum StandardLibraries))0x90ac10)(this, libs);
-      }
-      LuaState(LuaState* parentState) {
-        ((__thiscall LuaState* (*)(LuaState*, LuaState*))0x90a520)(this, parentState);
-      }
-      LuaState(int Unused) {
-        ((__thiscall LuaState* (*)(LuaState*, int))0x90a5d0)(this, Unused);
-      }
-      ~LuaState() {
-        ((__thiscall void (*)(LuaState*))0x90a600)(this);
-      }
-      void GetGlobal(LuaObject* out, const char* key) {
-        ((__thiscall void (*)(LuaState*, LuaObject*, const char*))0x4579d0)(this, out, key);
-      }
-      void GetGlobals(LuaObject* out) {
-        ((__thiscall void (*)(LuaState*, LuaObject*))0x90a690)(this, out);
-      }
-      LuaState* GetActiveState() {
-        return ((__thiscall LuaState* (*)(LuaState*))0x90bee0)(this);
-      }
-      const char* CheckString(int narg) {
-        return ((__thiscall const char* (*)(LuaState*, int))0x912d10)(this, narg);
-      }
-      int ArgError(int narg, const char* msg) {
-        return ((__thiscall int (*)(LuaState*, int, const char*))0x90bf70)(this, narg, msg);
-      }
-      __attribute__((noinline)) __cdecl int Error(const char* fmt, ...) {
-        asm("jmp 0x90c1d0;");
-      }
-      lua_State* GetActiveCState() {
-        return ((__thiscall lua_State* (*)(LuaState*))0x90bef0)(this);
-      }
-      void CheckAny(int narg) {
-        ((__thiscall void (*)(LuaState*, int))0x923f20)(this, narg);
-      }
+    bool __thiscall IsInteger() ADDR(0x907350);
 
-    //private
-      void Init(enum StandardLibraries libs) {
-        ((__thiscall void (*)(LuaState*, enum StandardLibraries))0x90aad0)(this, libs);
-      }
+    bool __thiscall IsNil() ADDR(0x9072f0);
 
-      lua_State* m_state;
-      void* ForMultipleThreads;
-      bool m_ownState;
-      LuaObject m_threadObj;
-      LuaState* m_rootState;
-      struct MiniLuaObject {
-        LuaObject* m_next;  // only valid when in free list
-        LuaObject* m_prev;  // only valid when in used list
-      } m_headObject,  m_tailObject;
-  };
-  VALIDATE_SIZE(LuaState, 0x34)
+    bool __thiscall IsNumber() ADDR(0x907360);
 
-FDecl(0x90a6b0, LuaPlusH_next, bool __cdecl (*)(LuaState*, const LuaObject*, LuaObject*, LuaObject*))
-FDecl(0x90ca40, lua_toboolean, bool __cdecl (*)(lua_State*, int))
-FDecl(0x90c340, negindex, TObject* __cdecl (*)(lua_State*, int))
-FDecl(0x90e260, luaL_prepbuffer, char* __cdecl (*)(luaL_Buffer*))
-FDecl(0x90eaa0, luaL_checklstring, const char* __cdecl (*)(lua_State*, int, unsigned int*))
-FDecl(0x90eb10, luaL_optlstring, const char* __cdecl (*)(lua_State*, int, const char*, unsigned int*))
-FDecl(0x912680, lua_getlocal, const char* __cdecl (*)(lua_State*, const lua_Debug*, int))
-FDecl(0x90d9a0, lua_getupvalue, const char* __cdecl (*)(lua_State*, int, int))
-FDecl(0x90ce90, lua_pushfstring, const char* __cdecl (*)(lua_State*, const char*, ...))
-FDecl(0x90ce50, lua_pushvfstring, const char* __cdecl (*)(lua_State*, const char*, char*))
-FDecl(0x9126f0, lua_setlocal, const char* __cdecl (*)(lua_State*, const lua_Debug*, int))
-FDecl(0x90da00, lua_setupvalue, const char* __cdecl (*)(lua_State*, int, int))
-FDecl(0x90ca90, lua_tostring, const char* __cdecl (*)(lua_State*, int))
-FDecl(0x90c780, lua_typename, const char* __cdecl (*)(lua_State*, int))
-FDecl(0x90eb70, luaL_checknumber, float __cdecl (*)(lua_State*, int))
-FDecl(0x90ebf0, luaL_optnumber, float __cdecl (*)(lua_State*, int, float))
-FDecl(0x90c9f0, lua_tonumber, float __cdecl (*)(lua_State*, int))
-FDecl(0x90d7e0, lua_newuserdata, void __cdecl (*)(RRef *ret, lua_State*, const RType*))
-FDecl(0x90cbb0, lua_touserdata, void __cdecl (*)(RRef *ret, lua_State*, int))
-FDecl(0x90e900, luaL_argerror, int __cdecl (*)(lua_State*, int, const char*))
-FDecl(0x90dda0, luaL_callmeta, int __cdecl (*)(lua_State*, int, const char*))
-FDecl(0x90dbf0, luaL_error, int __cdecl (*)(lua_State*, const char*, ...))
-FDecl(0x90dc20, luaL_findstring, int __cdecl (*)(const char*, const char* const list[]))
-FDecl(0x90dd40, luaL_getmetafield, int __cdecl (*)(lua_State*, int, const char*))
-FDecl(0x90e090, luaL_getn, int __cdecl (*)(lua_State*, int))
-FDecl(0x90e760, luaL_loadbuffer, int __cdecl (*)(lua_State*, const char*, unsigned int, const char*))
-FDecl(0x90e5d0, luaL_loadfile, int __cdecl (*)(lua_State*, const char*))
-FDecl(0x90dc70, luaL_newmetatable, int __cdecl (*)(lua_State*, const char*))
-FDecl(0x90e9a0, luaL_typerror, int __cdecl (*)(lua_State*, int, const char*))
-FDecl(0x90c460, lua_checkstack, int __cdecl (*)(lua_State*, int))
-FDecl(0x90e870, lua_dobuffer, int __cdecl (*)(lua_State*, const char*, unsigned int, const char*))
-FDecl(0x90e8d0, lua_dostring, int __cdecl (*)(lua_State*, const char*))
-FDecl(0x90d6c0, lua_error, int __cdecl (*)(lua_State*))
-FDecl(0x90d660, lua_getgccount, int __cdecl (*)(lua_State*))
-FDecl(0x90d650, lua_getgcthreshold, int __cdecl (*)(lua_State*))
-FDecl(0x9125d0, lua_gethookcount, int __cdecl (*)(lua_State*))
-FDecl(0x9125c0, lua_gethookmask, int __cdecl (*)(lua_State*))
-FDecl(0x9132f0, lua_getinfo, int __cdecl (*)(lua_State*, const char*, lua_Debug*))
-FDecl(0x90d180, lua_getmetatable, int __cdecl (*)(lua_State*, int))
-FDecl(0x90ad30, lua_getn, int __cdecl (*)(lua_State*, int))
-FDecl(0x9125e0, lua_getstack, int __cdecl (*)(lua_State*, int, lua_Debug*))
-FDecl(0x90c590, lua_gettop, int __cdecl (*)(lua_State*))
-FDecl(0x90c7a0, lua_isnumber, int __cdecl (*)(lua_State*, int))
-FDecl(0x90c800, lua_isstring, int __cdecl (*)(lua_State*, int))
-FDecl(0x90c980, lua_lessthan, int __cdecl (*)(lua_State*, int, int))
-FDecl(0x90d5c0, lua_load, int __cdecl (*)(lua_State*, lua_Chunkreader, void*, const char*))
-FDecl(0x90d6d0, lua_next, int __cdecl (*)(lua_State*, int))
-FDecl(0x90d430, lua_pcall, int __cdecl (*)(lua_State*, int, int))
-FDecl(0x90c890, lua_rawequal, int __cdecl (*)(lua_State*, int, int))
-FDecl(0x914610, lua_resume, int __cdecl (*)(lua_State*, int))
-FDecl(0x90d3b0, lua_setfenv, int __cdecl (*)(lua_State*, int))
-FDecl(0x912560, lua_sethook, int __cdecl (*)(lua_State*, lua_Hook, int, int))
-FDecl(0x90d340, lua_setmetatable, int __cdecl (*)(lua_State*, int))
-FDecl(0x911ea0, lua_traceback, int __cdecl (*)(lua_State*, const char*, int))
-FDecl(0x90c740, lua_type, int __cdecl (*)(lua_State*, int))
-FDecl(0x913e40, lua_yield, int __cdecl (*)(lua_State*, int))
-FDecl(0x90fd90, luaopen_base, int __cdecl (*)(lua_State*))
-FDecl(0x9124c0, luaopen_debug, int __cdecl (*)(lua_State*))
-FDecl(0x91a4b0, luaopen_loadlib, int __cdecl (*)(lua_State*))
-FDecl(0x91a110, luaopen_math, int __cdecl (*)(lua_State*))
-FDecl(0x923690, luaopen_serialize, int __cdecl (*)(lua_State*))
-FDecl(0x926ef0, luaopen_string, int __cdecl (*)(lua_State*))
-FDecl(0x90c530, lua_newthread, lua_State* __cdecl (*)(lua_State*))
-FDecl(0x9246d0, lua_open, lua_State* __cdecl (*)())
-FDecl(0x90cc50, lua_tothread, lua_State* __cdecl (*)(lua_State*, int))
-FDecl(0x90cb10, lua_strlen, unsigned int __cdecl (*)(lua_State*, int))
-FDecl(0x9125b0, lua_gethook, lua_Hook __cdecl (*)(lua_State*))
-FDecl(0x90e2a0, luaL_addlstring, void __cdecl (*)(luaL_Buffer*, const char*, unsigned int))
-FDecl(0x90e300, luaL_addstring, void __cdecl (*)(luaL_Buffer*, const char*))
-FDecl(0x90e370, luaL_addvalue, void __cdecl (*)(luaL_Buffer*))
-FDecl(0x90e400, luaL_buffinit, void __cdecl (*)(lua_State*, luaL_Buffer*))
-FDecl(0x90ea70, luaL_checkany, void __cdecl (*)(lua_State*, int))
-FDecl(0x90dd10, luaL_checkstack, void __cdecl (*)(lua_State*, int, const char*))
-FDecl(0x90ea20, luaL_checktype, void __cdecl (*)(lua_State*, int, int))
-FDecl(0x90dcf0, luaL_getmetatable, void __cdecl (*)(lua_State*, const char*))
-FDecl(0x90de00, luaL_openlib, void __cdecl (*)(lua_State*, const char*, const luaL_reg*, int))
-FDecl(0x90e330, luaL_pushresult, void __cdecl (*)(luaL_Buffer*))
-FDecl(0x90dfb0, luaL_setn, void __cdecl (*)(lua_State*, int, int))
-FDecl(0x90db80, luaL_where, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d400, lua_call, void __cdecl (*)(lua_State*, int, int))
-FDecl(0x9243e0, lua_close, void __cdecl (*)(lua_State*))
-FDecl(0x90d740, lua_concat, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d1f0, lua_getfenv, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d000, lua_gettable, void __cdecl (*)(lua_State*, int))
-FDecl(0x90c640, lua_insert, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d110, lua_newtable, void __cdecl (*)(lua_State*))
-FDecl(0x90cf80, lua_pushboolean, void __cdecl (*)(lua_State*, int))
-FDecl(0x90ced0, lua_pushcclosure, void __cdecl (*)(lua_State*, lua_CFunction, int))
-FDecl(0x90cfc0, lua_pushlightuserdata, void __cdecl (*)(lua_State*, void*))
-FDecl(0x90cd80, lua_pushlstring, void __cdecl (*)(lua_State*, const char*, unsigned int))
-FDecl(0x90cd00, lua_pushnil, void __cdecl (*)(lua_State*))
-FDecl(0x90cd40, lua_pushnumber, void __cdecl (*)(lua_State*, float))
-FDecl(0x90cdf0, lua_pushstring, void __cdecl (*)(lua_State*, const char*))
-FDecl(0x90c6e0, lua_pushvalue, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d050, lua_rawget, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d0a0, lua_rawgeti, void __cdecl (*)(lua_State*, int, int))
-FDecl(0x90d2a0, lua_rawset, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d2f0, lua_rawseti, void __cdecl (*)(lua_State*, int, int))
-FDecl(0x90c5f0, lua_remove, void __cdecl (*)(lua_State*, int))
-FDecl(0x90c690, lua_replace, void __cdecl (*)(lua_State*, int))
-FDecl(0x90ad00, lua_setdefaultmetatable, void __cdecl (*)(lua_State*, int))
-FDecl(0x90d670, lua_setgcthreshold, void __cdecl (*)(lua_State*, int))
-FDecl(0x924060, lua_setglobaluserdata, void __cdecl (*)(lua_State*, void*))
-FDecl(0x9240b0, lua_setstateuserdata, void __cdecl (*)(lua_State*, void*))
-FDecl(0x90d260, lua_settable, void __cdecl (*)(lua_State*, int))
-FDecl(0x90c5a0, lua_settop, void __cdecl (*)(lua_State*, int))
-FDecl(0x924080, lua_setusergcfunction, void __cdecl (*)(lua_State*, userGCFunction))
-FDecl(0x90c4c0, lua_xmove, void __cdecl (*)(lua_State*, lua_State*, int))
-FDecl(0x90cc90, lua_topointer, void const* __cdecl (*)(lua_State*, int))
-FDecl(0x924050, lua_getglobaluserdata, void* __cdecl (*)(lua_State*))
-FDecl(0x9240a0, lua_getstateuserdata, void* __cdecl (*)(lua_State*))
-FDecl(0x90cc10, lua_tolightuserdata, void* __cdecl (*)(lua_State*, int))
+    bool __thiscall IsString() ADDR(0x907370);
+
+    bool __thiscall IsTable() ADDR(0x907310);
+
+    bool __thiscall IsUserData() ADDR(0x907320);
+
+    void __thiscall Clone(LuaObject *out) ADDR(0x90a180);
+
+    void __thiscall CreateTable(LuaObject *out, const char *key, int narray, int lnhash) ADDR(0x908c10);
+    void __thiscall CreateTable(LuaObject *out, int key, int narray, int lnhash) ADDR(0x908ca0);
+    void __thiscall GetByIndex(LuaObject *out, int index) ADDR(0x908df0);
+    void __thiscall GetByName(LuaObject *out, const char *name) ADDR(0x90a160);
+    void __thiscall GetByObject(LuaObject *out, const LuaObject *obj) ADDR(0x908e70);
+    void __thiscall GetMetaTable(LuaObject *out) ADDR(0x908ba0);
+    void __thiscall Lookup(LuaObject *out, const char *key) ADDR(0x9093b0);
+    void __thiscall PushStack(LuaStackObject *out, LuaState *state) ADDR(0x907d80);
+    void __thiscall PushStack(lua_State *L) ADDR(0x907d10);
+    LuaState *__thiscall GetActiveState() ADDR(0x9072b0);
+    const char *__thiscall GetString() ADDR(0x907a90);
+    const char *__thiscall ToString() ADDR(0x9073e0);
+    const char *__thiscall TypeName() ADDR(0x908b50);
+    lua_Number __thiscall GetNumber() ADDR(0x907970);
+    lua_Number __thiscall GetDouble() ADDR(0x907a30);
+    lua_Number __thiscall ToNumber() ADDR(0x9073b0);
+    void __thiscall AssignNewUserData(RRef *out, LuaState *state, const RRef *rRef) ADDR(0x909840);
+    void __thiscall AssignNewUserData(RRef *out, LuaState *state, const RType *rType) ADDR(0x9097d0);
+    void __thiscall GetUserData(RRef *out) ADDR(0x907bc0);
+    int __thiscall GetCount() ADDR(0x907f50);
+    int __thiscall GetInteger() ADDR(0x907910);
+    int __thiscall GetN() ADDR(0x907e50);
+    int __thiscall GetTableCount() ADDR(0x90a410);
+    int __thiscall IsPassed() ADDR(0x907440);
+
+    int __thiscall Type() ADDR(0x9076d0);
+    lua_State *__thiscall GetActiveCState() ADDR(0x9072c0);
+
+    void __thiscall AssignBoolean(LuaState *state, bool value) ADDR(0x909600);
+    void __thiscall AssignInteger(LuaState *state, int value) ADDR(0x909650);
+    void __thiscall AssignNewTable(LuaState *state, int narray, int lnhash) ADDR(0x909940);
+    void __thiscall AssignNil(LuaState *state) ADDR(0x9095c0);
+    void __thiscall AssignNumber(LuaState *state, float value) ADDR(0x9096a0);
+    void __thiscall AssignString(LuaState *state, const char *value) ADDR(0x909750);
+    void __thiscall AssignTObject(LuaState *state, const TObject *value) ADDR(0x9099b0);
+    void __thiscall AssignThread(LuaState *state) ADDR(0x9096f0);
+    void __thiscall Insert(LuaObject *value) ADDR(0x909af0);
+    void __thiscall Insert(int key, LuaObject *value) ADDR(0x909ce0);
+    void __thiscall Register(const char *name, lua_CFunction func, int nupvalues) ADDR(0x907630);
+    void __thiscall Reset() ADDR(0x9075f0);
+    void __thiscall SetBoolean(const char *key, bool value) ADDR(0x9080c0);
+    void __thiscall SetInteger(const char *key, int value) ADDR(0x9081f0);
+    void __thiscall SetInteger(int key, int value) ADDR(0x908240);
+    void __thiscall SetMetaTable(const LuaObject *value) ADDR(0x907e00);
+    void __thiscall SetN(int n) ADDR(0x907ed0);
+    void __thiscall SetNil(const char *key) ADDR(0x907fa0);
+    void __thiscall SetNil(int key) ADDR(0x907ff0);
+    void __thiscall SetNumber(const char *key, float value) ADDR(0x908320);
+    void __thiscall SetNumber(int key, float value) ADDR(0x908370);
+    void __thiscall SetObject(const LuaObject *key, const LuaObject *value) ADDR(0x908810);
+    void __thiscall SetObject(const char *key, const LuaObject *value) ADDR(0x908760);
+    void __thiscall SetObject(int key, const LuaObject *value) ADDR(0x9087a0);
+    void __thiscall SetString(const char *key, const char *value) ADDR(0x908450);
+    void __thiscall SetString(int key, const char *value) ADDR(0x9084e0);
+    void __thiscall TypeError(const char *msg) ADDR(0x9072d0);
+
+    // private
+    void __thiscall AddToUsedList(LuaState *state) ADDR(0x908890);
+    void __thiscall AddToUsedList(LuaState *state, const TObject *obj) ADDR(0x9088e0);
+    void __thiscall SetTableHelper(const char *key, const TObject *value) ADDR(0x9074b0);
+
+    LuaObject *m_next;
+    LuaObject *m_prev;
+    LuaState *m_state;
+    TObject m_object;
+};
+VALIDATE_SIZE(LuaObject, 0x14);
+
+class LuaState
+{ // 0x34 bytes
+public:
+    enum StandardLibraries
+    {
+        LIB_NONE,
+        LIB_BASE,
+        LIB_OSIO
+    };
+
+    __thiscall LuaState(enum StandardLibraries libs) ADDR(0x90ac10);
+    __thiscall LuaState(LuaState *parentState) ADDR(0x90a520);
+    __thiscall LuaState(int Unused) ADDR(0x90a5d0);
+    __thiscall ~LuaState() ADDR(0x90a600);
+    void __thiscall GetGlobal(LuaObject *out, const char *key) ADDR(0x4579d0);
+    void __thiscall GetGlobals(LuaObject *out) ADDR(0x90a690);
+    LuaState *__thiscall GetActiveState() ADDR(0x90bee0);
+
+    const char *__thiscall CheckString(int narg) ADDR(0x912d10);
+
+    int __thiscall ArgError(int narg, const char *msg) ADDR(0x90bf70);
+
+    int __cdecl Error(const char *fmt, ...) ADDR(0x90c1d0);
+
+    lua_State *__thiscall GetActiveCState() ADDR(0x90bef0);
+
+    void __thiscall CheckAny(int narg) ADDR(0x923f20);
+
+    // private
+    void __thiscall Init(enum StandardLibraries libs) ADDR(0x90aad0);
+
+    lua_State *m_state;
+    void *ForMultipleThreads;
+    bool m_ownState;
+    LuaObject m_threadObj;
+    LuaState *m_rootState;
+    struct MiniLuaObject
+    {
+        LuaObject *m_next; // only valid when in free list
+        LuaObject *m_prev; // only valid when in used list
+    } m_headObject, m_tailObject;
+};
+VALIDATE_SIZE(LuaState, 0x34);
+
+bool __cdecl LuaPlusH_next(LuaState *, const LuaObject *, LuaObject *, LuaObject *) ADDR(0x90a6b0);
+bool __cdecl lua_toboolean(lua_State *l, int index) ADDR(0x90ca40);
+TObject *__cdecl negindex(lua_State *, int) ADDR(0x90c340);
+char *__cdecl luaL_prepbuffer(luaL_Buffer *) ADDR(0x90e260);
+const char *__cdecl luaL_checklstring(lua_State *, int, unsigned int *) ADDR(0x90eaa0);
+const char *__cdecl luaL_optlstring(lua_State *, int, const char *, unsigned int *) ADDR(0x90eb10);
+const char *__cdecl lua_getlocal(lua_State *, const lua_Debug *, int) ADDR(0x912680);
+const char *__cdecl lua_getupvalue(lua_State *, int, int) ADDR(0x90d9a0);
+const char *__cdecl lua_pushfstring(lua_State *, const char *, ...) ADDR(0x90ce90);
+const char *__cdecl lua_pushvfstring(lua_State *, const char *, char *) ADDR(0x90ce50);
+const char *__cdecl lua_setlocal(lua_State *, const lua_Debug *, int) ADDR(0x9126f0);
+const char *__cdecl lua_setupvalue(lua_State *, int, int) ADDR(0x90da00);
+const char *__cdecl lua_tostring(lua_State *, int) ADDR(0x90ca90);
+const char *__cdecl lua_typename(lua_State *, int) ADDR(0x90c780);
+float __cdecl luaL_checknumber(lua_State *, int) ADDR(0x90eb70);
+float __cdecl luaL_optnumber(lua_State *, int, float) ADDR(0x90ebf0);
+float __cdecl lua_tonumber(lua_State *, int) ADDR(0x90c9f0);
+void __cdecl lua_newuserdata(RRef *ret, lua_State *, const RType *) ADDR(0x90d7e0);
+RRef *__cdecl lua_touserdata(RRef *, lua_State *, int) ADDR(0x90cbb0);
+inline RRef lua_touserdata(lua_State *l, int index)
+{
+    RRef ref;
+    lua_touserdata(&ref, l, index);
+    return ref;
+}
+int __cdecl luaL_argerror(lua_State *, int, const char *) ADDR(0x90e900);
+int __cdecl luaL_callmeta(lua_State *, int, const char *) ADDR(0x90dda0);
+int __cdecl luaL_error(lua_State *, const char *, ...) ADDR(0x90dbf0);
+FDecl(0x90dc20, luaL_findstring, int __cdecl (*)(const char *, const char *const list[]));
+int __cdecl luaL_getmetafield(lua_State *, int, const char *) ADDR(0x90dd40);
+int __cdecl luaL_getn(lua_State *, int) ADDR(0x90e090);
+int __cdecl luaL_loadbuffer(lua_State *, const char *, unsigned int, const char *) ADDR(0x90e760);
+int __cdecl luaL_loadfile(lua_State *, const char *) ADDR(0x90e5d0);
+int __cdecl luaL_newmetatable(lua_State *, const char *) ADDR(0x90dc70);
+int __cdecl luaL_typerror(lua_State *, int, const char *) ADDR(0x90e9a0);
+int __cdecl lua_checkstack(lua_State *, int) ADDR(0x90c460);
+int __cdecl lua_dobuffer(lua_State *, const char *, unsigned int, const char *) ADDR(0x90e870);
+int __cdecl lua_dostring(lua_State *, const char *) ADDR(0x90e8d0);
+int __cdecl lua_error(lua_State *) ADDR(0x90d6c0);
+int __cdecl lua_getgccount(lua_State *) ADDR(0x90d660);
+int __cdecl lua_getgcthreshold(lua_State *) ADDR(0x90d650);
+int __cdecl lua_gethookcount(lua_State *) ADDR(0x9125d0);
+int __cdecl lua_gethookmask(lua_State *) ADDR(0x9125c0);
+int __cdecl lua_getinfo(lua_State *, const char *, lua_Debug *) ADDR(0x9132f0);
+int __cdecl lua_getmetatable(lua_State *, int) ADDR(0x90d180);
+int __cdecl lua_getn(lua_State *, int) ADDR(0x90ad30);
+int __cdecl lua_getstack(lua_State *, int, lua_Debug *) ADDR(0x9125e0);
+int __cdecl lua_gettop(lua_State *) ADDR(0x90c590);
+int __cdecl lua_isnumber(lua_State *, int) ADDR(0x90c7a0);
+int __cdecl lua_isstring(lua_State *, int) ADDR(0x90c800);
+int __cdecl lua_lessthan(lua_State *, int, int) ADDR(0x90c980);
+int __cdecl lua_load(lua_State *, lua_Chunkreader, void *, const char *) ADDR(0x90d5c0);
+int __cdecl lua_next(lua_State *, int) ADDR(0x90d6d0);
+int __cdecl lua_pcall(lua_State *, int, int) ADDR(0x90d430);
+int __cdecl lua_rawequal(lua_State *, int, int) ADDR(0x90c890);
+int __cdecl lua_resume(lua_State *, int) ADDR(0x914610);
+int __cdecl lua_setfenv(lua_State *, int) ADDR(0x90d3b0);
+int __cdecl lua_sethook(lua_State *, lua_Hook, int, int) ADDR(0x912560);
+int __cdecl lua_setmetatable(lua_State *, int) ADDR(0x90d340);
+int __cdecl lua_traceback(lua_State *, const char *, int) ADDR(0x911ea0);
+int __cdecl lua_type(lua_State *, int) ADDR(0x90c740);
+int __cdecl lua_yield(lua_State *, int) ADDR(0x913e40);
+int __cdecl luaopen_base(lua_State *) ADDR(0x90fd90);
+int __cdecl luaopen_debug(lua_State *) ADDR(0x9124c0);
+int __cdecl luaopen_loadlib(lua_State *) ADDR(0x91a4b0);
+int __cdecl luaopen_math(lua_State *) ADDR(0x91a110);
+int __cdecl luaopen_serialize(lua_State *) ADDR(0x923690);
+int __cdecl luaopen_string(lua_State *) ADDR(0x926ef0);
+lua_State *__cdecl lua_newthread(lua_State *) ADDR(0x90c530);
+lua_State *__cdecl lua_open() ADDR(0x9246d0);
+lua_State *__cdecl lua_tothread(lua_State *, int) ADDR(0x90cc50);
+unsigned int __cdecl lua_strlen(lua_State *, int) ADDR(0x90cb10);
+lua_Hook __cdecl lua_gethook(lua_State *) ADDR(0x9125b0);
+void __cdecl luaL_addlstring(luaL_Buffer *, const char *, unsigned int) ADDR(0x90e2a0);
+void __cdecl luaL_addstring(luaL_Buffer *, const char *) ADDR(0x90e300);
+void __cdecl luaL_addvalue(luaL_Buffer *) ADDR(0x90e370);
+void __cdecl luaL_buffinit(lua_State *, luaL_Buffer *) ADDR(0x90e400);
+void __cdecl luaL_checkany(lua_State *, int) ADDR(0x90ea70);
+void __cdecl luaL_checkstack(lua_State *, int, const char *) ADDR(0x90dd10);
+void __cdecl luaL_checktype(lua_State *, int, int) ADDR(0x90ea20);
+void __cdecl luaL_getmetatable(lua_State *, const char *) ADDR(0x90dcf0);
+void __cdecl luaL_openlib(lua_State *, const char *, const luaL_reg *, int) ADDR(0x90de00);
+void __cdecl luaL_pushresult(luaL_Buffer *) ADDR(0x90e330);
+void __cdecl luaL_setn(lua_State *, int, int) ADDR(0x90dfb0);
+void __cdecl luaL_where(lua_State *, int) ADDR(0x90db80);
+void __cdecl lua_call(lua_State *, int, int) ADDR(0x90d400);
+void __cdecl lua_close(lua_State *) ADDR(0x9243e0);
+void __cdecl lua_concat(lua_State *, int) ADDR(0x90d740);
+void __cdecl lua_getfenv(lua_State *, int) ADDR(0x90d1f0);
+void __cdecl lua_gettable(lua_State *, int) ADDR(0x90d000);
+void __cdecl lua_insert(lua_State *, int) ADDR(0x90c640);
+void __cdecl lua_newtable(lua_State *) ADDR(0x90d110);
+void __cdecl lua_pushboolean(lua_State *, int) ADDR(0x90cf80);
+void __cdecl lua_pushcclosure(lua_State *, lua_CFunction, int) ADDR(0x90ced0);
+void __cdecl lua_pushlightuserdata(lua_State *, void *) ADDR(0x90cfc0);
+void __cdecl lua_pushlstring(lua_State *, const char *, unsigned int) ADDR(0x90cd80);
+void __cdecl lua_pushnil(lua_State *) ADDR(0x90cd00);
+void __cdecl lua_pushnumber(lua_State *, float) ADDR(0x90cd40);
+void __cdecl lua_pushstring(lua_State *, const char *) ADDR(0x90cdf0);
+void __cdecl lua_pushvalue(lua_State *, int) ADDR(0x90c6e0);
+void __cdecl lua_rawget(lua_State *, int) ADDR(0x90d050);
+void __cdecl lua_rawgeti(lua_State *, int, int) ADDR(0x90d0a0);
+void __cdecl lua_rawset(lua_State *, int) ADDR(0x90d2a0);
+void __cdecl lua_rawseti(lua_State *, int, int) ADDR(0x90d2f0);
+void __cdecl lua_remove(lua_State *, int) ADDR(0x90c5f0);
+void __cdecl lua_replace(lua_State *, int) ADDR(0x90c690);
+void __cdecl lua_setdefaultmetatable(lua_State *, int) ADDR(0x90ad00);
+void __cdecl lua_setgcthreshold(lua_State *, int) ADDR(0x90d670);
+void __cdecl lua_setglobaluserdata(lua_State *, void *) ADDR(0x924060);
+void __cdecl lua_setstateuserdata(lua_State *, void *) ADDR(0x9240b0);
+void __cdecl lua_settable(lua_State *, int) ADDR(0x90d260);
+void __cdecl lua_settop(lua_State *, int) ADDR(0x90c5a0);
+void __cdecl lua_setusergcfunction(lua_State *, userGCFunction) ADDR(0x924080);
+void __cdecl lua_xmove(lua_State *, lua_State *, int) ADDR(0x90c4c0);
+void const *__cdecl lua_topointer(lua_State *, int) ADDR(0x90cc90);
+void *__cdecl lua_getglobaluserdata(lua_State *) ADDR(0x924050);
+void *__cdecl lua_getstateuserdata(lua_State *) ADDR(0x9240a0);
+void *__cdecl lua_tolightuserdata(lua_State *, int) ADDR(0x90cc10);
