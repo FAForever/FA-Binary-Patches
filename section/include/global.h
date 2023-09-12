@@ -5,11 +5,7 @@
 
 #define DebugLog(_s) LogF("%s", (_s))
 
-#ifdef __GETADDR
-#define ADDR(addr) \
-    {              \
-    }
-#else
+#ifndef __GETADDR
 #define ADDR(addr)
 #endif
 
