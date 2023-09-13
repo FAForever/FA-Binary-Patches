@@ -5,9 +5,6 @@
 
 #define DebugLog(_s) LogF("%s", (_s))
 
-#ifndef __GETADDR
-#define ADDR(addr)
-#endif
 
 #define GDecl(addr, type) \
     (*(type *)addr)
