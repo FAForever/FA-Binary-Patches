@@ -178,21 +178,27 @@ VALIDATE_SIZE(LuaStackObject, 8);
 
 class LuaObject
 { // 0x14 bytes
+    void __thiscall __LuaObject() asm("0x9072a0");
+    void __thiscall __LuaObject(LuaState *state) asm("0x908970");
+    void __thiscall __LuaObject(LuaState *state, int index) asm("0x9089c0");
+    void __thiscall __LuaObject(const LuaObject *obj) asm("0x908a40");
+    void __thiscall __LuaObject(const LuaStackObject *stack) asm("0x908a70");
+    void __thiscall __LuaObject(LuaState *state, const TObject *obj) asm("0x9089f0");
+    void __thiscall __DLuaObject() asm("0x9075d0");
+    void __thiscall __Index(LuaObject *obj, int key) asm("0x9091e0");
+    void __thiscall __Index(LuaObject *obj, const char *key) asm("0x908f60");
+
 public:
-    __thiscall LuaObject() asm("0x9072a0");
-    __thiscall LuaObject(LuaState *state) asm("0x908970");
-    __thiscall LuaObject(LuaState *state, int index) asm("0x9089c0");
-    __thiscall LuaObject(const LuaObject *obj) asm("0x908a40");
-    __thiscall LuaObject(const LuaStackObject *stack) asm("0x908a70");
-    __thiscall LuaObject(LuaState *state, const TObject *obj) asm("0x9089f0");
-    __thiscall ~LuaObject() asm("0x9075d0");
+    __thiscall LuaObject() { __LuaObject(); };
+    __thiscall LuaObject(LuaState *state) { __LuaObject(state); };
+    __thiscall LuaObject(LuaState *state, int index) { __LuaObject(state, index); };
+    __thiscall LuaObject(const LuaObject &obj) { __LuaObject(&obj); };
+    __thiscall LuaObject(const LuaStackObject &stack) { __LuaObject(&stack); };
+    __thiscall LuaObject(LuaState *state, const TObject *obj) { __LuaObject(state, obj); };
+    __thiscall ~LuaObject() { __DLuaObject(); };
 
     LuaObject *__thiscall operator=(const LuaObject *obj) asm("0x908ab0");
     LuaObject *__thiscall operator=(const LuaStackObject *stack) asm("0x908b00");
-
-    void __thiscall __Index(LuaObject *obj, int key) asm("0x9091e0");
-
-    void __thiscall __Index(LuaObject *obj, const char *key) asm("0x908f60");
 
     LuaObject operator[](int key)
     {

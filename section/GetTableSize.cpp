@@ -83,10 +83,10 @@ void IsTableEmpty()
         "JNZ ITE_L5;"
         "L072:;"
         "PUSH 0x1;"
-        "JMP L12;"
+        "JMP L120;"
         "L62:;"
         "PUSH 0x0;"
-        "L12:;"
+        "L120:;"
         "PUSH ESI;"
         "CALL 0x0090CF80;"     //PushBool
         "ADD ESP,0x8;"
