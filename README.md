@@ -70,6 +70,11 @@ https://github.com/FAForever/FA_Patcher
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
+- Adds new method to `WorldView` (WorldView.cpp):
+  * `ProjectMultiple` projects multiple vectors at once
+- Adds new methods for `UserUnit` (UserUnit.cpp):
+  * `GetInterpolatedPosition` returns position of a unit interpolated by current frame
+  * `GetFractionComplete` returns float from 0 to 1
 - Adds 5th argumnet for `IssueMobileBuild` as flag whether to pick all units for build order
     - hooks/IssueMobileBuild.cpp
     - section/IssueMobileBuild.cpp
