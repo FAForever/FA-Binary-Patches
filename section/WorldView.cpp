@@ -1,6 +1,6 @@
 
-#include "include/moho.h"
 #include "include/CObject.h"
+#include "include/moho.h"
 
 typedef unsigned char lu_byte;
 struct Table
@@ -9,8 +9,8 @@ struct Table
     int pad1;
     lu_byte tt;
     lu_byte lsizenode; /* log2 of size of `node' array */
-    lu_byte marked; /* 1<<p means tagmethod(p) is not present */
-    lu_byte flags;  
+    lu_byte marked;    /* 1<<p means tagmethod(p) is not present */
+    lu_byte flags;
     struct Table *metatable;
     TObject *array; /* array part */
     int pad2;
@@ -131,9 +131,9 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
 
-    Table* t = (Table*)lua_topointer(l , index);
+    Table *t = (Table *)lua_topointer(l, index);
     lua_createtable(l, t->sizearray, t->lsizenode); // result table
-    lua_pushvalue(l, index);  // input vectors
+    lua_pushvalue(l, index);                        // input vectors
     lua_pushnil(l);
     while (lua_next(l, -2)) // -1 = value, -2 =  key, -3 = table, -4 = result table
     {
@@ -154,7 +154,10 @@ int ProjectMultiple(lua_State *l)
     {
         l->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 2, lua_gettop(l));
     }
-
+    if (!lua_istable(l, 2))
+    {
+        luaL_argerror(l, 2, "table expected.");
+    }
     Result<CUIWorldView> r = GetCScriptObject<CUIWorldView>(l, 1);
     if (r.IsFail())
     {
