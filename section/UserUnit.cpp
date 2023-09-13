@@ -1,5 +1,5 @@
 #include "include/moho.h"
-#include "include/CObject.hpp"
+#include "include/CObject.h"
 
 void *CheckUserUnit(LuaObject *obj, LuaState *ls)
 {
@@ -49,7 +49,7 @@ int GetInterpolatedPosition(lua_State *l)
     {
         l->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 1, lua_gettop(l));
     }
-    Result<CUserUnit> r = GetCScriptObject<CUserUnit>(l, 1);
+    Result<UserUnit> r = GetCScriptObject<UserUnit>(l, 1);
     if (r.IsFail())
     {
         lua_pushstring(l, r.reason);
@@ -82,7 +82,7 @@ int GetFractionComplete(lua_State *l)
         l->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 1, lua_gettop(l));
     }
 
-    Result<CUserUnit> r = GetCScriptObject<CUserUnit>(l, 1);
+    Result<UserUnit> r = GetCScriptObject<UserUnit>(l, 1);
 
     if (r.IsFail())
     {

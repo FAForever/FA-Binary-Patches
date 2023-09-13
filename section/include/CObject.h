@@ -1,12 +1,9 @@
 #pragma once
 #include "moho.h"
-#include "strings.h"
 #include "result.h"
+#include "strings.h"
 
-void *GetCScriptType()
-{
-    return reinterpret_cast<void *(*)()>(0x4C8530)();
-}
+void *GetCScriptType() asm("0x4C8530");
 
 RRef REF_UpcastPtr(RRef *ref, void *sctype)
 {
@@ -25,7 +22,8 @@ void *GetCObject(lua_State *l, int index)
     }
     if (lua_isuserdata(l, -1))
     {
-        RRef udata = lua_touserdata(l, -1);
+        RRef udata;
+        lua_touserdata(&udata, l, -1);
         void *sctype = GetCScriptType();
         RRef p = REF_UpcastPtr(&udata, sctype);
         lua_pop(l, 1);
@@ -42,10 +40,7 @@ RRef CastObj(void *obj)
     return res;
 }
 
-void *LookupRType(void *typeinfo)
-{
-    return reinterpret_cast<void *(__cdecl *)(void *)>(0x8E0750)(typeinfo);
-}
+void *__cdecl LookupRType(void *typeinfo) asm("0x8E0750");
 
 template <class CScriptClass>
 Result<CScriptClass> GetCScriptObject(lua_State *l, int index)

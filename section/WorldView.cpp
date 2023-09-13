@@ -1,6 +1,24 @@
 
-#include "include/CObject.hpp"
 #include "include/moho.h"
+#include "include/CObject.h"
+
+typedef unsigned char lu_byte;
+struct Table
+{
+    int pad0;
+    int pad1;
+    lu_byte tt;
+    lu_byte lsizenode; /* log2 of size of `node' array */
+    lu_byte marked; /* 1<<p means tagmethod(p) is not present */
+    lu_byte flags;  
+    struct Table *metatable;
+    TObject *array; /* array part */
+    int pad2;
+    int pad3;
+    int pad4;
+    int sizearray; /* size of `array' array */
+};
+VALIDATE_SIZE(Table, 0x24)
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 void lua_createtable(lua_State *l, int narr, int nhash = 0)
