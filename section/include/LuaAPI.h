@@ -213,27 +213,16 @@ public:
         return out;
     }
     bool __thiscall GetBoolean() asm("0x907c90");
-
     bool __thiscall IsBoolean() asm("0x9078d0");
-
     bool __thiscall IsConvertibleToString() asm("0x9077c0");
-
     bool __thiscall IsFunction() asm("0x907810");
-
     bool __thiscall IsInteger() asm("0x907350");
-
     bool __thiscall IsNil() asm("0x9072f0");
-
     bool __thiscall IsNumber() asm("0x907360");
-
     bool __thiscall IsString() asm("0x907370");
-
     bool __thiscall IsTable() asm("0x907310");
-
     bool __thiscall IsUserData() asm("0x907320");
-
     void __thiscall Clone(LuaObject *out) asm("0x90a180");
-
     void __thiscall CreateTable(LuaObject *out, const char *key, int narray, int lnhash) asm("0x908c10");
     void __thiscall CreateTable(LuaObject *out, int key, int narray, int lnhash) asm("0x908ca0");
     void __thiscall GetByIndex(LuaObject *out, int index) asm("0x908df0");
@@ -258,10 +247,8 @@ public:
     int __thiscall GetN() asm("0x907e50");
     int __thiscall GetTableCount() asm("0x90a410");
     int __thiscall IsPassed() asm("0x907440");
-
     int __thiscall Type() asm("0x9076d0");
     lua_State *__thiscall GetActiveCState() asm("0x9072c0");
-
     void __thiscall AssignBoolean(LuaState *state, bool value) asm("0x909600");
     void __thiscall AssignInteger(LuaState *state, int value) asm("0x909650");
     void __thiscall AssignNewTable(LuaState *state, int narray, int lnhash) asm("0x909940");
