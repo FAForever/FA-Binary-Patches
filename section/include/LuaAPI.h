@@ -189,13 +189,13 @@ class LuaObject
     void __thiscall __Index(LuaObject *obj, const char *key) asm("0x908f60");
 
 public:
-    __thiscall LuaObject() { __LuaObject(); };
-    __thiscall LuaObject(LuaState *state) { __LuaObject(state); };
-    __thiscall LuaObject(LuaState *state, int index) { __LuaObject(state, index); };
-    __thiscall LuaObject(const LuaObject &obj) { __LuaObject(&obj); };
-    __thiscall LuaObject(const LuaStackObject &stack) { __LuaObject(&stack); };
-    __thiscall LuaObject(LuaState *state, const TObject *obj) { __LuaObject(state, obj); };
-    __thiscall ~LuaObject() { __DLuaObject(); };
+    LuaObject() { __LuaObject(); };
+    LuaObject(LuaState *state) { __LuaObject(state); };
+    LuaObject(LuaState *state, int index) { __LuaObject(state, index); };
+    LuaObject(const LuaObject &obj) { __LuaObject(&obj); };
+    LuaObject(const LuaStackObject &stack) { __LuaObject(&stack); };
+    LuaObject(LuaState *state, const TObject *obj) { __LuaObject(state, obj); };
+    ~LuaObject() { __DLuaObject(); };
 
     LuaObject *__thiscall operator=(const LuaObject *obj) asm("0x908ab0");
     LuaObject *__thiscall operator=(const LuaStackObject *stack) asm("0x908b00");
