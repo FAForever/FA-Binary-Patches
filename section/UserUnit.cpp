@@ -1,5 +1,6 @@
 #include "include/moho.h"
 #include "include/CObject.h"
+#include "include/utility.h"
 
 void *CheckUserUnit(LuaObject *obj, LuaState *ls)
 {
@@ -63,10 +64,8 @@ int GetInterpolatedPosition(lua_State *l)
     if (mesh == nullptr)
         return 0;
     Moho::MeshInstance::UpdateInterpolatedTransform(mesh);
-    lua_pushnumber(l, mesh[34]);
-    lua_pushnumber(l, mesh[35]);
-    lua_pushnumber(l, mesh[36]);
-    return 3;
+    PushVector(l, {mesh[34], mesh[35], mesh[36]});
+    return 1;
 }
 // for testing
 // UI_Lua LOG(GetSelectedUnits()[1].GetInterpolatedPosition)
