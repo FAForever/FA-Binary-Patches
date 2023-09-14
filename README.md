@@ -10,6 +10,9 @@ https://github.com/FAForever/FA_Patcher
 ## Signature patches
 - See `SigPatches.txt`
 ## Fixes
+- Fix `CMauiControl:SetAlpha`: don't change color part and check for 3rd argument as boolean.
+    - hooks/SetAlpha.cpp
+    - section/SetAlpha.cpp
 - Fix `UserDecal:SetPosition` argument.
     - hooks/DecalSetPositionFix.cpp
 - Fix `ForkThread` function. Allow only lua function to be passed as first argument.
