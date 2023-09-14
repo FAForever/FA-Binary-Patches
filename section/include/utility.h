@@ -1,3 +1,4 @@
+#pragma once
 #include "moho.h"
 #include "LuaAPI.h"
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
