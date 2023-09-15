@@ -1,9 +1,7 @@
 #pragma once
 #include "moho.h"
-#include "result.h"
-#include "strings.h"
 
-void *GetCScriptType() asm("0x4C8530");
+void* GetCScriptType() asm("0x4C8530");
 
 RRef REF_UpcastPtr(RRef *ref, void *sctype)
 {
@@ -40,7 +38,7 @@ RRef CastObj(void *obj)
     return res;
 }
 
-void *__cdecl LookupRType(void *typeinfo) asm("0x8E0750");
+void* LookupRType(void *typeinfo) asm("0x8E0750");
 
 template <class CScriptClass>
 Result<CScriptClass> GetCScriptObject(lua_State *l, int index)

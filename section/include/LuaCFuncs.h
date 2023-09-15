@@ -3,13 +3,8 @@
 #include "LuaAPI.h"
 
 #define LuaC(addr, name) \
-  FDecl(addr, name, lua_CFunction)
+  int FA_##name(lua_State *L) asm(#addr);
 
-//LuaC(0x128B2D0, GetTimeForProfile)
-//LuaC(0x128DDA0, GetDepositsAroundPoint)
-//LuaC(0x128DF30, SessionIsReplay)
-//LuaC(0x128DF50, SetCommandSource)
-//LuaC(0x128DFB0, SetFocusArmy)
 LuaC(0x416490, BeginLoggingStats)
 LuaC(0x416640, EndLoggingStats)
 LuaC(0x41B790, GetCommandLineArg)

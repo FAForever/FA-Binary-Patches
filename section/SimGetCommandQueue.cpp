@@ -10,7 +10,7 @@ void __thiscall SimGetCommandQueueInsert(LuaObject *this_, LuaObject *obj)
     auto targetId = *reinterpret_cast<unsigned long*>(unitCmd + 0xA0);
     if (targetId != 0xF0000000) {
         char buf[16];
-        FAsprintf_s(buf, sizeof(buf), "%d", targetId);  //like game doing entityId with std::string
+        sprintf_s(buf, sizeof(buf), "%d", targetId);  //like game doing entityId with std::string
         obj->SetString("targetId", buf);
     }
     auto v3 = *reinterpret_cast<uintptr_t*>(unitCmd + 0x60);

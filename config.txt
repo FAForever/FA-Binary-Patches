@@ -2,4 +2,4 @@ oldfile ForgedAlliance_base.exe
 newfile ForgedAlliance_exxt.exe
 newsect .exxt
 sectsize 0x80000
-cflags -pipe -m32 -Os -nostartfiles -w -fpermissive -masm=intel -std=c++17 -march=core2 -mfpmath=both
+cflags -pipe -m32 -Os -nostartfiles -w -fpermissive -masm=intel -std=c++20 -march=core2 -mfpmath=both

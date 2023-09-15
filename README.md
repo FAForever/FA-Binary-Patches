@@ -10,6 +10,8 @@ https://github.com/FAForever/FA_Patcher
 ## Signature patches
 - See `SigPatches.txt`
 ## Fixes
+- Fix `UserDecal:SetPosition` argument.
+    - hooks/DecalSetPositionFix.cpp
 - Fix `ForkThread` function. Allow only lua function to be passed as first argument.
     - hooks/ForkThreadFix.cpp
     - section/ForkThreadFix.cpp

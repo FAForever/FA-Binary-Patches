@@ -33,7 +33,7 @@ int SimGetDepositsAroundPoint(lua_State *L) {
         lua_push(L, "X2", deposit->X2);
         lua_push(L, "Z2", deposit->Z2);
         lua_push(L, "Type", deposit->Type);
-        lua_push(L, "Dist", FAsqrtf(dist));
+        lua_push(L, "Dist", sqrtf(dist));
         lua_settable(L, -3);
     }
     return 1;
