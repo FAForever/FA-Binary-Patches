@@ -72,6 +72,8 @@ https://github.com/FAForever/FA_Patcher
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
+- Adds method `MauiBitmap` (MauiBitmap.cpp):
+    - `SetColorMask`- sets color mask for bitmap
 - Adds 5th argumnet for `IssueMobileBuild` as flag whether to pick all units for build order
     - hooks/IssueMobileBuild.cpp
     - section/IssueMobileBuild.cpp
