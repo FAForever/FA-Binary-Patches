@@ -12,7 +12,7 @@ struct RegFunc : luaFuncDescReg
         *reinterpret_cast<luaFuncDescReg**>(EntryPoint) = this;
     }
     constexpr RegFunc(luaFuncDescReg &srf) :
-        RegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassPtr, srf.ClassPtr) {}
+        RegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassName, srf.ClassPtr) {}
 };
 
 
