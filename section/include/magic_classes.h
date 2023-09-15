@@ -2,7 +2,7 @@
 #include <type_traits>
 #include "moho.h"
 
-template<int EntryPoint, int ClassFactory, int ClassAddr>
+template<uintptr_t EntryPoint, uintptr_t ClassFactory, uintptr_t ClassAddr>
 struct RegFunc : luaFuncDescReg
 {
     constexpr RegFunc(const char *name, const char *desc,
@@ -16,9 +16,9 @@ struct RegFunc : luaFuncDescReg
 };
 
 
-template<int ClassFactory=0xE45E90, int ClassAddr=0>
+template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
 struct SimRegFunc : RegFunc<0xF5A124, ClassFactory, ClassAddr>{};
-template<int ClassFactory=0xE45E90, int ClassAddr=0>
+template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
 struct UIRegFunc : RegFunc<0xF59690, ClassFactory, ClassAddr>{};
 
 using TConFunc = void(vector<string>*);
