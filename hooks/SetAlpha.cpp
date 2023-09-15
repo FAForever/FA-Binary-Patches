@@ -13,5 +13,5 @@ asm(
     "sub esp, 4;"
     "fstp dword ptr [esp];"
     "call "QU(_SetAlphaChildren)";"
-    "jmp 0x7899FB;"
+    "jmp short 0x7899FB;"
 );
