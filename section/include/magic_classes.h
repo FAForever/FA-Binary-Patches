@@ -18,7 +18,7 @@ struct RegFunc : luaFuncDescReg
 
 template<int ClassFactory=0xE45E90, int ClassAddr=0>
 struct SimRegFunc : RegFunc<0xF5A124, ClassFactory, ClassAddr>{};
-template<int ClassFactory=0xE45E90>
+template<int ClassFactory=0xE45E90, int ClassAddr=0>
 struct UIRegFunc : RegFunc<0xF59690, ClassFactory, ClassAddr>{};
 
 using TConFunc = void(vector<string>*);
