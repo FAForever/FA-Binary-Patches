@@ -5,21 +5,21 @@
 template<uintptr_t EntryPoint, uintptr_t ClassFactory, uintptr_t ClassAddr>
 struct RegFunc : luaFuncDescReg
 {
-    constexpr RegFunc(const char *name, const char *desc,
+    RegFunc(const char *name, const char *desc,
         lua_CFunction f, const char *className = 0xE00D90) :
-        luaFuncDescReg{ClassAddr, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(EntryPoint), f, ClassAddr}
+        luaFuncDescReg{ClassFactory, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(EntryPoint), f, ClassAddr}
     {
         *reinterpret_cast<luaFuncDescReg**>(EntryPoint) = this;
     }
-    constexpr RegFunc(luaFuncDescReg &srf) :
+    RegFunc(struct luaFuncDescReg &srf) :
         RegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassName) {}
 };
 
+template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
+using SimRegFunc = RegFunc<0xF5A124, ClassFactory, ClassAddr>;
+template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
+using UIRegFunc = RegFunc<0xF59690, ClassFactory, ClassAddr>;
 
-template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
-struct SimRegFunc : RegFunc<0xF5A124, ClassFactory, ClassAddr>{};
-template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
-struct UIRegFunc : RegFunc<0xF59690, ClassFactory, ClassAddr>{};
 
 using TConFunc = void(vector<string>*);
 template <typename T>
