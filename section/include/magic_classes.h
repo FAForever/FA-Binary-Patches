@@ -2,29 +2,24 @@
 #include <type_traits>
 #include "moho.h"
 
-struct SimRegFunc : luaFuncDescReg
+template<int EntryPoint, int ClassAddr>
+struct RegFunc : luaFuncDescReg
 {
-    constexpr SimRegFunc(const char *name, const char *desc,
+    constexpr RegFunc(const char *name, const char *desc,
         lua_CFunction f, const char *className = 0xE00D90, void *classPtr = nullptr) :
-        luaFuncDescReg{0xE45E90, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(0xF5A124), f, classPtr}
+        luaFuncDescReg{ClassAddr, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(EntryPoint), f, classPtr}
     {
-        *reinterpret_cast<luaFuncDescReg**>(0xF5A124) = this;
+        *reinterpret_cast<luaFuncDescReg**>(EntryPoint) = this;
     }
-    constexpr SimRegFunc(luaFuncDescReg &srf) :
-        SimRegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassPtr, srf.ClassPtr) {}
+    constexpr RegFunc(luaFuncDescReg &srf) :
+        RegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassPtr, srf.ClassPtr) {}
 };
-struct UIRegFunc : luaFuncDescReg
-{
-    constexpr UIRegFunc(const char *name, const char *desc,
-        lua_CFunction f, const char *className = 0xE00D90, void *classPtr = nullptr) :
-        luaFuncDescReg{0xE45E90, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(0xF59690), f, classPtr}
-    {
-        *reinterpret_cast<luaFuncDescReg**>(0xF59690) = this;
-    }
 
-    constexpr UIRegFunc(luaFuncDescReg &srf) :
-        UIRegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassName, srf.ClassPtr) {}
-};
+
+template<int ClassAddr=0xE45E90>
+struct SimRegFunc : RegFunc<0xF5A124, ClassAddr>{};
+template<int ClassAddr=0xE45E90>
+struct UIRegFunc : RegFunc<0xF59690, ClassAddr>{};
 
 using TConFunc = void(vector<string>*);
 template <typename T>
