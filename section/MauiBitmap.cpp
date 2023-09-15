@@ -1,6 +1,7 @@
 #include "include/CObject.h"
 #include "include/LuaApi.h"
 #include "include/global.h"
+#include "include/magic_classes.h"
 
 bool __cdecl TryConvertToColor(const char *s, uint32_t &color) asm("0x4B2B90");
 
@@ -40,3 +41,5 @@ luaFuncDescReg BitmapSetColorMaskDesc = {0x00E37C14,
                                          nullptr,
                                          SetColorMask,
                                          0x00F8D7DC};
+
+UIRegFunc _SetColorMask{BitmapSetColorMaskDesc};
