@@ -10,7 +10,8 @@ asm(
 
     //apply to children
     ".section h2; .set h2,0x789999;"
-    "fstp dword ptr [esp+0x88-0x74];"
+    "sub esp, 4;"
+    "fstp dword ptr [esp];"
     "call "QU(_SetAlphaChildren)";"
     "jmp 0x7899FB;"
 );
