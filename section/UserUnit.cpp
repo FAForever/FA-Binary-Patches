@@ -1,5 +1,6 @@
-#include "include/moho.h"
 #include "include/CObject.h"
+#include "include/magic_classes.h"
+#include "include/moho.h"
 #include "include/utility.h"
 
 void *CheckUserUnit(LuaObject *obj, LuaState *ls)
@@ -100,20 +101,16 @@ int GetFractionComplete(lua_State *l)
 // UI_Lua LOG(GetSelectedUnits()[1]:GetFractionComplete())
 // UI_Lua LOG(GetSelectedUnits()[1].GetFractionComplete{})
 
-// PatcherList_UIFuncRegs_UUserUnitGetInterpolatedPosition
-luaFuncDescReg UUserUnitGetInterpolatedPosition = {0x00E4DA64,
-                                                   "GetInterpolatedPosition",
-                                                   s_UserUnit,
-                                                   "UserUnit:GetInterpolatedPosition()",
-                                                   0x00000000,
-                                                   GetInterpolatedPosition,
-                                                   0x00F8D89C};
+using UserUnitMethodReg = UIRegFunc<0x00E4DA64, 0x00F8D89C>;
 
-// PatcherList_UIFuncRegs_UUserUnitGetFractionComplete
-luaFuncDescReg UUserUnitGetFractionComplete = {0x00E4DA64,
-                                               "GetFractionComplete",
-                                               s_UserUnit,
-                                               "UserUnit:GetFractionComplete()",
-                                               0x00000000,
-                                               GetFractionComplete,
-                                               0x00F8D89C};
+UserUnitMethodReg UserUnitGetInterpolatedPosition{
+    "GetInterpolatedPosition",
+    "UserUnit:GetInterpolatedPosition()",
+    GetInterpolatedPosition,
+    s_UserUnit};
+
+UserUnitMethodReg UserUnitGetFractionComplete{
+    "GetFractionComplete",
+    "UserUnit:GetFractionComplete()",
+    GetFractionComplete,
+    s_UserUnit};

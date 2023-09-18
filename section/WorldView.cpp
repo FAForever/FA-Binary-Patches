@@ -1,5 +1,6 @@
-#include "include/moho.h"
 #include "include/CObject.h"
+#include "include/magic_classes.h"
+#include "include/moho.h"
 #include "include/utility.h"
 
 void Project(float *camera, const Vector3f *v, Vector2f *result)
@@ -24,9 +25,9 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
 
-    const char *t = (const char*)lua_topointer(l, index);
-    lua_createtable(l, *(int*)(t + offsetTSizeArray), *(unsigned char*)(t + offsetTSizeNode)); // result table
-    lua_pushvalue(l, index); // input vectors
+    const char *t = (const char *)lua_topointer(l, index);
+    lua_createtable(l, *(int *)(t + offsetTSizeArray), *(unsigned char *)(t + offsetTSizeNode)); // result table
+    lua_pushvalue(l, index);                                                                     // input vectors
     lua_pushnil(l);
     while (lua_next(l, -2)) // -1 = value, -2 =  key, -3 = table, -4 = result table
     {
@@ -76,11 +77,10 @@ int ProjectMultiple(lua_State *l)
 // UI_Lua reprsl(import("/lua/ui/game/worldview.lua").viewLeft.ProjectMultiple())
 // UI_Lua reprsl(import("/lua/ui/game/worldview.lua").viewLeft.ProjectMultiple({},{}))
 
-// PatcherList_UIFuncRegs_UWorldViewProjectMultiple
-luaFuncDescReg UWorldViewProjectMultiple = {0x00E491E8,
-                                            "ProjectMultiple",
-                                            "CUIWorldView",
-                                            "WorldView:ProjectMultiple(vectors)",
-                                            0x00000000,
-                                            ProjectMultiple,
-                                            0x00F8D88C};
+using WorldViewMethodReg = UIRegFunc<0x00E491E8, 0x00F8D88C>;
+
+WorldViewMethodReg WorldViewProjectMultiple{
+    "ProjectMultiple",
+    "WorldView:ProjectMultiple(vectors)",
+    ProjectMultiple,
+    "CUIWorldView"};
