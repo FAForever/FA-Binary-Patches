@@ -75,12 +75,14 @@ https://github.com/FAForever/FA_Patcher
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
-- Adds new method to `WorldView` (WorldView.cpp):
+- Adds `lua_createtable`
+    - section/lua_createtable.cpp
+- Adds new method to `WorldView` (section/WorldView.cpp):
     - `ProjectMultiple` projects multiple vectors at once
-- Adds new methods for `UserUnit` (UserUnit.cpp):
+- Adds new methods for `UserUnit` (section/UserUnit.cpp):
     - `GetInterpolatedPosition` returns position of a unit interpolated by current frame
     - `GetFractionComplete` returns float from 0 to 1
-- Adds method `MauiBitmap` (MauiBitmap.cpp):
+- Adds method `MauiBitmap` (section/MauiBitmap.cpp):
     - `SetColorMask`- sets color mask for bitmap
 - Adds 5th argumnet for `IssueMobileBuild` as flag whether to pick all units for build order
     - hooks/IssueMobileBuild.cpp
