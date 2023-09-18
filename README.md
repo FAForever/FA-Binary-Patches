@@ -10,6 +10,9 @@ https://github.com/FAForever/FA_Patcher
 ## Signature patches
 - See `SigPatches.txt`
 ## Fixes
+- Fix `CMauiControl:SetAlpha`: don't change color part and check for 3rd argument as boolean.
+    - hooks/SetAlpha.cpp
+    - section/SetAlpha.cpp
 - Fix `UserDecal:SetPosition` argument.
     - hooks/DecalSetPositionFix.cpp
 - Fix `ForkThread` function. Allow only lua function to be passed as first argument.
@@ -73,10 +76,12 @@ https://github.com/FAForever/FA_Patcher
 
 ## Additions
 - Adds new method to `WorldView` (WorldView.cpp):
-  * `ProjectMultiple` projects multiple vectors at once
+    - `ProjectMultiple` projects multiple vectors at once
 - Adds new methods for `UserUnit` (UserUnit.cpp):
-  * `GetInterpolatedPosition` returns position of a unit interpolated by current frame
-  * `GetFractionComplete` returns float from 0 to 1
+    - `GetInterpolatedPosition` returns position of a unit interpolated by current frame
+    - `GetFractionComplete` returns float from 0 to 1
+- Adds method `MauiBitmap` (MauiBitmap.cpp):
+    - `SetColorMask`- sets color mask for bitmap
 - Adds 5th argumnet for `IssueMobileBuild` as flag whether to pick all units for build order
     - hooks/IssueMobileBuild.cpp
     - section/IssueMobileBuild.cpp

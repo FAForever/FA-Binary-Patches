@@ -27,7 +27,7 @@ void __thiscall OnCreateInitLuaState(LuaState* state, int enumStdLibs) {
     lua_register(state->m_state, "SetProcessPriority", [](lua_State *L) -> int {
         //bool SetProcessPriority(uint32_t dwPriorityClass)
         uint32_t dwPriorityClass = luaL_checknumber(L, 1);
-        auto SetPriorityClass = reinterpret_cast<uint32_t(__stdcall*)(void*, uint32_t)>(GetProcAddress(GetModuleHandle("kernel32.dll"), "SetPriorityClass"));
+        auto SetPriorityClass = reinterpret_cast<uint32_t(__stdcall*)(void*, uint32_t)>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetPriorityClass"));
         int res = SetPriorityClass(GetCurrentProcess(), dwPriorityClass);
         lua_pushboolean(L, res != 0);
         return 1;

@@ -218,7 +218,7 @@ typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewPro
 
 void FAExtLoad()
 {
-    void *Kernel = GetModuleHandle("KERNEL32");
+    void *Kernel = GetModuleHandleA("KERNEL32");
     LoadLibrary_t *LoadLibrary = GetProcAddress(Kernel, "LoadLibraryA");
     VirtualProtect_t *VirtualProtect = GetProcAddress(Kernel, "VirtualProtect");
     void *ldll = LoadLibrary("FAExt.dll");

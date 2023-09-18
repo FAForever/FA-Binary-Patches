@@ -2,7 +2,7 @@
 
 int SetInvertMidMouseButton(lua_State *L)
 {
-    auto ptr = GetProcAddress(GetModuleHandle("KERNEL32"), "VirtualProtect");
+    auto ptr = GetProcAddress(GetModuleHandleA("KERNEL32"), "VirtualProtect");
     auto VirtualProtect = reinterpret_cast<bool (__stdcall *)(void*, size_t, uint32_t, uint32_t*)>(ptr);
 
     if (lua_gettop(L) != 1)

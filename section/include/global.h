@@ -80,7 +80,7 @@ float sqrtf(float) asm("0x452FC0");
 __thiscall void InitString(void *this_, const char *str) asm("0x405550");
 __thiscall void AssignString(void *this_, const char *str, size_t size) asm("0x4059E0");
 
-#define GetModuleHandle   WDecl(0xC0F378, __stdcall void* (*)(const char *lpLibFileName))
+#define GetModuleHandleA  WDecl(0xC0F378, __stdcall void* (*)(const char *lpLibFileName))
 #define GetProcAddress    WDecl(0xC0F48C, __stdcall void* (*)(void* hModule, const char *lpProcName))
 #define GetCurrentProcess WDecl(0xC0F58C, __stdcall void* (*)())
 
