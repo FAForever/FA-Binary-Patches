@@ -24,7 +24,7 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
 
-    char *t = lua_topointer(l, index);
+    const char *t = (const char*)lua_topointer(l, index);
     lua_createtable(l, *(t + offsetTSizeArray), *(t + offsetTSizeNode)); // result table
     lua_pushvalue(l, index); // input vectors
     lua_pushnil(l);
