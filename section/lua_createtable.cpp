@@ -1,3 +1,5 @@
+
+#include "include/LuaAPI.h"
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
 //PatcherList_LCreateTable_e_lua_createtable

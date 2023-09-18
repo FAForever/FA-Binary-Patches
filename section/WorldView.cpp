@@ -25,7 +25,7 @@ void ProjectVectors(lua_State *l, int index, float *camera)
 {
 
     const char *t = (const char*)lua_topointer(l, index);
-    lua_createtable(l, *(t + offsetTSizeArray), *(t + offsetTSizeNode)); // result table
+    lua_createtable(l, *(int*)(t + offsetTSizeArray), *(unsigned char*)(t + offsetTSizeNode)); // result table
     lua_pushvalue(l, index); // input vectors
     lua_pushnil(l);
     while (lua_next(l, -2)) // -1 = value, -2 =  key, -3 = table, -4 = result table
