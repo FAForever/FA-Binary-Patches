@@ -75,6 +75,9 @@ https://github.com/FAForever/FA_Patcher
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
+- Adds Strategic icon scale support:
+    - hooks/IconScale.cpp
+    - section/IconScale.cpp
 - Adds `lua_createtable`
     - section/lua_createtable.cpp
 - Adds new method to `WorldView` (section/WorldView.cpp):
