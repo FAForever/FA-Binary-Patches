@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include <moho.h>
 
 int GetTimeForProfile(lua_State *L) {
     int64_t Time, Freq;

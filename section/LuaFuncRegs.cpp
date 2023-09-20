@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include <moho.h>
 
 #define g_UINextDesc	GPtr(0x0F59690, luaFuncDescReg*)
 #define g_SimNextDesc	GPtr(0x0F5A124, luaFuncDescReg*)

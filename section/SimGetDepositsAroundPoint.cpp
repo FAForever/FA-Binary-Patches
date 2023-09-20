@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include <moho.h>
 
 #define lua_push(L, name, val) \
     lua_pushstring(L, name); \

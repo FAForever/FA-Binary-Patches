@@ -1,7 +1,7 @@
-#include "include/CObject.h"
-#include "include/magic_classes.h"
-#include "include/moho.h"
-#include "include/utility.h"
+#include <CObject.h>
+#include <magic_classes.h>
+#include <moho.h>
+#include <utility.h>
 
 void *CheckUserUnit(LuaObject *obj, LuaState *ls)
 {

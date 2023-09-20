@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include <moho.h>
 
 //PatcherList_SimFuncRegs_SGMWPRegDesc
 luaFuncDescReg SGMWPRegDesc = {

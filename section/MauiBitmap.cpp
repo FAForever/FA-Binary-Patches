@@ -1,7 +1,7 @@
-#include "include/CObject.h"
-#include "include/LuaApi.h"
-#include "include/global.h"
-#include "include/magic_classes.h"
+#include <CObject.h>
+#include <LuaApi.h>
+#include <global.h>
+#include <magic_classes.h>
 
 bool __cdecl TryConvertToColor(const char *s, uint32_t &color) asm("0x4B2B90");
 
