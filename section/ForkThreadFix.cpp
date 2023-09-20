@@ -1,23 +1,16 @@
 #include "include/moho.h"
 
-void IsLuaFunction()
+int *__thiscall luaplus_assert(int *_this, const char *Source) asm("0x457880");
+
+void __stdcall _CxxThrowException(void *pExceptionObject, void *pThrowInfo) asm("0x00A89950");
+
+bool __thiscall IsLuaFunction(LuaObject *obj)
 {
-    asm(
-        "sub     esp, 0x28;"
-        "cmp     dword ptr [ecx+8], 0;"
-        "jnz     loc_907836;"
-        "push    offset 0xD44C30; "
-        "lea     ecx, [esp+0x2C-0x28];"
-        "call    0x457880;"// luaplus_assert
-        "push    0xEC23F0 ;"
-        "lea     eax, [esp+0x2C-0x28];"
-        "push    eax             ; "
-        "call    0xA89950 ;"//__CxxThrowException
-        "loc_907836: ;"
-        "mov     ecx, [ecx+0x0C];"
-        "xor     eax, eax;"
-        "cmp     ecx, 7;" // check for lua function
-        "setz    al;"
-        "add     esp, 0x28;"
-        "ret;");
+    // if (!obj->m_state)
+    // {
+    //     int exception_obj[10];
+    //     luaplus_assert(exception_obj, "m_state");
+    //     _CxxThrowException(exception_obj, (void *)0xEC23F0);
+    // }
+    return obj->Type() == LUA_TFUNCTION;
 }
