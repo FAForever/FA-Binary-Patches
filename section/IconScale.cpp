@@ -41,3 +41,16 @@ void ScaleStunIcon()
         :);
 }
 
+void ScaleUnderlay()
+{
+    asm(
+        "movaps  xmm1, xmm6;"
+        "mulss xmm5, ds:%[iconscale];"
+        "mulss xmm4, ds:%[iconscale];"
+        "addss   xmm1, xmm5;"
+        "jmp 0x85DCFE;"
+        :
+        : [iconscale] "i"(&iconscale)
+        :);
+}
+
