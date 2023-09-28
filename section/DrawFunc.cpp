@@ -105,10 +105,8 @@ namespace Moho
             int a;
             int b;
         };
-        void __stdcall FromSolidColor(Texture *t, unsigned int color)
-        {
-            reinterpret_cast<void *(*)(Texture *, unsigned int)>(0x4478C0)(t, color);
-        }
+
+        void __stdcall FromSolidColor(Texture *t, unsigned int color) asm("0x4478C0");
 
         Texture FromSolidColor(unsigned int color)
         {
@@ -139,21 +137,15 @@ namespace Moho
         }
     } // namespace CPrimBatcher
 
-    int *D3D_GetDevice()
-    {
-        return reinterpret_cast<int *(*)()>(0x00430590)();
-    }
+    int *D3D_GetDevice() asm("0x00430590");
 
     void SetupDevice(int *device, const char *target, const char *mode)
     {
         (*(void(__thiscall **)(int *, const char *))(*device + 80))(device, target);
         (*(void(__thiscall **)(int *, const char *))(*device + 84))(device, mode);
     }
-
-    bool TryConvertToColor(const char *s, uint32_t &color)
-    {
-        return reinterpret_cast<bool(__cdecl *)(const char *, uint32_t *)>(0x4B2B90)(s, &color);
-    }
+    
+    bool __cdecl TryConvertToColor(const char *s, uint32_t &color) asm("0x4B2B90");
 
     float GetLODMetric(float *camera, const Vector3f &v)
     {
