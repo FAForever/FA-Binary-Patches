@@ -188,7 +188,6 @@ int LuaDrawRect(lua_State *l)
     {
         return 0;
     }
-
     Vector3f pos = ToVector(l, 1);
     float size = luaL_checknumber(l, 2);
     const char *s = lua_tostring(l, 3);
@@ -196,11 +195,9 @@ int LuaDrawRect(lua_State *l)
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
     {
-        lua_pushstring(l, "unknown color");
-        lua_error(l);
+        luaL_error(l, s_UnknownColor, s);
         return 0;
     }
-
     Vector3f orientation{0, 1, 0};
     float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(), pos);
     float thick = std::max(thickness / lod, 2.f);
@@ -226,8 +223,7 @@ int LuaDrawCircle(lua_State *l)
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
     {
-        lua_pushstring(l, "unknown color");
-        lua_error(l);
+        luaL_error(l, s_UnknownColor, s);
         return 0;
     }
     Vector3f orientation{0, 1, 0};
