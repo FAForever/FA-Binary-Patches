@@ -144,7 +144,7 @@ namespace Moho
         (*(void(__thiscall **)(int *, const char *))(*device + 80))(device, target);
         (*(void(__thiscall **)(int *, const char *))(*device + 84))(device, mode);
     }
-    
+
     bool __cdecl TryConvertToColor(const char *s, uint32_t &color) asm("0x4B2B90");
 
     float GetLODMetric(float *camera, const Vector3f &v)
@@ -171,6 +171,7 @@ namespace IWldTerrainRes
     }
 
 } // namespace  IWldTerrainRes
+bool is_in_render_world = false;
 
 // UI_Lua DrawRect()
 int LuaDrawRect(lua_State *l)
@@ -180,6 +181,12 @@ int LuaDrawRect(lua_State *l)
     {
         return 0;
     }
+    if (!is_in_render_world)
+    {
+        luaL_error(l, "Attempt to call DrawRect outside of OnRenderWorld");
+        return 0;
+    }
+
     Vector3f pos = ToVector(l, 1);
     float size = luaL_checknumber(l, 2);
     const char *s = lua_tostring(l, 3);
@@ -206,6 +213,11 @@ int LuaDrawCircle(lua_State *l)
     int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
     if (batcher == nullptr)
     {
+        return 0;
+    }
+    if (!is_in_render_world)
+    {
+        luaL_error(l, "Attempt to call DrawCircle outside of OnRenderWorld");
         return 0;
     }
     Vector3f pos = ToVector(l, 1);
@@ -267,11 +279,13 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     Moho::CPrimBatcher::FromSolidColor(&t, 0xFFFFFFFF);
     Moho::CPrimBatcher::SetTexture(batcher, &t);
 
+    is_in_render_world = true;
     lua_pushnumber(l, delta_frame);
     if (lua_pcall(l, 1, 0))
     {
         WarningF("%s", lua_tostring(l, -1));
     }
+    is_in_render_world = false;
     Moho::CPrimBatcher::FlushBatcher(batcher);
 }
 
