@@ -1,6 +1,6 @@
 #include "include/CObject.h"
-#include "include/moho.h"
 #include "include/magic_classes.h"
+#include "include/moho.h"
 #include <cmath>
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
@@ -244,6 +244,7 @@ int LuaDrawCircle(lua_State *l)
 bool CustomWorldRendering = false;
 ConDescReg CustomWorldRenderingVar{"ui_CustomWorldRendering", "Enables custom world rendering", &CustomWorldRendering};
 
+float delta_frame = 0;
 
 // this world view?
 void __thiscall CustomDraw(void *_this, void *batcher)
@@ -278,7 +279,6 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     Moho::CPrimBatcher::FromSolidColor(&t, 0xFFFFFFFF);
     Moho::CPrimBatcher::SetTexture(batcher, &t);
 
-    float delta_frame = 1.0 / *(float *)(0xF57E74);
     lua_pushnumber(l, delta_frame);
     if (lua_pcall(l, 1, 0))
     {
@@ -300,5 +300,18 @@ void CustomDrawEnter()
         "jmp     0x86EF30;" // jump back
         :
         : [CustomDraw] "i"(CustomDraw)
+        :);
+}
+
+void StoreFPS()
+{
+    asm(
+        "lea     esi, [edi+esi*4];"
+        "cmp     esi, ebx;"
+        "movss  xmm0, dword ptr [esp+0x78-0x68];"
+        "movss ds:%[delta_frame], xmm0;"
+        "jmp 0x8D1A83;"
+        :
+        : [delta_frame] "i"(&delta_frame)
         :);
 }
