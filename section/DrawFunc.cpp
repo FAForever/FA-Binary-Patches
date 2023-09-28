@@ -1,6 +1,7 @@
 #include "include/CObject.h"
 #include "include/magic_classes.h"
 #include "include/moho.h"
+#include "include/utility.h"
 #include <cmath>
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
@@ -187,12 +188,11 @@ int LuaDrawRect(lua_State *l)
     {
         return 0;
     }
-    float x, y, z;
-    const char *s;
-    x = luaL_checknumber(l, 1);
-    y = luaL_checknumber(l, 2);
-    z = luaL_checknumber(l, 3);
-    s = lua_tostring(l, 4);
+
+    Vector3f pos = ToVector(l, 1);
+    float size = luaL_checknumber(l, 2);
+    const char *s = lua_tostring(l, 3);
+    float thickness = luaL_optnumber(l, 4, 0.15);
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
     {
@@ -200,13 +200,17 @@ int LuaDrawRect(lua_State *l)
         lua_error(l);
         return 0;
     }
-    Vector3f a{0, 0, 8};
-    Vector3f b{8, 0, 0};
-    Vector3f c{x, y, z};
-    DrawRect(a, b, color, 1.f, batcher, c, nullptr, -10000);
+
+    Vector3f orientation{0, 1, 0};
+    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(), pos);
+    float thick = std::max(thickness / lod, 2.f);
+    Vector3f a{0, 0, size};
+    Vector3f b{size, 0, 0};
+    DrawRect(a, b, color, thick, batcher, pos, nullptr, -10000);
     Moho::CPrimBatcher::FlushBatcher(batcher);
     return 0;
 }
+UIRegFunc DrawRectReg{"UI_DrawRect", "UI_DrawRect(pos:vector, size:float, color:string, thickness?=0.15:float)", LuaDrawRect};
 
 int LuaDrawCircle(lua_State *l)
 {
@@ -215,14 +219,10 @@ int LuaDrawCircle(lua_State *l)
     {
         return 0;
     }
-    float x, y, z, r;
-    const char *s;
-    x = luaL_checknumber(l, 1);
-    y = luaL_checknumber(l, 2);
-    z = luaL_checknumber(l, 3);
-    r = luaL_checknumber(l, 4);
-    s = lua_tostring(l, 5);
-    float thickness = luaL_optnumber(l, 6, 0.15);
+    Vector3f pos = ToVector(l, 1);
+    float r = luaL_checknumber(l, 2);
+    const char *s = lua_tostring(l, 3);
+    float thickness = luaL_optnumber(l, 4, 0.15);
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
     {
@@ -230,8 +230,6 @@ int LuaDrawCircle(lua_State *l)
         lua_error(l);
         return 0;
     }
-
-    Vector3f pos{x, y, z};
     Vector3f orientation{0, 1, 0};
     float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(), pos);
     float a = std::max(thickness / lod, 2.f);
@@ -240,6 +238,8 @@ int LuaDrawCircle(lua_State *l)
     Moho::CPrimBatcher::FlushBatcher(batcher);
     return 0;
 }
+
+UIRegFunc DrawCircleReg{"UI_DrawCircle", "UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)", LuaDrawCircle};
 
 bool CustomWorldRendering = false;
 ConDescReg CustomWorldRenderingVar{"ui_CustomWorldRendering", "Enables custom world rendering", &CustomWorldRendering};
