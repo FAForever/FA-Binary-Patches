@@ -206,7 +206,7 @@ int LuaDrawRect(lua_State *l)
     float thick = std::max(thickness / lod, 2.f);
     Vector3f a{0, 0, size};
     Vector3f b{size, 0, 0};
-    DrawRect(a, b, color, thick, batcher, pos, nullptr, -10000);
+    DrawRect(a, b, color, thick * lod, batcher, pos, nullptr, -10000);
     Moho::CPrimBatcher::FlushBatcher(batcher);
     return 0;
 }
