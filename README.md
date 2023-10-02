@@ -75,11 +75,11 @@ https://github.com/FAForever/FA_Patcher
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
-- Adds Custom World Rendering (`HDraw.cpp`, `GetFPS.cpp`, `DrawFunc.cpp`, `DrawCircleSetColor.cpp`)
+- Adds Custom World Rendering (hooks: `HDraw.cpp`, `GetFPS.cpp`; section: `DrawFunc.cpp`, `DrawCircleSetColor.cpp`)
     - `UI_DrawRect(pos:vector, size:float, color:string, thickness?=0.15:float)`
     - `UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)`
   
-    both functions must be called within `OnRenderWorld(delta_time)` of `gamemain.lua`. CWR can be enabled with console command `ui_CustomWorldRendering`.
+    Both functions must be called within `OnRenderWorld(delta_time)` of `gamemain.lua`. CWR can be enabled with console command `ui_CustomWorldRendering`.
 - Adds Strategic icon scale support:
     - hooks/IconScale.cpp
     - section/IconScale.cpp
