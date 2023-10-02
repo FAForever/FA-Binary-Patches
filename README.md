@@ -79,7 +79,7 @@ https://github.com/FAForever/FA_Patcher
     - `UI_DrawRect(pos:vector, size:float, color:string, thickness?=0.15:float)`
     - `UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)`
   
-    both functions must be called within `OnRenderWorld` of `gamemain.lua`. CWR can be enabled with console command `ui_CustomWorldRendering`.
+    both functions must be called within `OnRenderWorld(delta_time)` of `gamemain.lua`. CWR can be enabled with console command `ui_CustomWorldRendering`.
 - Adds Strategic icon scale support:
     - hooks/IconScale.cpp
     - section/IconScale.cpp
