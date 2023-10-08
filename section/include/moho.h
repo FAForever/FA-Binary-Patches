@@ -59,7 +59,7 @@ struct basic_string
 	uint32_t size; // capacity?
 
 	const T* data() {
-		return size < sso_size ? &str : (const T*)str;
+		return size < sso_size ? &str : *(const T**)str;
 	}
 };
 
