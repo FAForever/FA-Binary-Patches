@@ -47,18 +47,29 @@ struct vtable
 	void* methods[];
 };
 
-struct string
-{       // 0x1c bytes
-	uint32_t ptr1;
-	char str[0x10]; // DataPtr or used as memory for 'Short Set Optimization'
-	uint32_t strLen;
-	uint32_t size; // 0f if SSO, 1f not SSO
+#define SSO_bytes 0x10ul
 
-	const char* data() {
-		return size == 0xF ? &str : (const char*)str;
+template<typename T>
+struct basic_string
+{
+	static constexpr uint32_t sso_size = SSO_bytes/sizeof(T);
+	uint32_t ptr;  // ?
+	T str[sso_size]; // pointer to data
+	uint32_t strLen;
+	uint32_t size; // capacity?
+
+	const T* data() {
+		return size < sso_size ? &str : (const T*)str;
 	}
 };
+
+using string = basic_string<char>;
+using wstring = basic_string<wchar_t>;
+
 VALIDATE_SIZE(string, 0x1C)
+static_assert(string::sso_size == 0x10);
+VALIDATE_SIZE(wstring, 0x1C)
+static_assert(wstring::sso_size == 0x8);
 
 template<typename T>
 struct vector
