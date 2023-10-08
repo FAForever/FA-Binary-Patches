@@ -106,6 +106,14 @@ struct basic_string
 	uint32_t strLen;
 	uint32_t size; // capacity?
 
+  basic_string()
+  {
+    ptr = 0;
+    str[0] = T(0);
+    strLen = 0;
+    size = 0;
+  }
+
   basic_string(const char*s)
   {
     if constexpr(std::is_same_v<char, T>)
