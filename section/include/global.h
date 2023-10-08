@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "../../workflow.cpp"
+#include <type_traits>
 
 #define GPtr(addr, type) \
   (*(type*)addr)
@@ -76,10 +77,6 @@ int strcmp(const char *str1, const char *str2) asm("0xAA549E");
 int sprintf_s(char *Buffer, size_t BufferCount, const char *Format, ...) asm("0xA82F32");
 float sqrtf(float) asm("0x452FC0");
 }
-
-__thiscall void InitString(void *this_, const char *str) asm("0x405550");
-__thiscall void AssignString(void *this_, const char *str, size_t size) asm("0x4059E0");
-
 #define GetModuleHandleA  WDecl(0xC0F378, __stdcall void* (*)(const char *lpLibFileName))
 #define GetProcAddress    WDecl(0xC0F48C, __stdcall void* (*)(void* hModule, const char *lpProcName))
 #define GetCurrentProcess WDecl(0xC0F58C, __stdcall void* (*)())
@@ -88,6 +85,52 @@ __thiscall void AssignString(void *this_, const char *str, size_t size) asm("0x4
 #define QueryPerformanceFrequency WDecl(0xC0F46C, __stdcall bool (*)(int64_t*))
 
 #define DebugLog(_s) LogF("%s", (_s))
+
+template<typename T>
+struct basic_string;
+using string = basic_string<char>;
+using wstring = basic_string<wchar_t>;
+
+wstring *__cdecl wstring_copy_ctor(wstring *ws, const char *s) asm("0x938720");
+string *__thiscall InitString(string *this_, const char *str) asm("0x405550");
+string *__thiscall AssignString(string *this_, const char *str, size_t size) asm("0x4059E0");
+
+
+#define SSO_bytes 0x10ul
+template<typename T>
+struct basic_string
+{
+	static constexpr uint32_t sso_size = SSO_bytes/sizeof(T);
+	uint32_t ptr;  // ?
+	T str[sso_size]; // pointer to data
+	uint32_t strLen;
+	uint32_t size; // capacity?
+
+  basic_string(const char*s)
+  {
+    if constexpr(std::is_same_v<char, T>)
+    {
+      InitString(this, s);
+    }
+    else if constexpr(std::is_same_v<wchar_t, T>)
+    {
+      wstring_copy_ctor(this, s);
+    }
+    else
+    {
+      static_assert(false, "Unknown type T.");
+    }
+  }
+
+	const T* data() {
+		return size < sso_size ? &str : *(const T**)str;
+	}
+};
+
+VALIDATE_SIZE(string, 0x1C)
+static_assert(string::sso_size == 0x10);
+VALIDATE_SIZE(wstring, 0x1C)
+static_assert(wstring::sso_size == 0x8);
 
 template <typename T>
 struct Result
