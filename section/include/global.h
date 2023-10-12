@@ -62,6 +62,7 @@ int WarningF(const char *fmt, ...) asm("0x937D30");
 int SpewF(const char *fmt, ...) asm("0x937C30");
 int ConsoleLogF(const char *fmt, ...) asm("0x41C990");
 int FileWrite(int fileIndex, const char *str, int strlen) asm("0xA9B4E6"); //index 3 is log.
+bool CopyToClipboard(const wchar_t *str) asm("0x4F2730");
 void* shi_new(size_t size) asm("0xA825B9");
 
 extern "C" {
@@ -98,41 +99,31 @@ string *__thiscall AssignString(string *this_, const char *str, size_t size) asm
 
 #define SSO_bytes 0x10ul
 template<typename T>
-struct basic_string
-{
-	static constexpr uint32_t sso_size = SSO_bytes/sizeof(T);
-	uint32_t ptr;  // ?
-	T str[sso_size]; // pointer to data
-	uint32_t strLen;
-	uint32_t size; // capacity?
+struct basic_string {
+  static constexpr uint32_t sso_size = SSO_bytes/sizeof(T);
+  uint32_t ptr;  // ?
+  T str[sso_size]; // pointer to data
+  uint32_t strLen;
+  uint32_t size; // capacity?
 
-  basic_string()
-  {
+  basic_string() {
     ptr = 0;
     str[0] = T(0);
     strLen = 0;
     size = 0;
   }
 
-  basic_string(const char*s)
-  {
+  basic_string(const char*s) {
     if constexpr(std::is_same_v<char, T>)
-    {
-      InitString(this, s);
-    }
-    else if constexpr(std::is_same_v<wchar_t, T>)
-    {
-      wstring_copy_ctor(this, s);
-    }
-    else
-    {
+      InitString(this, s); else
+    if constexpr(std::is_same_v<wchar_t, T>)
+      wstring_copy_ctor(this, s); else
       static_assert(false, "Unknown type T.");
-    }
   }
 
-	const T* data() {
-		return size < sso_size ? &str : *(const T**)str;
-	}
+  const T* data() {
+    return size < sso_size ? &str : *(const T**)str;
+  }
 };
 
 VALIDATE_SIZE(string, 0x1C)
@@ -141,13 +132,12 @@ VALIDATE_SIZE(wstring, 0x1C)
 static_assert(wstring::sso_size == 0x8);
 
 template <typename T>
-struct Result
-{
-    T *object = nullptr;
-    const char *reason = nullptr;
+struct Result {
+  T *object = nullptr;
+  const char *reason = nullptr;
 
-    constexpr static Result<T> Fail(const char *reason) { return {nullptr, reason}; }
-    constexpr static Result<T> Success(void *data) { return {(T *)data, nullptr}; }
+  constexpr static Result<T> Fail(const char *reason) { return {nullptr, reason}; }
+  constexpr static Result<T> Success(void *data) { return {(T *)data, nullptr}; }
 
-    inline bool IsFail() { return reason != nullptr; }
+  inline bool IsFail() { return reason != nullptr; }
 };
