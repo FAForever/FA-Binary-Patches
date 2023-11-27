@@ -14,6 +14,9 @@ To apply the patches you can use the upload action or do it local via the [patch
     - hooks/LuaFuncRegs.cpp
     - section/LuaFuncRegs.cpp
 ## Fixes
+- Optimize `VDist3` function
+    - hooks/VDist3.cpp
+    - section/VDist3.cpp
 - Projectiles measure unit collision distance properly.
 - Prevent projectile layer changes on terrain collisions.
 - Allows multiple collisions to be processed during collision checks.
