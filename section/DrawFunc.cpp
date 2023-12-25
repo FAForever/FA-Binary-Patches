@@ -69,7 +69,6 @@ void _DrawCircle(void *batcher, Vector3f *pos, float radius, float thickness, ui
         : "eax");
 }
 
-void *worldview = nullptr;
 namespace Moho
 {
     void Import(lua_State *l, const char *filename)
@@ -79,7 +78,7 @@ namespace Moho
         lua_call(l, 1, 1);
     }
 
-    void *GetWorldCamera()
+    void *GetWorldCamera(void* worldview)
     {
         int *camera = *(int **)((int)worldview + 4);
         void *projmatrix = (*(void *(__thiscall **)(int *))(*camera + 8))(camera);
@@ -175,6 +174,7 @@ namespace IWldTerrainRes
 } // namespace  IWldTerrainRes
 bool is_in_render_world = false;
 
+void *worldview = nullptr;
 // UI_Lua DrawRect()
 int LuaDrawRect(lua_State *l)
 {
@@ -200,7 +200,7 @@ int LuaDrawRect(lua_State *l)
         return 0;
     }
     Vector3f orientation{0, 1, 0};
-    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(), pos);
+    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(worldview), pos);
     float thick = std::max(thickness / lod, 2.f);
     Vector3f a{0, 0, size};
     Vector3f b{size, 0, 0};
@@ -233,7 +233,7 @@ int LuaDrawCircle(lua_State *l)
         return 0;
     }
     Vector3f orientation{0, 1, 0};
-    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(), pos);
+    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(worldview), pos);
     float a = std::max(thickness / lod, 2.f);
     _DrawCircle(batcher, &pos, r, lod * a, color, &orientation);
 
@@ -273,10 +273,8 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     }
     int *device = Moho::D3D_GetDevice();
     Moho::SetupDevice(device, "primbatcher", "TAlphaBlendLinearSampleNoDepth");
-    int *camera = *(int **)((int)_this + 4);
-    void *projmatrix = (*(void *(__thiscall **)(int *))(*camera + 8))(camera);
     Moho::CPrimBatcher::ResetBatcher(batcher);
-    Moho::CPrimBatcher::SetViewProjMatrix(batcher, projmatrix);
+    Moho::CPrimBatcher::SetViewProjMatrix(batcher, Moho::GetWorldCamera(worldview));
     Moho::CPrimBatcher::Texture t;
     Moho::CPrimBatcher::FromSolidColor(&t, 0xFFFFFFFF);
     Moho::CPrimBatcher::SetTexture(batcher, &t);
