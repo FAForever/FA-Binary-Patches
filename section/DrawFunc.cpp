@@ -68,6 +68,8 @@ void _DrawCircle(void *batcher, Vector3f *pos, float radius, float thickness, ui
           NON_GENERAL_REG(radius)
         : "eax");
 }
+
+void *worldview = nullptr;
 namespace Moho
 {
     void Import(lua_State *l, const char *filename)
@@ -79,7 +81,7 @@ namespace Moho
 
     void *GetWorldCamera()
     {
-        int *camera = *(int **)((int)*((int *)g_WRenViewport + 2128) + 4);
+        int *camera = *(int **)((int)worldview + 4);
         void *projmatrix = (*(void *(__thiscall **)(int *))(*camera + 8))(camera);
         return projmatrix;
     }
@@ -258,7 +260,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     //     return;
     if (!CustomWorldRendering)
         return;
-
+    worldview = _this;
     LuaState *state = *(LuaState **)((int)g_CUIManager + 48);
     lua_State *l = state->m_state;
     Moho::Import(l, "/lua/ui/game/gamemain.lua");
