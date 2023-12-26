@@ -286,8 +286,9 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     Moho::CPrimBatcher::SetTexture(batcher, &t);
 
     is_in_render_world = true;
+    lua_pushvalue(l, -2);
     lua_pushnumber(l, delta_frame);
-    if (lua_pcall(l, 1, 0))
+    if (lua_pcall(l, 2, 0))
     {
         WarningF("%s", lua_tostring(l, -1));
     }
