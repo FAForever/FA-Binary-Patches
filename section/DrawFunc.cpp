@@ -78,7 +78,7 @@ namespace Moho
         lua_call(l, 1, 1);
     }
 
-    void *GetWorldCamera(void* worldview)
+    void *GetWorldCamera(void *worldview)
     {
         int *camera = *(int **)((int)worldview + 4);
         void *projmatrix = (*(void *(__thiscall **)(int *))(*camera + 8))(camera);
@@ -248,7 +248,7 @@ ConDescReg CustomWorldRenderingVar{"ui_CustomWorldRendering", "Enables custom wo
 
 float delta_frame = 0;
 
-// this world view?
+// offset +284 from CUIWorldView
 void __thiscall CustomDraw(void *_this, void *batcher)
 {
     // void *wldmap = IWldTerrainRes::GetWldMap();
@@ -261,14 +261,21 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     if (!CustomWorldRendering)
         return;
     worldview = _this;
+
+    // LogF("%p", *(int *)(0x010A6470));//gamesession
+    // LogF("%p", *(int *)((int)worldview - 284 + 532));
+
+    
     LuaState *state = *(LuaState **)((int)g_CUIManager + 48);
     lua_State *l = state->m_state;
-    Moho::Import(l, "/lua/ui/game/gamemain.lua");
+    LuaObject *view = (LuaObject *)((int)worldview - 284 + 32);
+    //Moho::Import(l, "/lua/ui/game/gamemain.lua");
+    view->PushStack(l);
     lua_pushstring(l, "OnRenderWorld");
-    lua_rawget(l, -2);
+    lua_gettable(l, -2);
     if (!lua_isfunction(l, -1))
     {
-        WarningF("%s", "OnRenderWorld not a function");
+        //WarningF("%s", "OnRenderWorld not a function");
         return;
     }
     int *device = Moho::D3D_GetDevice();
