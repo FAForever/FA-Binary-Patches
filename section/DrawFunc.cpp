@@ -179,7 +179,7 @@ void *worldview = nullptr;
 int LuaDrawRect(lua_State *l)
 {
     int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
-    if (batcher == nullptr)
+    if (batcher == nullptr || worldview == nullptr)
     {
         return 0;
     }
@@ -213,7 +213,7 @@ UIRegFunc DrawRectReg{"UI_DrawRect", "UI_DrawRect(pos:vector, size:float, color:
 int LuaDrawCircle(lua_State *l)
 {
     int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
-    if (batcher == nullptr)
+    if (batcher == nullptr || worldview == nullptr)
     {
         return 0;
     }
@@ -294,6 +294,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     lua_pop(l, 1);
     is_in_render_world = false;
     Moho::CPrimBatcher::FlushBatcher(batcher);
+    worldview = nullptr;
 }
 
 void CustomDrawEnter()
