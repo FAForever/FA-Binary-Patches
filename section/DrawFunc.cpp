@@ -265,17 +265,16 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     // LogF("%p", *(int *)(0x010A6470));//gamesession
     // LogF("%p", *(int *)((int)worldview - 284 + 532));
 
-    
     LuaState *state = *(LuaState **)((int)g_CUIManager + 48);
     lua_State *l = state->m_state;
     LuaObject *view = (LuaObject *)((int)worldview - 284 + 32);
-    //Moho::Import(l, "/lua/ui/game/gamemain.lua");
+    // Moho::Import(l, "/lua/ui/game/gamemain.lua");
     view->PushStack(l);
     lua_pushstring(l, "OnRenderWorld");
     lua_gettable(l, -2);
     if (!lua_isfunction(l, -1))
     {
-        //WarningF("%s", "OnRenderWorld not a function");
+        // WarningF("%s", "OnRenderWorld not a function");
         return;
     }
     int *device = Moho::D3D_GetDevice();
@@ -292,6 +291,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     {
         WarningF("%s", lua_tostring(l, -1));
     }
+    lua_pop(l, 1);
     is_in_render_world = false;
     Moho::CPrimBatcher::FlushBatcher(batcher);
 }
