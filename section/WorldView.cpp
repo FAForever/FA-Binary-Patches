@@ -25,7 +25,8 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
     const char *t = (const char *)lua_topointer(l, index);
-    uint32_t asize; uint8_t hbits;
+    uint32_t asize;
+    uint8_t hbits;
     GetTableAH(t, &asize, &hbits);
     lua_createtable(l, asize, hbits); // result table
     lua_pushvalue(l, index);          // input vectors
@@ -84,4 +85,32 @@ WorldViewMethodReg WorldViewProjectMultiple{
     "ProjectMultiple",
     "WorldView:ProjectMultiple(vectors)",
     ProjectMultiple,
+    "CUIWorldView"};
+
+int SetCustomRender(lua_State *l)
+{
+    if (lua_gettop(l) != 2)
+    {
+        l->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 2, lua_gettop(l));
+    }
+    Result<CUIWorldView> r = GetCScriptObject<CUIWorldView>(l, 1);
+    if (r.IsFail())
+    {
+        lua_pushstring(l, r.reason);
+        lua_error(l);
+        return 0;
+    }
+    void *worldview = r.object;
+    if (worldview == nullptr)
+        return 0;
+
+    bool state = lua_toboolean(l, 2);
+    *(char *)((int)worldview + 377) = state;
+    return 0;
+}
+
+WorldViewMethodReg WorldViewSetCustomRender{
+    "SetCustomRender",
+    "WorldView:SetCustomRender(bool)",
+    SetCustomRender,
     "CUIWorldView"};
