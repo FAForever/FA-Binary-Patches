@@ -174,12 +174,12 @@ namespace IWldTerrainRes
 } // namespace  IWldTerrainRes
 bool is_in_render_world = false;
 
-void *worldview = nullptr;
+void *_worldview = nullptr;
 // UI_Lua DrawRect()
 int LuaDrawRect(lua_State *l)
 {
     int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
-    if (batcher == nullptr || worldview == nullptr)
+    if (batcher == nullptr || _worldview == nullptr)
     {
         return 0;
     }
@@ -200,7 +200,7 @@ int LuaDrawRect(lua_State *l)
         return 0;
     }
     Vector3f orientation{0, 1, 0};
-    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(worldview), pos);
+    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos);
     float thick = std::max(thickness / lod, 2.f);
     Vector3f a{0, 0, size};
     Vector3f b{size, 0, 0};
@@ -213,7 +213,7 @@ UIRegFunc DrawRectReg{"UI_DrawRect", "UI_DrawRect(pos:vector, size:float, color:
 int LuaDrawCircle(lua_State *l)
 {
     int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
-    if (batcher == nullptr || worldview == nullptr)
+    if (batcher == nullptr || _worldview == nullptr)
     {
         return 0;
     }
@@ -233,7 +233,7 @@ int LuaDrawCircle(lua_State *l)
         return 0;
     }
     Vector3f orientation{0, 1, 0};
-    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(worldview), pos);
+    float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos);
     float a = std::max(thickness / lod, 2.f);
     _DrawCircle(batcher, &pos, r, lod * a, color, &orientation);
 
@@ -261,9 +261,9 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     if (!CustomWorldRendering)
         return;
         
-    worldview = _this;
+    _worldview = _this;
 
-    if (!*(char *)((int)worldview + 377 - 284))//check for custom render enabled (see WorldView.cpp)
+    if (!*(char *)((int)_worldview + 377 - 284))//check for custom render enabled (see WorldView.cpp)
         return;
 
     // LogF("%p", *(int *)(0x010A6470));//gamesession
@@ -271,7 +271,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
 
     LuaState *state = *(LuaState **)((int)g_CUIManager + 48);
     lua_State *l = state->m_state;
-    LuaObject *view = (LuaObject *)((int)worldview - 284 + 32);
+    LuaObject *view = (LuaObject *)((int)_worldview - 284 + 32);
     // Moho::Import(l, "/lua/ui/game/gamemain.lua");
     view->PushStack(l);
     lua_pushstring(l, "OnRenderWorld");
@@ -284,7 +284,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     int *device = Moho::D3D_GetDevice();
     Moho::SetupDevice(device, "primbatcher", "TAlphaBlendLinearSampleNoDepth");
     Moho::CPrimBatcher::ResetBatcher(batcher);
-    Moho::CPrimBatcher::SetViewProjMatrix(batcher, Moho::GetWorldCamera(worldview));
+    Moho::CPrimBatcher::SetViewProjMatrix(batcher, Moho::GetWorldCamera(_worldview));
     Moho::CPrimBatcher::Texture t;
     Moho::CPrimBatcher::FromSolidColor(&t, 0xFFFFFFFF);
     Moho::CPrimBatcher::SetTexture(batcher, &t);
@@ -299,7 +299,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     lua_pop(l, 1);
     is_in_render_world = false;
     Moho::CPrimBatcher::FlushBatcher(batcher);
-    worldview = nullptr;
+    _worldview = nullptr;
 }
 
 int SetCustomRender(lua_State *l)
