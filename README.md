@@ -86,11 +86,11 @@ To apply the patches you can use the upload action or do it local via the [patch
     - section/StopReclaimWhenPaused.cpp
 
 ## Additions
-- Adds Custom World Rendering (hooks: `HDraw.cpp`, `GetFPS.cpp`; section: `DrawFunc.cpp`, `DrawCircleSetColor.cpp`)
+- Adds Custom World Rendering (hooks: `HDraw.cpp`, `GetFPS.cpp`; section: `DrawFunc.cpp`, `DrawCircleSetColor.cpp`,`WorldView.cpp`)
     - `UI_DrawRect(pos:vector, size:float, color:string, thickness?=0.15:float)`
     - `UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)`
   
-    Both functions must be called within `WorldView:OnRenderWorld(delta_time)`. CWR can be enabled with console command `ui_CustomWorldRendering`.
+    Both functions must be called within `WorldView:OnRenderWorld(delta_time)`. CWR can be enabled with console command `ui_CustomWorldRendering`. To enable CWR for WorldView call `WorldView:SetCustomRender(true)`. To disable call `WorldView:SetCustomRender(false)` respectively.
 - Adds Strategic icon scale support:
     - hooks/IconScale.cpp
     - section/IconScale.cpp
