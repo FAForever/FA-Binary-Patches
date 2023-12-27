@@ -87,27 +87,7 @@ WorldViewMethodReg WorldViewProjectMultiple{
     ProjectMultiple,
     "CUIWorldView"};
 
-int SetCustomRender(lua_State *l)
-{
-    if (lua_gettop(l) != 2)
-    {
-        l->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 2, lua_gettop(l));
-    }
-    Result<CUIWorldView> r = GetCScriptObject<CUIWorldView>(l, 1);
-    if (r.IsFail())
-    {
-        lua_pushstring(l, r.reason);
-        lua_error(l);
-        return 0;
-    }
-    void *worldview = r.object;
-    if (worldview == nullptr)
-        return 0;
-
-    bool state = lua_toboolean(l, 2);
-    *(char *)((int)worldview + 377) = state;
-    return 0;
-}
+int SetCustomRender(lua_State *l);
 
 WorldViewMethodReg WorldViewSetCustomRender{
     "SetCustomRender",
