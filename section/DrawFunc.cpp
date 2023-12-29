@@ -243,9 +243,6 @@ int LuaDrawCircle(lua_State *l)
 
 UIRegFunc DrawCircleReg{"UI_DrawCircle", "UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)", LuaDrawCircle};
 
-bool CustomWorldRendering = false;
-ConDescReg CustomWorldRenderingVar{"ui_CustomWorldRendering", "Enables custom world rendering", &CustomWorldRendering};
-
 float delta_frame = 0;
 
 // offset +284 from CUIWorldView
@@ -258,12 +255,10 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     // void *map = IWldTerrainRes::GetMap(terrain);
     // if (!map)
     //     return;
-    if (!CustomWorldRendering)
-        return;
-        
+
     _worldview = _this;
 
-    if (!*(char *)((int)_worldview + 377 - 284))//check for custom render enabled (see WorldView.cpp)
+    if (!*(char *)((int)_worldview + 377 - 284)) // check for custom render enabled (see WorldView.cpp)
         return;
 
     // LogF("%p", *(int *)(0x010A6470));//gamesession
