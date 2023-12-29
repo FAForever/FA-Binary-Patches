@@ -203,6 +203,16 @@ struct CUIWorldView : CMauiControl
 	// at 0x208
 	CWldSession *session;
 	void *unk1; // If shift pressed
+
+	bool GetCustomRenderingEnabled()const
+	{
+		return *(char*)((int)this + 377);
+	}
+
+	void SetCustomRenderingEnabled(bool state)
+	{
+		*(char*)((int)this + 377) = state;
+	}
 };
 
 struct RBlueprint;

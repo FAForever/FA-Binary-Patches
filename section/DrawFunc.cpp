@@ -257,8 +257,9 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     //     return;
 
     _worldview = _this;
+    CUIWorldView *view = (CUIWorldView *)((int)_worldview - 284);
 
-    if (!*(char *)((int)_worldview + 377 - 284)) // check for custom render enabled (see WorldView.cpp)
+    if (!view->GetCustomRenderingEnabled())
         return;
 
     // LogF("%p", *(int *)(0x010A6470));//gamesession
@@ -266,9 +267,9 @@ void __thiscall CustomDraw(void *_this, void *batcher)
 
     LuaState *state = *(LuaState **)((int)g_CUIManager + 48);
     lua_State *l = state->m_state;
-    LuaObject *view = (LuaObject *)((int)_worldview - 284 + 32);
+    LuaObject *worldviewTable = (LuaObject *)((int)_worldview - 284 + 32);
     // Moho::Import(l, "/lua/ui/game/gamemain.lua");
-    view->PushStack(l);
+    worldviewTable->PushStack(l);
     lua_pushstring(l, "OnRenderWorld");
     lua_gettable(l, -2);
     if (!lua_isfunction(l, -1))
@@ -310,12 +311,12 @@ int SetCustomRender(lua_State *l)
         lua_error(l);
         return 0;
     }
-    void *worldview = r.object;
+    CUIWorldView *worldview = r.object;
     if (worldview == nullptr)
         return 0;
 
     bool state = lua_toboolean(l, 2);
-    *(char *)((int)worldview + 377) = state;
+    worldview->SetCustomRenderingEnabled(state);
     return 0;
 }
 
