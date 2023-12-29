@@ -274,7 +274,8 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     lua_gettable(l, -2);
     if (!lua_isfunction(l, -1))
     {
-        // WarningF("%s", "OnRenderWorld not a function");
+        // pop worldviewTable and the value under 'OnRenderWorld' key
+        lua_pop(l, 2);
         return;
     }
     int *device = Moho::D3D_GetDevice();
