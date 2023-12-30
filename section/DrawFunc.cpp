@@ -107,7 +107,7 @@ namespace Moho
             int b;
         };
 
-        void __stdcall FromSolidColor(Texture *t, unsigned int color) asm("0x4478C0");
+        void FromSolidColor(Texture *t, unsigned int color) asm("0x4478C0");
 
         Texture FromSolidColor(unsigned int color)
         {
@@ -320,6 +320,14 @@ int SetCustomRender(lua_State *l)
     worldview->SetCustomRenderingEnabled(state);
     return 0;
 }
+
+using WorldViewMethodReg = UIRegFunc<0x00E491E8, 0x00F8D88C>;
+
+WorldViewMethodReg WorldViewSetCustomRender{
+    "SetCustomRender",
+    "WorldView:SetCustomRender(bool)",
+    SetCustomRender,
+    "CUIWorldView"};
 
 void CustomDrawEnter()
 {

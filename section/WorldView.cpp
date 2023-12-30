@@ -86,11 +86,3 @@ WorldViewMethodReg WorldViewProjectMultiple{
     "WorldView:ProjectMultiple(vectors)",
     ProjectMultiple,
     "CUIWorldView"};
-
-int SetCustomRender(lua_State *l);
-
-WorldViewMethodReg WorldViewSetCustomRender{
-    "SetCustomRender",
-    "WorldView:SetCustomRender(bool)",
-    SetCustomRender,
-    "CUIWorldView"};
