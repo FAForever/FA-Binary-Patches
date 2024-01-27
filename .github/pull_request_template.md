@@ -8,3 +8,4 @@
 
 - [ ] Clear naming of variables in the assembly
 - [ ] Add description of changes to [README.md](/README.md)
+- [ ] Add console commands for value changes ([example: Resize of strategic icons](https://github.com/FAForever/FA-Binary-Patches/pull/45/files))
