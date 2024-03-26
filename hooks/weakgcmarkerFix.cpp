@@ -16,7 +16,7 @@ asm(
     ";loc_915A11:"
     ";                mov     cl, [eax+5]"
     ";                movzx   edx, cl "
-    ";                and     edx, -7 "
+    ";                and     edx, -7 " //the fixing line
     ";                cmp     edx, [esp+0x0C+limit]"
     ";                jle     short loc_915A27 "
     ";                and     cl, 0x0FE "
