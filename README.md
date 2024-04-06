@@ -39,6 +39,8 @@ These don't matter except for other assembly patches
     - hooks/aiinitattack.cpp
 
 ## Bugs
+- Fix `RolloverInfo` returning integer economy values. 
+    - hooks/GetRolloverInfoFix.cpp
 - Fix [problem described here](https://www.lua.org/bugs.html#5.0.2-5)
     - hooks/weakgcmarkerFix.cpp
 - Fix CUIWorldMesh:GetInterpolatedAlignedBox return table to properly store `ymax` and `zMax`
