@@ -1,5 +1,3 @@
-#include "include/moho.h"
-
 void SetStatCheck() {
   asm(
       // mov    ebx, eax //pointer to our stat in other thread
