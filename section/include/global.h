@@ -107,10 +107,7 @@ struct basic_string {
   uint32_t size; // capacity?
 
   basic_string() {
-    ptr = 0;
-    str[0] = T(0);
-    strLen = 0;
-    size = 0;
+    _clear();
   }
 
   basic_string(const char*s) {
@@ -124,11 +121,22 @@ struct basic_string {
   const T* data() {
     return size < sso_size ? &str : *(const T**)str;
   }
+
    ~basic_string() {
     if (size < sso_size) {
       return;
     }
     free(*(const T **)str);
+    _clear();
+  }
+
+private:
+  void _clear()
+  {
+    ptr = 0;
+    str[0] = T(0);
+    strLen = 0;
+    size = 0;
   }
 };
 
