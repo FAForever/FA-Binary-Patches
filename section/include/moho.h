@@ -1467,3 +1467,26 @@ namespace incomplete {
 		Vector3f pos; // at 0x64
 	};
 }
+
+struct VMatrix4
+{
+	float data[16];
+};
+VALIDATE_SIZE(VMatrix4, 0x40);
+
+
+struct CD3DPrimBarcher //0x007F6BD0 292 bytes
+{
+void* textureBatcher;
+int pad1[22];
+VMatrix4 viewMatrix;//4x23
+VMatrix4 projectionMatrix;//4x39
+VMatrix4 unknownMatrix;//4x55
+bool b1;
+bool b2;
+bool padb1;
+bool padb2;
+int unk;
+};
+
+VALIDATE_SIZE(CD3DPrimBarcher, 292);
