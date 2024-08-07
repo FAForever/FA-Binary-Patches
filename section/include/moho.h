@@ -1475,7 +1475,7 @@ struct VMatrix4
 VALIDATE_SIZE(VMatrix4, 0x40);
 
 
-struct CD3DPrimBarcher //0x007F6BD0 292 bytes
+struct CD3DPrimBatcher //0x007F6BD0 292 bytes
 {
 void* textureBatcher;
 int pad1[22];
@@ -1489,4 +1489,4 @@ bool padb2;
 int unk;
 };
 
-VALIDATE_SIZE(CD3DPrimBarcher, 292);
+VALIDATE_SIZE(CD3DPrimBatcher, 292);
