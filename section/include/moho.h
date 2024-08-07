@@ -1479,9 +1479,9 @@ struct CD3DPrimBarcher //0x007F6BD0 292 bytes
 {
 void* textureBatcher;
 int pad1[22];
-VMatrix4 viewMatrix;//4x23
-VMatrix4 projectionMatrix;//4x39
-VMatrix4 unknownMatrix;//4x55
+VMatrix4 viewMatrix;
+VMatrix4 projectionMatrix;
+VMatrix4 unknownMatrix;
 bool b1;
 bool b2;
 bool padb1;
