@@ -983,10 +983,27 @@ struct CPlatoon : public CScriptObject
 	using Type = ObjectType<0x10C6FCC, 0xF6A1FC>;
 };
 
-struct CMauiBitmap : public CMauiControl
+struct CMauiBitmap : public CMauiControl //ctor 0x0077F950 
 {
 	using Type = ObjectType<0x10C7704, 0xF832F4>;
+
+	void *field_11C;
+	void *field_120;
+	void *field_124;
+	void *field_128;
+	LuaObject bitmapWidth;
+	LuaObject bitmapHeight;
+	void *field_154;
+	void *field_158;
+	float field_15C;
+	float field_160;
+	void *field_164;
+	bool field_168[4];
+	float field_16C;
+	bool field_170[4];
+	void *unk_[6];
 };
+VALIDATE_SIZE(CMauiBitmap, 0x18C)
 
 struct ReconBlip : Entity
 {	// 0x4D0 bytes
