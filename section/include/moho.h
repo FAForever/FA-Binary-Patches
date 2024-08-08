@@ -1488,5 +1488,49 @@ bool padb1;
 bool padb2;
 int unk;
 };
-
 VALIDATE_SIZE(CD3DPrimBatcher, 292);
+
+
+struct Quaternion
+{
+	float x,y,z,w;
+};
+
+struct  VTransform
+{
+Quaternion orientation;
+Vector3f pos;
+};
+
+
+struct GeomSolid
+{
+	float data[4];
+};
+
+
+struct GeomCamera // sizeof=0x2C4
+{
+    VTransform transform;
+    VMatrix4 projectionMatrix;
+    VMatrix4 viewMatrix;
+    VMatrix4 viewProjMatrix;
+    VMatrix4 inverseProjMatrix;
+    VMatrix4 inverseViewMatrix;
+    VMatrix4 inverseViewProjMatrix;
+    void *ptr1;//??
+    void *ptr2;
+    void *ptr3;
+    void *ptr4;
+    void *ptr5;
+    float unk1[24];
+    void *ptr6;
+    void *ptr7;
+    void *ptr8;
+    void *ptr9;
+    float unk2[24];
+    float unk_float1;
+    float unk3[16];
+};
+
+VALIDATE_SIZE(GeomCamera, 708);
