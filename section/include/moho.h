@@ -1140,23 +1140,26 @@ struct CSimDriver // : ISTIDriver
 };
 VALIDATE_SIZE(CSimDriver, 0x230);
 
-struct CHeightField // : class detail::boost::sp_counted_base
-{//0x00579121, 0x10 bytes
-	void* vtable;
-};
-
-struct MapData
+struct CHeightField //ctor 0x00476090 
 {	// 0x1C bytes
-	uint32_t *TerrainHeights; // Word(TerrainHeights+(Y*SizeX+X)*2)
+	uint16_t *data; // 
 	int SizeX; // +1
 	int SizeY; // +1
+	void* unk1;
+	void* unk2;
+	void* unk3;
+	void* unk4;
 };
+VALIDATE_SIZE(CHeightField, 0x1C);
 
-struct STIMap
+struct STIMap //ctor 0x00577890
 {	// 0x1548 bytes
-	MapData *MapData;
-	CHeightField *HeightField;
-	uint32_t unk1[4];
+	CHeightField*HeightField;
+	void* unk_1;
+	void* unk_2;
+	void* unk_3;
+	int SizeX; // +1
+	int SizeY; // +1
 	// at 0x18
 	void *beginData;
 	void *endData;
@@ -1165,8 +1168,8 @@ struct STIMap
 	// at 0x28
 	LuaObject Data[0x100]; // Type desc tables
 	uint8_t *TerrainTypes; // TerrainTypes+(Y*SizeX+X)
-	int SizeX;
-	int SizeY;
+	int SizeX1;
+	int SizeY1;
 	uint8_t unk2[0x100];
 	// at 0x1534
 	BOOL Water;
@@ -1534,3 +1537,4 @@ struct GeomCamera // sizeof=0x2C4
 };
 
 VALIDATE_SIZE(GeomCamera, 708);
+
