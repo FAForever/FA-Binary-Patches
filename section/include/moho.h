@@ -194,10 +194,36 @@ struct Camera // : RCamCamera
 {//0x007A7972, 0x858 bytes
 };
 
-struct CMauiControl : CScriptObject
+struct CMauiControl : CScriptObject //ctor 0x007867B0
 {//0x004C6F8A, 0x11C bytes
 	using Type = ObjectType<0x10C7700, 0xF83314>;
+
+	void *unk1;
+	void *unk2;
+	CMauiControl *parent;
+	void *unk3;
+	void *unk4;
+	LuaObject left;
+	LuaObject right;
+	LuaObject top;
+	LuaObject bottom;
+	LuaObject width;
+	LuaObject height;
+	LuaObject depth;
+	float f_depth;
+	void *field_D8;
+	void *field_DC;
+	void *field_E0;
+	void *field_E4;
+	bool flags[8];
+	float field_F0;
+	int unk5;
+	void *unk6;
+	void *unk7;
+	string name;
 };
+VALIDATE_SIZE(CMauiControl, 0x11C)
+
 
 struct CWldSession;
 
