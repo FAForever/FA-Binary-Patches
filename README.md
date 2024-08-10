@@ -39,8 +39,6 @@ These don't matter except for other assembly patches
     - hooks/aiinitattack.cpp
 
 ## Bugs
-- Enable Class 4 attach points ("AttachPoint_Spr" bones)
-    - hooks/Class4AttachSize.cpp
 - Remove lingering transport load factor calcuation at aircraft initialization
     - hooks/RemoveTransportLoadFactor.cpp
 - Fix `RolloverInfo` returning integer economy values. 
