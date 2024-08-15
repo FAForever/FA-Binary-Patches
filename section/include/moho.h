@@ -1560,8 +1560,7 @@ class vector_inline
 
 struct moho_entity_set
 {
-	moho_entity_set *unk1;
-	moho_entity_set *unk2;
+	linked_list<moho_entity_set> unk;
 	vector_inline<Entity*, 2> data;
 };
 VALIDATE_SIZE(moho_entity_set, 0x20);
