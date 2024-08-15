@@ -1548,36 +1548,49 @@ Quaternion orientation;
 Vector3f pos;
 };
 
-
-struct GeomSolid
+template<class T, int I>
+class vector_inline
 {
-	float data[4];
+  T *begin;
+  T *end;
+  T *capacity_end;
+  T *inline_begin;
+  T vector[I];
 };
 
-
-struct GeomCamera // sizeof=0x2C4
+struct moho_entity_set
 {
-    VTransform transform;
-    VMatrix4 projectionMatrix;
-    VMatrix4 viewMatrix;
-    VMatrix4 viewProjMatrix;
-    VMatrix4 inverseProjMatrix;
-    VMatrix4 inverseViewMatrix;
-    VMatrix4 inverseViewProjMatrix;
-    void *ptr1;//??
-    void *ptr2;
-    void *ptr3;
-    void *ptr4;
-    void *ptr5;
-    float unk1[24];
-    void *ptr6;
-    void *ptr7;
-    void *ptr8;
-    void *ptr9;
-    float unk2[24];
-    float unk_float1;
-    float unk3[16];
+	moho_entity_set *unk1;
+	moho_entity_set *unk2;
+	vector_inline<Entity*, 2> data;
+};
+VALIDATE_SIZE(moho_entity_set, 0x20);
+
+struct Plane3f
+{
+  Vector3f Normal;
+  float Constant;
 };
 
-VALIDATE_SIZE(GeomCamera, 708);
+struct CGeomSolid3
+{  
+  vector_inline<Plane3f, 6> planes;
+};  
 
+struct CGeomCamera3
+{
+  VTransform transform;
+  VMatrix4 projection;
+  VMatrix4 view;
+  VMatrix4 viewProjection;
+  VMatrix4 inverseProjection;
+  VMatrix4 inverseView;
+  VMatrix4 inverseViewProjection;
+  int prolly_alignment;
+  CGeomSolid3 solid1;
+  CGeomSolid3 solid2;
+  float lodScale;
+  VMatrix4 viewport;
+};
+
+VALIDATE_SIZE(CGeomCamera3, 708);
