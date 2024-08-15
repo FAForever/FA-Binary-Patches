@@ -1551,17 +1551,38 @@ Vector3f pos;
 template<class T, int I>
 class vector_inline
 {
+public:
   T *begin;
   T *end;
   T *capacity_end;
   T *inline_begin;
-  T vector[I];
+  T inlined_items[I];
 };
 
 struct moho_entity_set
 {
+	moho_entity_set()
+	{
+		unk.prev = this;
+		unk.next = this;
+		data.begin = &data.inlined_items[0];
+		data.end = &data.inlined_items[0];
+		data.capacity_end = &data.inlined_items[2];
+		data.inline_begin = &data.inlined_items[0];
+	}
+
+
 	linked_list<moho_entity_set> unk;
 	vector_inline<Entity*, 2> data;
+
+	~moho_entity_set()
+	{
+		if ( data.begin != data.inline_begin )
+			free(data.begin);
+			
+		unk.next->unk.prev = unk.prev;
+		unk.prev->unk.next = unk.next;
+	}
 };
 VALIDATE_SIZE(moho_entity_set, 0x20);
 
