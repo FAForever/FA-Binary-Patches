@@ -124,6 +124,18 @@ struct basic_string {
   const T* data() {
     return size < sso_size ? &str : *(const T**)str;
   }
+
+  ~basic_string()
+  {
+    if(size >= sso_size)
+    {
+      free(data());
+    }
+    ptr = 0;
+    str[0] = T(0);
+    strLen = 0;
+    size = sso_size - 1;
+  }
 };
 
 VALIDATE_SIZE(string, 0x1C)
