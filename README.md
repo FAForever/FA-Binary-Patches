@@ -121,7 +121,9 @@ These don't matter except for other assembly patches
 
 ## Additions
 These new features have been added in a backwards compatibile manner
-
+- Add `GetFocusArmyUnits()` function for UI Lua.
+    - section/GetFocusArmyUnits.cpp
+    - include/GetFocusArmyUnits.h
 - Enable unused console commands: ren_Steering, dbg_Ballistics, dbg_EfxBeams, dbg_Trail, dbg_CollisionBeam, dbg_Projectile
     - hooks/EnableConsoleCommands.cpp
 - Adds `GetHighlightCommand() - return table of command or nil` to UI (section/GetHighlightCommand.cpp)
