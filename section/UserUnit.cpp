@@ -17,7 +17,7 @@ void *CheckUserUnit(LuaObject *obj, LuaState *ls)
 
 namespace Moho
 {
-    namespace UserUnit
+    namespace UserUnit_
     {
         inline float GetFractionComplete(void *unit)
         {
@@ -61,7 +61,7 @@ int GetInterpolatedPosition(lua_State *l)
     void *unit = r.object;
     if (unit == nullptr)
         return 0;
-    float *mesh = (float *)Moho::UserUnit::GetMeshInstance(unit);
+    float *mesh = (float *)Moho::UserUnit_::GetMeshInstance(unit);
     if (mesh == nullptr)
         return 0;
     Moho::MeshInstance::UpdateInterpolatedTransform(mesh);
@@ -93,7 +93,7 @@ int GetFractionComplete(lua_State *l)
     void *unit = r.object;
     if (unit == nullptr)
         return 0;
-    lua_pushnumber(l, Moho::UserUnit::GetFractionComplete(unit));
+    lua_pushnumber(l, Moho::UserUnit_::GetFractionComplete(unit));
     return 1;
 }
 // UI_Lua LOG(GetSelectedUnits()[1].GetFractionComplete)
