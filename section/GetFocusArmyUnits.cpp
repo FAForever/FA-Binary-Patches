@@ -73,5 +73,5 @@ int GetFocusArmyUnits(lua_State *L) {
 // UI_Lua LOG(GetFocusArmyUnits())
 // UI_Lua reprsl(GetFocusArmyUnits())
 // UI_Lua for i=1,1000000 do GetFocusArmyUnits() end
-static UIRegFunc GetFocusArmyUnitsReg{"GetFocusArmyUnits", "",
+static UIRegFunc GetFocusArmyUnitsReg{"GetFocusArmyUnits", "GetFocusArmyUnits(): UserUnit[]?",
                                       GetFocusArmyUnits};
