@@ -56,7 +56,7 @@ int GetFocusArmyUnits(lua_State *L) {
 
     int id = GetField<int>(uunit, 0x44);
     void *army = GetField<void *>(uunit, 0x120);
-    if (army == focus_army) {
+    if (army == focus_army || focus_army_index < 0) {
       auto iunit_vtable = GetIUnitVTable(uunit);
       LuaObject obj;
       iunit_vtable->GetLuaObject(Offset<Moho::Unit_ *>(uunit, 0x148), &obj);
@@ -73,5 +73,6 @@ int GetFocusArmyUnits(lua_State *L) {
 // UI_Lua LOG(GetFocusArmyUnits())
 // UI_Lua reprsl(GetFocusArmyUnits())
 // UI_Lua for i=1,1000000 do GetFocusArmyUnits() end
+// UI_Lua for _,unit in GetFocusArmyUnits() do LOG(unit:GetArmy()) end
 static UIRegFunc GetFocusArmyUnitsReg{"GetFocusArmyUnits", "GetFocusArmyUnits(): UserUnit[]?",
                                       GetFocusArmyUnits};
