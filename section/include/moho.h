@@ -194,10 +194,36 @@ struct Camera // : RCamCamera
 {//0x007A7972, 0x858 bytes
 };
 
-struct CMauiControl : CScriptObject
+struct CMauiControl : CScriptObject //ctor 0x007867B0
 {//0x004C6F8A, 0x11C bytes
 	using Type = ObjectType<0x10C7700, 0xF83314>;
+
+	void *unk1;
+	void *unk2;
+	CMauiControl *parent;
+	void *unk3;
+	void *unk4;
+	LuaObject left;
+	LuaObject right;
+	LuaObject top;
+	LuaObject bottom;
+	LuaObject width;
+	LuaObject height;
+	LuaObject depth;
+	float f_depth;
+	void *field_D8;
+	void *field_DC;
+	void *field_E0;
+	void *field_E4;
+	bool flags[8];
+	float field_F0;
+	int unk5;
+	void *unk6;
+	void *unk7;
+	string name;
 };
+VALIDATE_SIZE(CMauiControl, 0x11C)
+
 
 struct CWldSession;
 
@@ -957,10 +983,27 @@ struct CPlatoon : public CScriptObject
 	using Type = ObjectType<0x10C6FCC, 0xF6A1FC>;
 };
 
-struct CMauiBitmap : public CMauiControl
+struct CMauiBitmap : public CMauiControl //ctor 0x0077F950 
 {
 	using Type = ObjectType<0x10C7704, 0xF832F4>;
+
+	void *field_11C;
+	void *field_120;
+	void *field_124;
+	void *field_128;
+	LuaObject bitmapWidth;
+	LuaObject bitmapHeight;
+	void *field_154;
+	void *field_158;
+	float field_15C;
+	float field_160;
+	void *field_164;
+	bool field_168[4];
+	float field_16C;
+	bool field_170[4];
+	void *unk_[6];
 };
+VALIDATE_SIZE(CMauiBitmap, 0x18C)
 
 struct ReconBlip : Entity
 {	// 0x4D0 bytes
@@ -1140,23 +1183,26 @@ struct CSimDriver // : ISTIDriver
 };
 VALIDATE_SIZE(CSimDriver, 0x230);
 
-struct CHeightField // : class detail::boost::sp_counted_base
-{//0x00579121, 0x10 bytes
-	void* vtable;
-};
-
-struct MapData
+struct CHeightField //ctor 0x00476090 
 {	// 0x1C bytes
-	uint32_t *TerrainHeights; // Word(TerrainHeights+(Y*SizeX+X)*2)
+	uint16_t *data; // 
 	int SizeX; // +1
 	int SizeY; // +1
+	void* unk1;
+	void* unk2;
+	void* unk3;
+	void* unk4;
 };
+VALIDATE_SIZE(CHeightField, 0x1C);
 
-struct STIMap
+struct STIMap //ctor 0x00577890
 {	// 0x1548 bytes
-	MapData *MapData;
-	CHeightField *HeightField;
-	uint32_t unk1[4];
+	CHeightField*HeightField;
+	void* unk_1;
+	void* unk_2;
+	void* unk_3;
+	int SizeX; // +1
+	int SizeY; // +1
 	// at 0x18
 	void *beginData;
 	void *endData;
@@ -1165,8 +1211,8 @@ struct STIMap
 	// at 0x28
 	LuaObject Data[0x100]; // Type desc tables
 	uint8_t *TerrainTypes; // TerrainTypes+(Y*SizeX+X)
-	int SizeX;
-	int SizeY;
+	int SizeX1;
+	int SizeY1;
 	uint8_t unk2[0x100];
 	// at 0x1534
 	BOOL Water;
@@ -1467,3 +1513,104 @@ namespace incomplete {
 		Vector3f pos; // at 0x64
 	};
 }
+
+struct VMatrix4
+{
+	float data[16];
+};
+VALIDATE_SIZE(VMatrix4, 0x40);
+
+
+struct CD3DPrimBatcher //0x007F6BD0 292 bytes
+{
+void* textureBatcher;
+int pad1[22];
+VMatrix4 viewMatrix;
+VMatrix4 projectionMatrix;
+VMatrix4 unknownMatrix;
+bool b1;
+bool b2;
+bool padb1;
+bool padb2;
+int unk;
+};
+VALIDATE_SIZE(CD3DPrimBatcher, 292);
+
+
+struct Quaternion
+{
+	float x,y,z,w;
+};
+
+struct  VTransform
+{
+Quaternion orientation;
+Vector3f pos;
+};
+
+template<class T, int I>
+class vector_inline
+{
+public:
+  T *begin;
+  T *end;
+  T *capacity_end;
+  T *inline_begin;
+  T inlined_items[I];
+};
+
+struct moho_entity_set
+{
+	moho_entity_set()
+	{
+		unk.prev = this;
+		unk.next = this;
+		data.begin = &data.inlined_items[0];
+		data.end = &data.inlined_items[0];
+		data.capacity_end = &data.inlined_items[2];
+		data.inline_begin = &data.inlined_items[0];
+	}
+
+
+	linked_list<moho_entity_set> unk;
+	vector_inline<Entity*, 2> data;
+
+	~moho_entity_set()
+	{
+		if ( data.begin != data.inline_begin )
+			free(data.begin);
+			
+		unk.next->unk.prev = unk.prev;
+		unk.prev->unk.next = unk.next;
+	}
+};
+VALIDATE_SIZE(moho_entity_set, 0x20);
+
+struct Plane3f
+{
+  Vector3f Normal;
+  float Constant;
+};
+
+struct CGeomSolid3
+{  
+  vector_inline<Plane3f, 6> planes;
+};  
+
+struct CGeomCamera3
+{
+  VTransform transform;
+  VMatrix4 projection;
+  VMatrix4 view;
+  VMatrix4 viewProjection;
+  VMatrix4 inverseProjection;
+  VMatrix4 inverseView;
+  VMatrix4 inverseViewProjection;
+  int prolly_alignment;
+  CGeomSolid3 solid1;
+  CGeomSolid3 solid2;
+  float lodScale;
+  VMatrix4 viewport;
+};
+
+VALIDATE_SIZE(CGeomCamera3, 708);
