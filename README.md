@@ -37,7 +37,13 @@ These don't matter except for other assembly patches
     - hooks/CameraPerf.cpp
 - Optimised some AI actions
     - hooks/aiinitattack.cpp
-- Optimized lua tables filling
+- Reduce overhead of population of Lua tables in C code. Affected functions:
+    * UI
+      * EntityCategoryFilterOut
+      * EntityCategoryFilterDown
+      * SelectUnits
+    * Sim
+      * EntityCategoryFilterDown
     - hooks/TableInsertFix.cpp
 
 ## Bugs
