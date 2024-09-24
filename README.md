@@ -45,6 +45,8 @@ These don't matter except for other assembly patches
     * Sim
       * EntityCategoryFilterDown
     - hooks/TableInsertFix.cpp
+- Remove result table in `SelectUnits`
+    - hooks/SelecUnitsTableFix.cpp
 
 ## Bugs
 - Remove lingering transport load factor calcuation at aircraft initialization
