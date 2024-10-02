@@ -116,8 +116,10 @@ namespace Moho
             return t;
         }
 
-        void ReleaseTexture(Texture *t) {
-            asm("call 0x004260B0;" : : [t] "a"(t) : "edx", "ecx");
+        void *ReleaseTexture(Texture *t) {
+            void *__result;
+            asm("call 0x004260B0;" : "=a"(__result) : [t] "a"(t) : "edx", "ecx");
+            return __result;
         }
 
         void __stdcall SetTexture(void *batcher, Texture *texture)
