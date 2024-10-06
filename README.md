@@ -120,6 +120,9 @@ These don't matter except for other assembly patches
     - hooks/WallSelection.cpp
 - Make `LOWSELECTPRIO` apply to units under construction
     - hooks/selectionPriority.cpp
+- Allow mass extractor template snapping
+    - hooks/BuildTemplateSnap.cpp
+    - section/BuildTemplateSnap.cpp
 
 ## Lua
 - Change `SUBCOMMANDER` category name to `SACU_BEHAVIOR` (FAF makes this transparent)
