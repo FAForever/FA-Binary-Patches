@@ -116,6 +116,12 @@ namespace Moho
             return t;
         }
 
+        void *ReleaseTexture(Texture *t) {
+            void *__result;
+            asm("call 0x004260B0;" : "=a"(__result) : [t] "a"(t) : "edx", "ecx");
+            return __result;
+        }
+
         void __stdcall SetTexture(void *batcher, Texture *texture)
         {
             asm(
@@ -295,6 +301,7 @@ void __thiscall CustomDraw(void *_this, void *batcher)
     }
     lua_pop(l, 1);
     is_in_render_world = false;
+    Moho::CPrimBatcher::ReleaseTexture(&t);
     Moho::CPrimBatcher::FlushBatcher(batcher);
     _worldview = nullptr;
 }
