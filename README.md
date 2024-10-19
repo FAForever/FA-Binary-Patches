@@ -125,6 +125,9 @@ These don't matter except for other assembly patches
 - Allow mass extractor template snapping
     - hooks/BuildTemplateSnap.cpp
     - section/BuildTemplateSnap.cpp
+- Change how silos process their build progress (make it float instead of integer)
+    - hooks/SiloProgress.cpp
+    - section/SiloProgress.cpp
 
 ## Lua
 - Change `SUBCOMMANDER` category name to `SACU_BEHAVIOR` (FAF makes this transparent)
