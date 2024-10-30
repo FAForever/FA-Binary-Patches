@@ -197,9 +197,6 @@ These new features have been added in a backwards compatible manner
     - section/LuaFuncRegs.cpp
 - Maximum sim rate up to 50
     - hooks/DelClampMaxSimRate.cpp
-- Adds an amphibious mode toggle to the Salem
-    - hooks/luaSimGetStat.cpp
-    - section/luaSimGetStat.cpp
 - Adds GetDepositsAroundPoint to Sim and UI
     - section/SimGetDepositsAroundPoint.cpp
     - section/LuaFuncRegs.cpp
