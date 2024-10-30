@@ -222,3 +222,6 @@ These new features have been added in a backwards compatible manner
     - section/BuildUnit.cpp
     - section/SelectUnit.cpp
     - section/SimArmyCreate.cpp
+- Add `Unit:ForceAltFootPrint` that forces game to use AltFootprint for the unit (applied to Salem in particular)
+    - hooks/EntityGetFootprint.cpp
+    - section/EntityGetFootprint.cpp
