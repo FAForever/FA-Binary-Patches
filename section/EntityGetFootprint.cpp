@@ -2,7 +2,7 @@
 #include "include/magic_classes.h"
 #include "include/moho.h"
 
-int ForceAltFootPrint(lua_State *L)
+int ForceAltFootprint(lua_State *L)
 {
 
     if (lua_gettop(L) != 2)
@@ -20,10 +20,10 @@ int ForceAltFootPrint(lua_State *L)
 }
 using UnitMethodReg = SimRegFunc<0x00E2D550, 0x00F8D704>;
 
-UnitMethodReg UseAltFootPrintReg{
-    "ForceAltFootPrint",
+UnitMethodReg UseAltFootprintReg{
+    "ForceAltFootprint",
     "",
-    ForceAltFootPrint,
+    ForceAltFootprint,
     "Unit"};
 
 
