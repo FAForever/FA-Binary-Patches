@@ -55,8 +55,8 @@ jobs:
           ./BinaryPatcher.exe
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          path: "ForgedAlliance_exxt.exe"
-          name: "ForgedAlliance_${{ github.sha }}.exe"
-          retention-days: 7
+          name: "ForgedAlliance_${{ github.sha }}"
+          path: |
+            ForgedAlliance_exxt.exe
