@@ -104,6 +104,9 @@ These don't matter except for other assembly patches
     - section/xact_3d_fix.cpp
 - Improvements to lua messages
     - hooks/LuaMessages.cpp
+- Adds the ability to bind the side mouse buttons (XButton1 and XButton2)
+    - hooks/OnWindowMessage.cpp
+    - section/OnWindowMessage.cpp
 
 ## Gameplay
 - Change tick intel update interval from every 30 ticks to every 1 tick
