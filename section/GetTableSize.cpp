@@ -1,6 +1,7 @@
 void GetTableSize()
 {
     asm(
+        "PushNumber = 0x0090CD40;"
         "MOV EAX,[ESI+0xC];"
         "CMP EAX,[ESI+0x8];"
         "JAE Err;"
@@ -40,12 +41,19 @@ void GetTableSize()
         "SUB ESP,0x4;"
         "MOVSS [ESP],XMM0;"
         "PUSH ESI;"
-        "CALL 0x0090CD40;"     //PushNumber
+        "CALL PushNumber;"
         "ADD ESP,0x8;"
         "MOV EAX,0x1;"
         "RET;"
         "Err:;"
-        "XOR EAX,EAX;"
+        "SUB ESP,0x4;"
+        "XORPS XMM0, XMM0;"
+        "MOVSS [ESP],XMM0;"
+        "PUSH ESI;"
+        "CALL PushNumber;"
+        "ADD ESP,0x8;"
+        "MOV EAX,0x1;"
+        "RET;"
     );
 }
 
