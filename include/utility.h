@@ -37,7 +37,7 @@ Vector2f ToVector2f(lua_State *l, int index)
     return res;
 }
 
-void PushVector(lua_State *l, Vector3f v)
+void PushVector3(lua_State *l, Vector3f v)
 {
     lua_createtable(l, 3, 0);
     lua_pushnumber(l, v.x);
@@ -48,7 +48,7 @@ void PushVector(lua_State *l, Vector3f v)
     lua_rawseti(l, -2, 3);
 }
 
-void PushVector(lua_State *l, Vector2f v)
+void PushVector2(lua_State *l, Vector2f v)
 {
     lua_createtable(l, 2, 0);
     lua_pushnumber(l, v.x);

@@ -73,7 +73,7 @@ int SetNewTargetGroundXYZ(lua_State *L) {
     return 0;
 }
 
-using ProjectileMethodReg = SimRegFunc<0xE2A0DC, 0xF8D784>;
+using ProjectileMethodReg = SimRegFuncT<0xE2A0DC, 0xF8D784>;
 
 ProjectileMethodReg ProjectileGetMaxZigZag{
     "GetMaxZigZag",

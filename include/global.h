@@ -94,48 +94,53 @@ using wstring = basic_string<wchar_t>;
 
 wstring *__cdecl wstring_copy_ctor(wstring *ws, const char *s) asm("0x938720");
 string *__thiscall InitString(string *this_, const char *str) asm("0x405550");
-string *__thiscall AssignString(string *this_, const char *str, size_t size) asm("0x4059E0");
+string *__thiscall AssignString(string *this_, const char *str,
+                                size_t size) asm("0x4059E0");
 
+int __thiscall wstring_dtor(wstring *ws) asm("0x00431390");
+void __thiscall string_dtor(string *ws) asm("0x00402370");
 
 #define SSO_bytes 0x10ul
-template<typename T>
-struct basic_string {
-  static constexpr uint32_t sso_size = SSO_bytes/sizeof(T);
-  uint32_t ptr;  // ?
-  T str[sso_size]; // pointer to data
+template <typename T> struct basic_string {
+  static constexpr uint32_t sso_size = SSO_bytes / sizeof(T);
+  uint32_t ptr; // ?
+  union {
+    T str[sso_size]; // data
+    T *_data;        // pointer to data
+  };
   uint32_t strLen;
-  uint32_t size; // capacity?
+  uint32_t capacity; // capacity?
 
   basic_string() {
     ptr = 0;
     str[0] = T(0);
     strLen = 0;
-    size = 0;
+    capacity = sso_size - 1;
   }
 
-  basic_string(const char*s) {
-    if constexpr(std::is_same_v<char, T>)
-      InitString(this, s); else
-    if constexpr(std::is_same_v<wchar_t, T>)
-      wstring_copy_ctor(this, s); else
+  basic_string(const char *s) {
+    if constexpr (std::is_same_v<char, T>)
+      InitString(this, s);
+    else if constexpr (std::is_same_v<wchar_t, T>)
+      wstring_copy_ctor(this, s);
+    else
       static_assert(false, "Unknown type T.");
   }
 
-  const T* data() {
-    return size < sso_size ? &str : *(const T**)str;
-  }
+  inline const T *data() const { return capacity < sso_size ? static_cast<const T*>(str) : _data; }
+  inline T *data() { return capacity < sso_size ? static_cast<T*>(str) : _data; }
 
-  ~basic_string()
-  {
-    if(size >= sso_size)
-    {
+  inline void clear() {
+    if (capacity >= sso_size) {
       free(data());
     }
     ptr = 0;
     str[0] = T(0);
     strLen = 0;
-    size = sso_size - 1;
+    capacity = sso_size - 1;
   }
+
+  ~basic_string() { clear(); }
 };
 
 VALIDATE_SIZE(string, 0x1C)

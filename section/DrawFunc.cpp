@@ -321,7 +321,7 @@ int SetCustomRender(lua_State *l)
     return 0;
 }
 
-using WorldViewMethodReg = UIRegFunc<0x00E491E8, 0x00F8D88C>;
+using WorldViewMethodReg = UIRegFuncT<0x00E491E8, 0x00F8D88C>;
 
 WorldViewMethodReg WorldViewSetCustomRender{
     "SetCustomRender",
