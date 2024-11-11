@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "../../workflow.cpp"
+#include "../workflow.cpp"
 #include <type_traits>
 
 #define GPtr(addr, type) \
