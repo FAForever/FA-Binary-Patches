@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. 
+All notable changes to this project will be documented in this file. Unlike other changelogs, this particular changelog is not in chronological order. Instead the changes that are similar are grouped together.
 
 ## Signature patches
 
