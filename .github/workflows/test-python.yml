@@ -1,0 +1,68 @@
+# Copyright (c) FAForever
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: Test - Python
+
+# Note: due to piracy concerns we should at no point upload the executable as
+# an artifact. We do not want the lua-compatible executable available to the
+# public without verification that they own the game. This verification is 
+# done via the client.
+
+on:
+  push:
+    branches: "master"
+  pull_request:
+    branches: "master"
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MinGW i686
+        run: choco install mingw --x86 -y --no-progress
+
+      - name: Add mingw32 to path
+        run: echo C:/ProgramData/mingw64/mingw32/bin/ >> $env:GITHUB_PATH
+
+      - name: Install python requirements
+        run: |
+          git clone https://github.com/FAForever/fa-python-binary-patcher.git
+          pip install -r ./fa-python-binary-patcher/requirements.txt
+
+      - name: Download base executable
+        run: curl -L "https://content.faforever.com/build/ForgedAlliance_base.exe" -o ForgedAlliance_base.exe
+
+      # This is the practical test - if it patches, then we're good
+      - name: Patch base executable
+        run: |
+          echo "#define gitsha \"${{ github.sha }}\"" > workflow.cpp
+          mkdir build
+          python ./fa-python-binary-patcher/main.py "$(pwd)" clang++ ld g++
