@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 int SimSetFocusArmy(lua_State *L) {
     int armyIndex = lua_tonumber(L, 1);

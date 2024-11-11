@@ -1,6 +1,6 @@
-#include "include/LuaAPI.h"
-#include "include/global.h"
-#include "include/utility.h"
+#include "LuaAPI.h"
+#include "global.h"
+#include "utility.h"
 
 int VDist3(lua_State *l)
 {

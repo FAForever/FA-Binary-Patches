@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 struct struct_Resources // sizeof=0x8
 {

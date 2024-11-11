@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 void __thiscall OnCreateInitLuaState(LuaState* state, int enumStdLibs) {
     reinterpret_cast<void(__thiscall*)(LuaState*, int)>(0x90AC10)(state, enumStdLibs); //original

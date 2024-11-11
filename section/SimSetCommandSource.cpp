@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 int SimSetCommandSource(lua_State *L) {
     int armyI = lua_tonumber(L, 1);

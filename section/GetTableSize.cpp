@@ -94,7 +94,7 @@ void IsTableEmpty()
     );
 }
 
-#include "include/LuaAPI.h"
+#include "LuaAPI.h"
 int TableClone(lua_State* L)
 {
     LuaObject obj{L->LuaState, 1};

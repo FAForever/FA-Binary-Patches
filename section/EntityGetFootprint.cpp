@@ -1,6 +1,6 @@
-#include "include/CObject.h"
-#include "include/magic_classes.h"
-#include "include/moho.h"
+#include "CObject.h"
+#include "magic_classes.h"
+#include "moho.h"
 
 int ForceAltFootprint(lua_State *L)
 {

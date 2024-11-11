@@ -1,4 +1,4 @@
-#include "include/magic_classes.h"
+#include "magic_classes.h"
 
 typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewProtect, int *lpflOldProtect);
 

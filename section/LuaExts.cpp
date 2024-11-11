@@ -1,4 +1,4 @@
-#include "include/LuaAPI.h"
+#include "LuaAPI.h"
 
 void e_GetTableAH(char *t, uint32_t *asize, uint8_t *hbits) {
     *asize = *(int*)(t + 32);

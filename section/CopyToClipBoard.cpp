@@ -1,4 +1,4 @@
-#include "include/magic_classes.h"
+#include "magic_classes.h"
 
 int LuaCopyToClipboard(lua_State *l) {
     if (lua_gettop(l) != 1)

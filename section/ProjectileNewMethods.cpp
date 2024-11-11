@@ -1,7 +1,7 @@
-#include "include/global.h"
-#include "include/moho.h"
-#include "include/CObject.h"
-#include "include/magic_classes.h"
+#include "global.h"
+#include "moho.h"
+#include "CObject.h"
+#include "magic_classes.h"
 
 int GetMaxZigZag(lua_State *L) {
     auto res = GetCScriptObject<Projectile>(L, 1);

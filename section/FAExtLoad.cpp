@@ -211,7 +211,7 @@ FuncDesc Funcs[] = {
     {"", 0x90c340},
 };
 
-#include "include/global.h"
+#include "global.h"
 
 typedef __stdcall void* LoadLibrary_t(char *lpLibFileName);
 typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewProtect, int *lpflOldProtect);

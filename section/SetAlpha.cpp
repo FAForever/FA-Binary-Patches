@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 void SetAlpha(int control, float alpha, uint32_t alphai)
 {
     *(float *)(control + 240) = alpha;
