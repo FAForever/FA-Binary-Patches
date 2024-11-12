@@ -33,6 +33,8 @@ But these skills and knowledge would be more than enough:
 
 ## Development environment
 
+See [setup process](https://github.com/FAForever/fa-python-binary-patcher/blob/main/SETUP.md).
+
 ## Process of reviewing a patch
 
 ## Process of discussing a possible new patch
