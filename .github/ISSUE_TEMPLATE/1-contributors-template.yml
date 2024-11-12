@@ -1,0 +1,17 @@
+name: Contribution template
+description: Template for an extensive description, to enable other contributors to discuss and and implement on a feature of the patcher. Discussions about the patching process should be in the repository of the patcher, see below for a link.
+labels: ["status: novel issue"]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+  - type: textarea
+    id: action
+    attributes:
+      label: Course of Action
+  - type: textarea
+    id: test
+    attributes:
+      label: Test Plan
