@@ -39,6 +39,7 @@ on:
 
 jobs:
   release:
+    environment: deploy
     runs-on: windows-latest
     permissions:
       contents: write
