@@ -41,8 +41,8 @@ Useful links:
 
 See [setup process](https://github.com/FAForever/fa-python-binary-patcher/blob/main/SETUP.md).
 
-## Process of reviewing a patch
+<!-- ## Process of reviewing a patch
 
 ## Process of discussing a possible new patch
 
-## Process of writing a new patch
+## Process of writing a new patch -->
