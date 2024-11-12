@@ -31,7 +31,7 @@ But these skills and knowledge would be more than enough:
   * x32Dbg
   * Cheat Engine
 
-Usefull links:
+Useful links:
 * [GCC inline asm](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html)
 * [Compiler explorer](https://godbolt.org/) (select x86-64 gcc to try and test asm and C/C++)
 * [C++ doc](https://en.cppreference.com/w/) (most of std is not available in this repo, be aware of that)
