@@ -399,7 +399,10 @@ void* lua_getglobaluserdata(lua_State*) asm("0x924050");
 void* lua_getstateuserdata(lua_State*) asm("0x9240a0");
 void* lua_tolightuserdata(lua_State*, int) asm("0x90cc10");
 
-void GetTableAH(const void* t, uint32_t *asize, uint8_t *hbits);
+void GetTableAH(const void *t, uint32_t *asize, uint8_t *hbits) {
+    *asize = *(int*)(t + 32);
+    *hbits = *(uint8_t*)(t + 9);
+}
 
 void lua_createtable(lua_State *L, int narray, int nrec);
 
