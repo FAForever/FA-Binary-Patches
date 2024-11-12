@@ -109,6 +109,8 @@ These don't matter except for other assembly patches
     - section/OnWindowMessage.cpp
 
 ## Gameplay
+- Remove formation scaling based on footprint
+    - hooks/FixFormationScaling.cpp
 - Change tick intel update interval from every 30 ticks to every 1 tick
     - hooks/IntelUpdate.cpp
 - Removing CTRL formations
