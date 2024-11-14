@@ -1,4 +1,4 @@
-#include "include/LuaAPI.h"
+#include "LuaAPI.h"
 namespace lua
 {
     struct TObject
