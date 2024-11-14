@@ -3,11 +3,12 @@
 #include "moho.h"
 
 template<uintptr_t EntryPoint, uintptr_t ClassFactory, uintptr_t ClassAddr>
-struct RegFunc : luaFuncDescReg
+class RegFunc : luaFuncDescReg
 {
+    public:
     RegFunc(const char *name, const char *desc,
-        lua_CFunction f, const char *className = 0xE00D90) :
-        luaFuncDescReg{ClassFactory, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(EntryPoint), f, ClassAddr}
+        lua_CFunction f, const char *className = reinterpret_cast<const char *>(0xE00D90)) :
+        luaFuncDescReg{(void**)ClassFactory, name, className, desc, *reinterpret_cast<luaFuncDescReg**>(EntryPoint), f, (void*)ClassAddr}
     {
         *reinterpret_cast<luaFuncDescReg**>(EntryPoint) = this;
     }
@@ -15,10 +16,13 @@ struct RegFunc : luaFuncDescReg
         RegFunc(srf.FuncName, srf.FuncDesc, srf.FuncPtr, srf.ClassName) {}
 };
 
-template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
-using SimRegFunc = RegFunc<0xF5A124, ClassFactory, ClassAddr>;
-template<uintptr_t ClassFactory=0xE45E90, uintptr_t ClassAddr=0>
-using UIRegFunc = RegFunc<0xF59690, ClassFactory, ClassAddr>;
+using SimRegFunc = RegFunc<0xF5A124, 0xE45E90, 0>;
+using UIRegFunc = RegFunc<0xF59690, 0xE45E90, 0>;
+
+template<uintptr_t ClassFactory, uintptr_t ClassAddr>
+using SimRegFuncT = RegFunc<0xF5A124, ClassFactory, ClassAddr>;
+template<uintptr_t ClassFactory, uintptr_t ClassAddr>
+using UIRegFuncT = RegFunc<0xF59690, ClassFactory, ClassAddr>;
 
 
 using TConFunc = void(vector<string>*);

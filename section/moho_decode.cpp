@@ -1,6 +1,6 @@
 #pragma GCC optimize("O3")
 
-#include "include/desync_fix_global.h"
+#include "desync_fix_global.h"
 
 const char* safe_quit = "safeQuit";
 uint32_t tick_num = 0;

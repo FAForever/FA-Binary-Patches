@@ -1,7 +1,7 @@
-#include "include/CObject.h"
-#include "include/LuaApi.h"
-#include "include/global.h"
-#include "include/magic_classes.h"
+#include "CObject.h"
+#include "LuaApi.h"
+#include "global.h"
+#include "magic_classes.h"
 
 bool __cdecl TryConvertToColor(const char *s, uint32_t &color) asm("0x4B2B90");
 
@@ -34,12 +34,11 @@ int SetColorMask(lua_State *l)
     return 0;
 }
 
-// PatcherList_UIFuncRegs_BitmapSetColorMaskDesc
-luaFuncDescReg BitmapSetColorMaskDesc = {0x00E37C14,
-                                         "SetColorMask",
-                                         "CMauiBitmap",
-                                         "Bitmap:SetColorMask(color)",
-                                         nullptr,
-                                         SetColorMask,
-                                         0x00F8D7DC};
+using BitmapMethodReg = UIRegFuncT<0x00E37C14, 0x00F8D7DC>;
+
+BitmapMethodReg BitmapSetColorMaskDesc{
+    "SetColorMask",
+    "Bitmap:SetColorMask(color)",
+    SetColorMask,
+    "CMauiBitmap"};
 

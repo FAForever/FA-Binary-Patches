@@ -1,6 +1,6 @@
-#include "include/CObject.h"
-#include "include/magic_classes.h"
-#include "include/moho.h"
+#include "CObject.h"
+#include "magic_classes.h"
+#include "moho.h"
 
 int ForceAltFootprint(lua_State *L)
 {
@@ -18,7 +18,7 @@ int ForceAltFootprint(lua_State *L)
 
     return 0;
 }
-using UnitMethodReg = SimRegFunc<0x00E2D550, 0x00F8D704>;
+using UnitMethodReg = SimRegFuncT<0x00E2D550, 0x00F8D704>;
 
 UnitMethodReg UseAltFootprintReg{
     "ForceAltFootprint",

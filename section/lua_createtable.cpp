@@ -1,9 +1,8 @@
 
-#include "include/LuaAPI.h"
+#include "LuaAPI.h"
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
-//PatcherList_LCreateTable_e_lua_createtable
-void e_lua_createtable(lua_State *l, int narr, int nhash)
+void lua_createtable(lua_State *l, int narr, int nhash)
 { // copied from lua_newtable
     asm("mov     esi, %[l];" // lua_State
         "mov     eax, [esi+0x10];"

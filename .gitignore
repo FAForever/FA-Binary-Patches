@@ -14,3 +14,7 @@ section.cpp
 *.nam
 
 .vscode
+
+section.ld
+section/main.cpp
+section/main.cxx

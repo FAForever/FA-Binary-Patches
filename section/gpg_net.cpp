@@ -1,6 +1,6 @@
 #pragma GCC optimize("O3")
 
-#include "include/desync_fix_global.h"
+#include "desync_fix_global.h"
 
 uint32_t tag_sent = 0;
 uint32_t p_index = 0;

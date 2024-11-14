@@ -1,7 +1,7 @@
-#include "include/global.h"
-#include "include/moho.h"
-#include "include/CObject.h"
-#include "include/magic_classes.h"
+#include "global.h"
+#include "moho.h"
+#include "CObject.h"
+#include "magic_classes.h"
 
 int GetMaxZigZag(lua_State *L) {
     auto res = GetCScriptObject<Projectile>(L, 1);
@@ -73,7 +73,7 @@ int SetNewTargetGroundXYZ(lua_State *L) {
     return 0;
 }
 
-using ProjectileMethodReg = SimRegFunc<0xE2A0DC, 0xF8D784>;
+using ProjectileMethodReg = SimRegFuncT<0xE2A0DC, 0xF8D784>;
 
 ProjectileMethodReg ProjectileGetMaxZigZag{
     "GetMaxZigZag",

@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 bool __thiscall IsLuaFunction(LuaObject *obj)
 {

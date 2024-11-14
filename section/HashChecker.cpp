@@ -1,4 +1,4 @@
-#include "include/magic_classes.h"
+#include "magic_classes.h"
 
 typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewProtect, int *lpflOldProtect);
 
@@ -33,7 +33,7 @@ void HashWarn(uint64_t *data1, uint64_t *data2) {
 }
 
 void HashCheckerStop() {
-    uint32_t oldProt;
+    int oldProt;
     VirtualProtect((void*)(0x7433F4), 4, 0x40, &oldProt);
     *(uint32_t*)(0x7433F4) = 0xD8;
     VirtualProtect((void*)(0x7433F4), 4, oldProt, &oldProt);
@@ -86,22 +86,22 @@ void SimCreateHook() {
             FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_FLAG_SEQUENTIAL_SCAN, 0); else
         hcFile = CreateFileA("HashChecker.hash", GENERIC_READ,
             FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, 0);
-    if (hcFile == -1) {
+    if (hcFile == (void*)-1) {
         WarningF("%s", "CreateFileA error");
         asm("add esp,0x34; pop ebx; pop ebp; jmp 0x7434D0;");
         return;
     }
     hashIndex = 0;
 
-    uint32_t oldProt;
+    int oldProt;
     VirtualProtect((void*)(0x746271), 5, 0x40, &oldProt);
     *(uint8_t*)(0x746271) = 0xE9;
-    *(uint32_t*)(0x746272) = &SimDestroyHook - 0x746271 - 5;
+    *(uint32_t*)(0x746272) = (uint32_t)&SimDestroyHook - 0x746271 - 5;
     VirtualProtect((void*)(0x746271), 5, oldProt, &oldProt);
 
     VirtualProtect((void*)(0x8E5782), 5, 0x40, &oldProt);
     *(uint8_t*)(0x8E5782) = 0xE9;
-    *(uint32_t*)(0x8E5783) = &HashHook - 0x8E5782 - 5;
+    *(uint32_t*)(0x8E5783) = (uint32_t)&HashHook - 0x8E5782 - 5;
     VirtualProtect((void*)(0x8E5782), 5, oldProt, &oldProt);
 
     WarningF("%s", "HashChecker init");
@@ -115,12 +115,12 @@ int HashChecker(lua_State *L) {
     }
     hcMode = luaL_checknumber(L, 1);
     void *Kernel = GetModuleHandleA("KERNEL32");
-    VirtualProtect = GetProcAddress(Kernel, "VirtualProtect");
+    VirtualProtect = (VirtualProtect_t*)GetProcAddress(Kernel, "VirtualProtect");
     HashCheckerStop();
     if (hcMode) {
-        uint32_t oldProt;
+        int oldProt;
         VirtualProtect((void*)(0x7433F4), 4, 0x40, &oldProt);
-        *(uint32_t*)(0x7433F4) = &SimCreateHook - 0x7433F3 - 5;
+        *(uint32_t*)(0x7433F4) = (uint32_t)&SimCreateHook - 0x7433F3 - 5;
         VirtualProtect((void*)(0x7433F4), 4, oldProt, &oldProt);
         if (hcMode == 2)
             WarningF("Use breakpoint at 0x%X", HashWarn);

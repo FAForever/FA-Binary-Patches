@@ -1,6 +1,6 @@
 #pragma GCC optimize("O3")
 
-#include "include/desync_fix_global.h"
+#include "desync_fix_global.h"
 
 uint32_t input_tick = 0;
 uint32_t prev_tick = 0;

@@ -1,11 +1,5 @@
-#include "include/moho.h"
+#include "moho.h"
+#include "magic_classes.h"
 
-//PatcherList_SimFuncRegs_SGMWPRegDesc
-luaFuncDescReg SGMWPRegDesc = {
-    0x00E45E90,
-    0x00E451A4, // "GetMouseWorldPos"
-    0x00E00D90,
-    0x00E45188,
-    0x00000000,
-    0x00842BB0,
-    0x00000000};
+SimRegFunc SGMWPRegDesc{(const char *)0x00E451A4, (const char *)0x00E45188,
+                        (lua_CFunction)0x00842BB0};

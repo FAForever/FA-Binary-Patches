@@ -1,7 +1,7 @@
-#include "include/CObject.h"
-#include "include/magic_classes.h"
-#include "include/moho.h"
-#include "include/utility.h"
+#include "CObject.h"
+#include "magic_classes.h"
+#include "moho.h"
+#include "utility.h"
 
 void *CheckUserUnit(LuaObject *obj, LuaState *ls)
 {
@@ -65,7 +65,7 @@ int GetInterpolatedPosition(lua_State *l)
     if (mesh == nullptr)
         return 0;
     Moho::MeshInstance::UpdateInterpolatedTransform(mesh);
-    PushVector(l, {mesh[34], mesh[35], mesh[36]});
+    PushVector3(l, {mesh[34], mesh[35], mesh[36]});
     return 1;
 }
 // for testing
@@ -101,7 +101,7 @@ int GetFractionComplete(lua_State *l)
 // UI_Lua LOG(GetSelectedUnits()[1]:GetFractionComplete())
 // UI_Lua LOG(GetSelectedUnits()[1].GetFractionComplete{})
 
-using UserUnitMethodReg = UIRegFunc<0x00E4DA64, 0x00F8D89C>;
+using UserUnitMethodReg = UIRegFuncT<0x00E4DA64, 0x00F8D89C>;
 
 UserUnitMethodReg UserUnitGetInterpolatedPosition{
     "GetInterpolatedPosition",

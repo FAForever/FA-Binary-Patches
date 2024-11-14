@@ -1,4 +1,4 @@
-#include "include/magic_classes.h"
+#include "magic_classes.h"
 
 float iconscale = 1.0;
 ConDescReg icons_scale_var{"ui_StrategicIconScale", "", &iconscale};

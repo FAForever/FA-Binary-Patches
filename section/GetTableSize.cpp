@@ -126,8 +126,7 @@ int lua_tableempty(lua_State *L)
     return 1;
 }
 
-#include "include/LuaAPI.h"
-int TableClone(lua_State *L)
+int TableClone(lua_State* L)
 {
     LuaObject obj{L->LuaState, 1};
     LuaObject cloned{};

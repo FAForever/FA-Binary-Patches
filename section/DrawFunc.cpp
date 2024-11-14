@@ -1,7 +1,7 @@
-#include "include/CObject.h"
-#include "include/magic_classes.h"
-#include "include/moho.h"
-#include "include/utility.h"
+#include "CObject.h"
+#include "magic_classes.h"
+#include "moho.h"
+#include "utility.h"
 #include <cmath>
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
@@ -321,7 +321,7 @@ int SetCustomRender(lua_State *l)
     return 0;
 }
 
-using WorldViewMethodReg = UIRegFunc<0x00E491E8, 0x00F8D88C>;
+using WorldViewMethodReg = UIRegFuncT<0x00E491E8, 0x00F8D88C>;
 
 WorldViewMethodReg WorldViewSetCustomRender{
     "SetCustomRender",

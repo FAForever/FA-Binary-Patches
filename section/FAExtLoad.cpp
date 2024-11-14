@@ -1,5 +1,5 @@
 struct FuncDesc {
-    char* Name; char* Ptr;
+    const char* Name;int Ptr;
 };
 
 FuncDesc Funcs[] = {
@@ -211,7 +211,7 @@ FuncDesc Funcs[] = {
     {"", 0x90c340},
 };
 
-#include "include/global.h"
+#include "global.h"
 
 typedef __stdcall void* LoadLibrary_t(char *lpLibFileName);
 typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewProtect, int *lpflOldProtect);
@@ -219,18 +219,18 @@ typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewPro
 void FAExtLoad()
 {
     void *Kernel = GetModuleHandleA("KERNEL32");
-    LoadLibrary_t *LoadLibrary = GetProcAddress(Kernel, "LoadLibraryA");
-    VirtualProtect_t *VirtualProtect = GetProcAddress(Kernel, "VirtualProtect");
+    LoadLibrary_t *LoadLibrary = ( LoadLibrary_t *)GetProcAddress(Kernel, "LoadLibraryA");
+    VirtualProtect_t *VirtualProtect =(VirtualProtect_t *) GetProcAddress(Kernel, "VirtualProtect");
     void *ldll = LoadLibrary("FAExt.dll");
     if (ldll)
     for (int i = 0; i < sizeof(Funcs) / sizeof(Funcs[0]); i++) {
-        char *FPtr = GetProcAddress(ldll, Funcs[i].Name);
+        char *FPtr = (char*)GetProcAddress(ldll, Funcs[i].Name);
         //if (FPtr) {
             int OldProtect;
-            char* Ptr = Funcs[i].Ptr;
+            char* Ptr = (char*)Funcs[i].Ptr;
             VirtualProtect(Ptr, 5, 0x04, &OldProtect);
             *Ptr = (char)(0xE9);
-            *(int*)(Ptr+1) = FPtr - (unsigned int)(Ptr) - 5;
+            *(int*)(Ptr+1) = FPtr - Ptr - 5;
             VirtualProtect(Ptr, 5, OldProtect, &OldProtect);
         //}
     }

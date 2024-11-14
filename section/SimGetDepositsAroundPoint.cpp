@@ -1,4 +1,5 @@
-#include "include/moho.h"
+#include "moho.h"
+#include "magic_classes.h"
 
 #define lua_push(L, name, val) \
     lua_pushstring(L, name); \
@@ -41,22 +42,6 @@ int SimGetDepositsAroundPoint(lua_State *L) {
 
 #define s_GDAPName "GetDepositsAroundPoint"
 #define s_GDAPDesc "(X, Z, Radius, Type)"
-//PatcherList_SimFuncRegs_SGDAPRegDesc
-luaFuncDescReg SGDAPRegDesc = {
-    0x00E45E90,
-    s_GDAPName,
-    0x00E00D90,
-    s_GDAPDesc,
-    0x00000000,
-    SimGetDepositsAroundPoint,
-    0x00000000};
 
-//PatcherList_UIFuncRegs_UGDAPRegDesc
-luaFuncDescReg UGDAPRegDesc = {
-    0x00E45E90,
-    s_GDAPName,
-    0x00E00D90,
-    s_GDAPDesc,
-    0x00000000,
-    SimGetDepositsAroundPoint,
-    0x00000000};
+UIRegFunc SGDAPRegDesc{s_GDAPName,s_GDAPDesc, SimGetDepositsAroundPoint};
+SimRegFunc UGDAPRegDesc{s_GDAPName, s_GDAPDesc, SimGetDepositsAroundPoint};

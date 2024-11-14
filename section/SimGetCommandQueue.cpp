@@ -1,4 +1,4 @@
-#include "include/moho.h"
+#include "moho.h"
 
 void __thiscall SimGetCommandQueueInsert(LuaObject *this_, LuaObject *obj)
 {

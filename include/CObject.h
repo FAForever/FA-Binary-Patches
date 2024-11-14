@@ -45,7 +45,7 @@ Result<CScriptClass> GetCScriptObject(lua_State *l, int index)
 {
     using CScriptType = typename CScriptClass::Type;
     using TResult = Result<CScriptClass>;
-    void **obj = GetCObject(l, index);
+    void **obj = reinterpret_cast<void**>(GetCObject(l, index));
     if (obj == nullptr)
     {
         return TResult::Fail(s_ExpectedAGameObject);
