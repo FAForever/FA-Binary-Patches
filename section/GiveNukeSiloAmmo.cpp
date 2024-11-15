@@ -35,7 +35,8 @@ void SiloAmmoSetBlocks()
     asm(
         "cmp %[Blocks], 0;"
         "je Finish;"
-        "mov [ebx+0x48], eax;" //here we set the number of blocks. This value is used by Moho::CAiSiloBuildImpl::SiloTick for calculations
+        "cvtsi2ss xmm0, eax;" //here we set the number of blocks. This value is used by Moho::CAiSiloBuildImpl::SiloTick for calculations
+        "movss ds:[ebx+0x48], xmm0;"
         "jmp 0x6CEDFA;"
 
         //default code
