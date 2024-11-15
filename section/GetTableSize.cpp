@@ -126,7 +126,7 @@ int lua_tableempty(lua_State *L)
     return 1;
 }
 
-int TableClone(lua_State* L)
+int TableClone(lua_State *L)
 {
     LuaObject obj{L->LuaState, 1};
     LuaObject cloned{};
@@ -167,14 +167,12 @@ luaL_reg RegTableFuncsDesc[] = {{"getsize2", &lua_tablesize},
                                 {"unpack", &lua_unpack},
                                 {nullptr, nullptr}};
 
-void RegTableFuncs()
+
+extern const luaL_reg original_table_funcs[] asm("0x00D47418");
+
+int __cdecl lua_openlibtable(lua_State *L)
 {
-    asm("CALL 0x0090DE00;"
-        "MOV DWORD PTR [ESP+0x8],%[RegTableFuncsDesc];"
-        "MOV DWORD PTR [ESP+0xC],0x0;"
-        "CALL 0x0090DE00;"
-        "JMP 0x009283B6;"
-        :
-        : [RegTableFuncsDesc] "i"(RegTableFuncsDesc)
-        :);
+    luaL_openlib(L, "table", original_table_funcs, 0);
+    luaL_openlib(L, "table", RegTableFuncsDesc, 0);
+    return 1;
 }
