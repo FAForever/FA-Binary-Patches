@@ -160,9 +160,8 @@ int lua_unpack(lua_State *l)
     return n_stack;
 }
 
-const luaL_reg RegTableFuncsDesc[] = {{"getsize2", &lua_tablesize},
-                                      {"empty2", &lua_tableempty},
-                                      {"getn2", (lua_CFunction)0x00927C20},
+const luaL_reg RegTableFuncsDesc[] = {{"getsize", &lua_tablesize},
+                                      {"empty", &lua_tableempty},
                                       {"clone", &TableClone},
                                       {"unpack", &lua_unpack},
                                       {nullptr, nullptr}};
