@@ -1,0 +1,2 @@
+0x0090AB1F:
+    call @lua_openlibtable
