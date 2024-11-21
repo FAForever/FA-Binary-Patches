@@ -24,11 +24,8 @@ Vector2f ProjectVec(const Vector3f &v, float *camera)
 
 void ProjectVectors(lua_State *l, int index, float *camera)
 {
-    const void *t = lua_topointer(l, index);
-    uint32_t asize;
-    uint8_t hbits;
-    GetTableAH(t, &asize, &hbits);
-    lua_createtable(l, asize, hbits); // result table
+    auto t = (const lua::Table*)lua_topointer(l, index);
+    lua_createtable(l, t->sizearray, t->lsizenode); // result table
     lua_pushvalue(l, index);          // input vectors
     lua_pushnil(l);
     while (lua_next(l, -2)) // -1 = value, -2 =  key, -3 = table, -4 = result table
