@@ -94,11 +94,9 @@ LuaObject LuaObject::__Clone(LuaObject &backref) const
 {
     luaplus_assert(IsTable());
     LuaObject result;
-    int narr;
-    unsigned nhash;
-    GetTableArrAndHash(&m_object.value, narr, nhash);
 
-    result.AssignNewTable(m_state, narr, 1 << nhash);
+    auto t = reinterpret_cast<lua::Table *>(m_object.value.p);
+    result.AssignNewTable(m_state, t->sizearray, 1 << t->lsizenode);
     backref.SetObject(*this, result);
 
     for (const auto &[key, value] : Pairs(*this))

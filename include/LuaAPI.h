@@ -127,11 +127,6 @@ typedef union {
   int b;
 } Value;
 
-void GetTableArrAndHash(const Value *t, int &narr, unsigned int &nhash) {
-  narr = *(int *)(t->b + 32);
-  nhash = *(unsigned char *)(t->b + 9);
-}
-
 // lua.org/source/5.0/lobject.h.html#TObject
 struct TObject {
   int tt;
