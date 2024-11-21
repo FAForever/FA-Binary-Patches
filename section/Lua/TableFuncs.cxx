@@ -115,9 +115,22 @@ int lua_unpack(lua_State *l)
     return n_stack;
 }
 
+// UI_Lua local a = {} reprsl(table.clone(a))
+// UI_Lua local a = {1,2,3} reprsl(table.clone(a))
+// UI_Lua local a = (function() local t = {} for i=1,1000 do t[i]={1,2,3} end
+// return t end)() reprsl(table.clone(a)) UI_Lua local a = {a=1,b=3,c=4,1,3,4}
+// reprsl(table.clone(a)) UI_Lua local a = {} a[1] = a  reprsl(table.clone(a))
+// UI_Lua local a = {} a.a = a reprsl(table.clone(a))
+int TableClone(lua_State *L) noexcept(false)
+{
+    LuaObject(L->LuaState, 1).DeepCopy().PushStack(L);
+    return 1;
+}
+
 const luaL_reg RegTableFuncsDesc[] = {{"getsize", &lua_tablesize},
                                       {"empty", &lua_tableempty},
                                       {"unpack", &lua_unpack},
+                                      {"clone", &TableClone},
                                       {nullptr, nullptr}};
 
 extern const luaL_reg original_table_funcs[] asm("0x00D47418");
