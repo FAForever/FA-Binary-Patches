@@ -4,6 +4,8 @@
 #include "../workflow.cpp"
 #include <type_traits>
 
+#define SHARED extern "C"
+
 #define GPtr(addr, type) \
   (*(type*)addr)
 
