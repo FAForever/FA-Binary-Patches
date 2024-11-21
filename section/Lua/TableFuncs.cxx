@@ -126,15 +126,6 @@ int lua_tableempty(lua_State *L)
     return 1;
 }
 
-int TableClone(lua_State *L)
-{
-    LuaObject obj{L->LuaState, 1};
-    LuaObject cloned{};
-    obj.Clone(&cloned);
-    cloned.PushStack(L);
-    return 1;
-}
-
 // UI_Lua reprsl({table.unpack2({1,2,3,4},2,3)})
 // UI_Lua reprsl({table.unpack2({1,2,3,4},2)})
 // UI_Lua reprsl({table.unpack2({1,2,3,4})})
@@ -162,13 +153,12 @@ int lua_unpack(lua_State *l)
 
 const luaL_reg RegTableFuncsDesc[] = {{"getsize", &lua_tablesize},
                                       {"empty", &lua_tableempty},
-                                      {"clone", &TableClone},
                                       {"unpack", &lua_unpack},
                                       {nullptr, nullptr}};
 
 extern const luaL_reg original_table_funcs[] asm("0x00D47418");
 
-int __cdecl lua_openlibtable(lua_State *L)
+SHARED int __cdecl lua_openlibtable(lua_State *L)
 {
     luaL_openlib(L, "table", original_table_funcs, 0);
     luaL_openlib(L, "table", RegTableFuncsDesc, 0);
