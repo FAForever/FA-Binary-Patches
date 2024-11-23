@@ -1,0 +1,10 @@
+//Moho::SSTIEntityVariableData::SSTIEntityVariableData
+0x00558823:
+    mov dword ptr [eax+0x0A4], ecx // 0x0A5 bool forceAltFootprint
+
+
+//  Moho::Entity::GetFootprint
+0x006788A5:
+    jmp @asm__GetFootprint
+    nop
+    nop
