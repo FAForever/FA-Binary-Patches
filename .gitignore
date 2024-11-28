@@ -18,3 +18,6 @@ section.cpp
 section.ld
 section/main.cpp
 section/main.cxx
+
+// one day I'll commit with my bat files without it here :P
+*.bat
