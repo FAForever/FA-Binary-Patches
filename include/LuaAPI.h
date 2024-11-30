@@ -238,6 +238,8 @@ public:
   inline bool IsTable() const;
   inline bool IsUserData() const;
 
+  operator bool() const;
+
   LuaObject GetMetaTable()const;
   LuaObject Clone() const;
   LuaObject DeepCopy() const;

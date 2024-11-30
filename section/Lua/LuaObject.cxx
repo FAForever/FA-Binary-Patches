@@ -283,3 +283,17 @@ bool LuaObject::operator!=(const LuaObject &right) const
 {
     return !(*this == right);
 }
+
+LuaObject::operator bool() const
+{
+    if (this->m_state)
+    {
+        auto tt = this->m_object.tt;
+        if (tt)
+        {
+            if (tt != LUA_TBOOLEAN || this->m_object.value.b)
+                return true;
+        }
+    }
+    return false;
+}
