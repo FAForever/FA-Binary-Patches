@@ -344,7 +344,7 @@ public:
   void GetGlobal(LuaObject *out, const char *key) asm("0x4579d0");
   void GetGlobals(LuaObject *out) asm("0x90a690");
   LuaState *GetActiveState() asm("0x90bee0");
-  const char *CheckString(int narg) asm("0x912d10");
+  const char *CheckString(int narg, size_t* len) asm("0x90BFB0");
   int ArgError(int narg, const char *msg) asm("0x90bf70");
   __cdecl int Error(const char *fmt, ...) asm("0x90c1d0");
   lua_State *GetActiveCState() asm("0x90bef0");
