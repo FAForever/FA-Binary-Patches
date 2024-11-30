@@ -382,7 +382,7 @@ const char *luaL_optlstring(lua_State *, int, const char *,
 const char *lua_getlocal(lua_State *, const lua_Debug *, int) asm("0x912680");
 const char *lua_getupvalue(lua_State *, int, int) asm("0x90d9a0");
 const char *lua_pushfstring(lua_State *, const char *, ...) asm("0x90ce90");
-const char *lua_pushvfstring(lua_State *, const char *, char *) asm("0x90ce50");
+const char *lua_pushvfstring(lua_State *, const char *, va_list args) asm("0x90ce50");
 const char *lua_setlocal(lua_State *, const lua_Debug *, int) asm("0x9126f0");
 const char *lua_setupvalue(lua_State *, int, int) asm("0x90da00");
 const char *lua_tostring(lua_State *, int) asm("0x90ca90");
