@@ -348,7 +348,7 @@ public:
   int ArgError(int narg, const char *msg) asm("0x90bf70");
   __cdecl int Error(const char *fmt, ...) asm("0x90c1d0");
   lua_State *GetActiveCState() asm("0x90bef0");
-  void CheckAny(int narg) asm("0x923f20");
+  void CheckAny(int narg) asm("0x90C170");
 
   // private
   void Init(enum StandardLibraries libs) asm("0x90aad0");
