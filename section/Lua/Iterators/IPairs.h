@@ -15,7 +15,7 @@ public:
 
   std::pair<int, LuaObject> operator*();
 
-  bool operator!=(const IPairsEndIterator &end_it) const;
+  bool operator!=(const IPairsEndIterator &) const;
 
 private:
   const LuaObject &table;

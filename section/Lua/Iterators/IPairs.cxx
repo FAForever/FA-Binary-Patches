@@ -16,7 +16,7 @@ const std::pair<int, LuaObject> IPairsIterator::operator*() const {
 
 std::pair<int, LuaObject> IPairsIterator::operator*() { return {index, value}; }
 
-bool IPairsIterator::operator!=(const IPairsEndIterator &end_it) const {
+bool IPairsIterator::operator!=(const IPairsEndIterator &) const {
   return !value.IsNil();
 }
 
