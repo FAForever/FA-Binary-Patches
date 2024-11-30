@@ -429,7 +429,7 @@ int lua_resume(lua_State *, int) asm("0x914610");
 int lua_setfenv(lua_State *, int) asm("0x90d3b0");
 int lua_sethook(lua_State *, lua_Hook, int, int) asm("0x912560");
 int lua_setmetatable(lua_State *, int) asm("0x90d340");
-int lua_traceback(lua_State *, const char *, int) asm("0x911ea0");
+int lua_traceback(lua_State *, const char *) asm("0x911ea0");
 int lua_type(lua_State *, int) asm("0x90c740");
 int lua_yield(lua_State *, int) asm("0x913e40");
 int luaopen_base(lua_State *) asm("0x90fd90");
