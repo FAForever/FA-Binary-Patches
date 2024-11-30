@@ -1,10 +1,5 @@
 #include "IPairs.h"
 
-IPairsEndIterator::IPairsEndIterator(const LuaObject &table)
-    : n{table.GetN()} {}
-
-int IPairsEndIterator::GetN() const { return n; }
-
 IPairsIterator::IPairsIterator(const LuaObject &table)
     : table{table}, index{0}, value{table.m_state} {}
 
@@ -22,7 +17,7 @@ const std::pair<int, LuaObject> IPairsIterator::operator*() const {
 std::pair<int, LuaObject> IPairsIterator::operator*() { return {index, value}; }
 
 bool IPairsIterator::operator!=(const IPairsEndIterator &end_it) const {
-  return index <= end_it.GetN();
+  return !value.IsNil();
 }
 
 IPairs::IPairs(const LuaObject &table) : table{table} {
@@ -30,4 +25,4 @@ IPairs::IPairs(const LuaObject &table) : table{table} {
 }
 
 IPairsIterator IPairs::begin() { return ++IPairsIterator(table); }
-IPairsEndIterator IPairs::end() { return IPairsEndIterator{table}; }
+IPairsEndIterator IPairs::end() { return IPairsEndIterator{}; }

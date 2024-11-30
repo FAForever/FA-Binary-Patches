@@ -3,13 +3,6 @@
 #include <utility>
 
 class IPairsEndIterator {
-public:
-  IPairsEndIterator(const LuaObject &table);
-
-  int GetN() const;
-
-private:
-  int n;
 };
 
 class IPairsIterator {

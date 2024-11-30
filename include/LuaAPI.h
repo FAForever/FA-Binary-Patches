@@ -285,7 +285,6 @@ public:
   int GetInteger() const asm("0x907910");
   int GetN() const asm("0x907e50");
   int GetTableCount() asm("0x90a410");
-  int IsPassed() asm("0x907440");
   lua_State *GetActiveCState() const asm("0x9072c0");
   void AssignBoolean(LuaState *state, bool value) asm("0x909600");
   void AssignInteger(LuaState *state, int value) asm("0x909650");
