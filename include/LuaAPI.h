@@ -176,10 +176,17 @@ namespace lua
 } // namespace lua
 
 // namespace gpg
+namespace gpg
+{
+  struct RType
+  {
+  };
+  
+}
 class RRef {
 public:
   void *d;
-  void *t;
+  gpg::RType *t;
 };
 class RType {};
 
