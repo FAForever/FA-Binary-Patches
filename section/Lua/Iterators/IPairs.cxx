@@ -4,7 +4,6 @@ IPairsIterator::IPairsIterator(const LuaObject &table)
     : table{table}, index{0}, value{table.m_state} {}
 
 IPairsIterator &IPairsIterator::operator++() {
-  LuaState *state = table.m_state;
   ++index;
   value = table[index];
   return *this;
