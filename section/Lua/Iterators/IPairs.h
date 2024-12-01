@@ -2,34 +2,37 @@
 #include "LuaAPI.h"
 #include <utility>
 
-class IPairsEndIterator {
+class IPairsEndIterator
+{
 };
 
-class IPairsIterator {
+class IPairsIterator
+{
 public:
-  IPairsIterator(const LuaObject &table);
+    IPairsIterator(const LuaObject &table);
 
-  IPairsIterator &operator++();
+    IPairsIterator &operator++();
 
-  const std::pair<int, LuaObject> operator*() const;
+    const std::pair<int, LuaObject> operator*() const;
 
-  std::pair<int, LuaObject> operator*();
+    std::pair<int, LuaObject> operator*();
 
-  bool operator!=(const IPairsEndIterator &) const;
+    bool operator!=(const IPairsEndIterator &) const;
 
 private:
-  const LuaObject &table;
-  int index;
-  LuaObject value;
+    const LuaObject &table;
+    int index;
+    LuaObject value;
 };
 
-class IPairs {
+class IPairs
+{
 public:
-  IPairs(const LuaObject &table);
+    IPairs(const LuaObject &table);
 
-  IPairsIterator begin();
-  IPairsEndIterator end();
+    IPairsIterator begin();
+    IPairsEndIterator end();
 
 private:
-  const LuaObject &table;
+    const LuaObject &table;
 };

@@ -2,32 +2,36 @@
 #include "LuaAPI.h"
 #include <utility>
 
-class EndIterator {};
-class PairsIterator {
+class EndIterator
+{
+};
+class PairsIterator
+{
 public:
-  PairsIterator(const LuaObject &table);
+    PairsIterator(const LuaObject &table);
 
-  PairsIterator &operator++();
+    PairsIterator &operator++();
 
-  const std::pair<LuaObject, LuaObject> operator*() const;
+    const std::pair<LuaObject, LuaObject> operator*() const;
 
-  std::pair<LuaObject, LuaObject> operator*();
+    std::pair<LuaObject, LuaObject> operator*();
 
-  bool operator!=(const EndIterator &) const;
+    bool operator!=(const EndIterator &) const;
 
 private:
-  const LuaObject &table;
-  LuaObject key;
-  LuaObject value;
-  bool done;
+    const LuaObject &table;
+    LuaObject key;
+    LuaObject value;
+    bool done;
 };
 
-class Pairs {
+class Pairs
+{
 public:
-  Pairs(const LuaObject &table);
-  PairsIterator begin();
-  EndIterator end();
+    Pairs(const LuaObject &table);
+    PairsIterator begin();
+    EndIterator end();
 
 private:
-  const LuaObject &table;
+    const LuaObject &table;
 };
