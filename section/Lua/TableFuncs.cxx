@@ -133,8 +133,6 @@ const luaL_reg RegTableFuncsDesc[] = {{"getsize", &lua_tablesize},
                                       {"clone", &TableClone},
                                       {nullptr, nullptr}};
 
-extern const luaL_reg original_table_funcs[] asm("0x00D47418");
-
 SHARED int __cdecl lua_openlibtable(lua_State *L)
 {
     luaL_openlib(L, "table", original_table_funcs, 0);
