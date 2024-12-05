@@ -496,8 +496,6 @@ void lua_createtable(lua_State *l, int narr, int nhash);
 }
 
 void *__thiscall luaplusassert(void *except, const char *msg) asm("0x00457880");
-void __stdcall _CXXThrowException(void *except,
-                                  void *throwInfo) asm("0x00A89950");
 
 void ThrowLuaException(const char *message) {
   int info[10];

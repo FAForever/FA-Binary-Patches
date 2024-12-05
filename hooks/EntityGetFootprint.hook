@@ -4,7 +4,5 @@
 
 
 //  Moho::Entity::GetFootprint
-0x006788A5:
-    jmp @asm__GetFootprint
-    nop
-    nop
+0x00678880:
+    jmp @Moho__Entity__GetFootprint
