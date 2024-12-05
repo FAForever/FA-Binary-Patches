@@ -31,7 +31,7 @@ SHARED void *__thiscall Moho__Entity__GetFootprint(Entity *entity)
     void *bp = GetField<void *>(entity, 0x6C);
     if (!bp)
     {
-        runtime_error err(string{"Attempt to get footprint on nameless entity"});
+        runtime_error err{string{"Attempt to get footprint on nameless entity"}};
         _CXXThrowException(&err, (void *)0xEC210C);
     }
     void *sstiData = Offset<void *>(entity, 0x78);

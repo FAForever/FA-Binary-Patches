@@ -196,6 +196,8 @@ struct runtime_error : exception
   {
     runtime_error_ctor(this, &s);
   }
-
+private:
+  // string str; erases message because of dtor!
+  char str[0x1C];
 };
 void __stdcall _CXXThrowException(void *except, void *throwInfo) asm("0x00A89950");
