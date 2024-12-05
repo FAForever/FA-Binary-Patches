@@ -161,6 +161,19 @@ struct Result {
   inline bool IsFail() { return reason != nullptr; }
 };
 
+bool InterlockedExchangeAdd(volatile unsigned *addr, unsigned value)
+{
+    bool _result;
+    asm(
+        "lock xadd [eax], edx;"
+        "setnz al;"
+        : "=a"(_result)
+        : "a"(addr),
+          "d"(value)
+        :);
+    return _result;
+}
+
 template <typename T>
 T Offset(void *ptr, size_t offset)
 {
