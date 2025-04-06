@@ -22,7 +22,7 @@ int strCmp(const char* s1, const char* s2)
 
 void Conexecute()
 {
-	register int eax asm("eax");
+	register const char* eax asm("eax");
 	asm(
 		"push ebp;"
 		"mov ebp,esp;"

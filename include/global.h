@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+
 #define SHARED extern "C"
 
 #define GPtr(addr, type) \
@@ -94,7 +96,6 @@ float sqrtf(float) asm("0x452FC0");
 #define DebugLog(_s) LogF("%s", (_s))
 
 
-#include <cstdint>
 #include "../workflow.cpp"
 #include <type_traits>
 
