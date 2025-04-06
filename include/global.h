@@ -1,8 +1,5 @@
 #pragma once
-
 #include <cstdint>
-#include "../workflow.cpp"
-#include <type_traits>
 
 #define SHARED extern "C"
 
@@ -17,6 +14,8 @@
 
 #define VALIDATE_SIZE(struc, size) \
   static_assert(sizeof(struc) == size, "Invalid structure size of " #struc);
+
+#define CSTR(NAME) extern const char NAME[]
 
 #define g_CSimDriver			GPtr(0x10C4F50, CSimDriver*)
 #define g_SWldSessionInfo		GPtr(0x10C4F58, SWldSessionInfo*)
@@ -41,18 +40,24 @@ GDecl(range_RenderBuild,		0x10A6414, bool)
 GDecl(d3d_WindowsCursor,		0x10A636E, bool)
 GDecl(debugSelect,			0x10A645E, bool)
 
-GDecl(s_FACTORY,			0xE19824, const char*)
-GDecl(s_EXPERIMENTAL,			0xE204B8, const char*)
-GDecl(s_ExpectedButGot,			0xE0A220, const char*) // "%s\n  expected %d args, but got %d"
-GDecl(s_ExpectedBetweenButGot,		0xE0A270, const char*) // "%s\n  expected between %d and %d args, but got %d"
-GDecl(s_Global,				0xE00D90, const char*) // "<global>"
-GDecl(s_CMauiBitmap,			0xE37438, const char*) // "CMauiBitmap"
-GDecl(s_UserUnit,			0xE4D090, const char*) // "UserUnit"
-GDecl(s_ExpectedAGameObject,		0xE09860, const char*) // "Expected a game object. (Did you call with '.' instead of ':'?)"
-GDecl(s_GameObjectHasBeenDestroyed,	0xE098A0, const char*) // "Game object has been destroyed"
-GDecl(s_IncorrectTypeOfGameObject,	0xE098C0, const char*) // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
-GDecl(s_UnknownColor,			0x4B2D54, const char*) // "Unknown color: %s"
-GDecl(s_c_object,			0xE016DC, const char*) // "_c_object"
+CSTR(s_FACTORY) asm("0xE19824");
+CSTR(s_EXPERIMENTAL) asm("0xE204B8");
+// "%s\n  expected %d args, but got %d"
+CSTR(s_ExpectedButGot) asm("0xE0A220");
+// "%s\n  expected between %d and %d args, but got %d"
+CSTR(s_ExpectedBetweenButGot) asm("0xE0A270");
+CSTR(s_Global) asm("0xE00D90");      // "<global>"
+CSTR(s_CMauiBitmap) asm("0xE37438"); // "CMauiBitmap"
+// "UserUnit"
+CSTR(s_UserUnit) asm("0xE4D090");
+// "Expected a game object. (Did you call with '.' instead of ':'?)"
+CSTR(s_ExpectedAGameObject) asm("0xE09860");
+// "Game object has been destroyed"
+CSTR(s_GameObjectHasBeenDestroyed) asm("0xE098A0");
+// "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
+CSTR(s_IncorrectTypeOfGameObject) asm("0xE098C0");
+CSTR(s_UnknownColor) asm("0x00E07D14"); // "Unknown color: %s"
+CSTR(s_c_object) asm("0xE016DC");       // "_c_object"
 
 GDecl(g_ExeVersion1,			0x876666, const int)
 GDecl(g_ExeVersion2,			0x87612d, const int)
@@ -66,6 +71,7 @@ int ConsoleLogF(const char *fmt, ...) asm("0x41C990");
 int FileWrite(int fileIndex, const char *str, int strlen) asm("0xA9B4E6"); //index 3 is log.
 bool CopyToClipboard(const wchar_t *str) asm("0x4F2730");
 void* shi_new(size_t size) asm("0xA825B9");
+
 
 extern "C" {
 void* realloc(void *ptr, size_t new_size) asm("0x957B00");
@@ -88,6 +94,10 @@ float sqrtf(float) asm("0x452FC0");
 #define QueryPerformanceFrequency WDecl(0xC0F46C, __stdcall bool (*)(int64_t*))
 
 #define DebugLog(_s) LogF("%s", (_s))
+
+
+#include "../workflow.cpp"
+#include <type_traits>
 
 template<typename T>
 struct basic_string;
@@ -172,3 +182,23 @@ T &GetField(void *ptr, size_t offset)
 {
     return *Offset<T *>(ptr, offset);
 }
+
+struct exception
+{
+  void *vtable;
+  int msg;
+  int complete;
+};
+struct runtime_error : exception
+{
+  static runtime_error *__thiscall runtime_error_ctor(runtime_error *_this, const string *str) asm("0x00405130");
+
+  runtime_error(const string& s)
+  {
+    runtime_error_ctor(this, &s);
+  }
+private:
+  // string str; erases message because of dtor!
+  char str[0x1C];
+};
+void __stdcall _CXXThrowException(void *except, void *throwInfo) asm("0x00A89950");
