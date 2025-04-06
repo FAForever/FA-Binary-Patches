@@ -7,6 +7,7 @@ int ForceAltFootprint(lua_State *L)
 
     if (lua_gettop(L) != 2)
         L->LuaState->Error(s_ExpectedButGot, __FUNCTION__, 2, lua_gettop(L));
+
     auto res = GetCScriptObject<Unit>(L, 1);
     if (res.IsFail())
         L->LuaState->Error("%s", res.reason);
