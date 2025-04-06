@@ -6,6 +6,27 @@
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
+void _DrawQuad(
+    unsigned int color,
+    Vector3f *a2,
+    Vector3f *ecx0,
+    Vector3f *esi0,
+    void *batcher,
+    Vector3f *a6)
+{
+    asm("push %[a6];"
+        "push %[a5];"
+        "call 0x00438DA0;"
+        :
+        : [color] "a"(color),
+          [a2] "d"(a2),
+          [ecx0] "c"(ecx0),
+          [esi0] "S"(esi0),
+          [a5] "g"(batcher),
+          [a6] "g"(a6)
+        :);
+}
+
 void _DrawRect(
     Vector3f *v1,
     Vector3f *v2,
@@ -86,15 +107,7 @@ namespace Moho
     }
     namespace CPrimBatcher
     {
-        void FlushBatcher(void *batcher)
-        {
-            asm(
-                "push %[batcher];"
-                "call 0x0043A140;"
-                :
-                : NON_GENERAL_REG(batcher)
-                : "eax");
-        }
+        __stdcall void *FlushBatcher(void *batcher) asm("0x0043A140");
 
         void ResetBatcher(void *batcher)
         {
@@ -242,6 +255,59 @@ int LuaDrawCircle(lua_State *l)
 }
 
 UIRegFunc DrawCircleReg{"UI_DrawCircle", "UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)", LuaDrawCircle};
+
+Vector3f FindNormalVector(const Vector3f &p1, const Vector3f &p2)
+{
+    float dx = p2.x - p1.x;
+    float dz = p2.z - p1.z;
+
+    return Vector3f{-dz, 0, dx}.normalized();
+}
+
+int LuaDrawLine(lua_State *l)
+{
+    int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
+    if (batcher == nullptr || _worldview == nullptr)
+    {
+        return 0;
+    }
+    if (!is_in_render_world)
+    {
+        luaL_error(l, "Attempt to call DrawCircle outside of OnRenderWorld");
+        return 0;
+    }
+    Vector3f pos1 = ToVector(l, 1);
+    Vector3f pos2 = ToVector(l, 2);
+    const char *s = lua_tostring(l, 3);
+    float thickness = luaL_optnumber(l, 4, 0.15);
+    uint32_t color;
+    if (!Moho::TryConvertToColor(s, color))
+    {
+        luaL_error(l, s_UnknownColor, s);
+        return 0;
+    }
+
+    float lod1 = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos1);
+    float lod2 = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos2);
+    float lod = std::max(lod1, lod2);
+    float a = std::max(thickness / lod, 2.f);
+
+    Vector3f offset = FindNormalVector(pos1, pos2);
+
+    thickness = a * lod;
+
+    Vector3f v1 = pos1 + offset * thickness;
+    Vector3f v2 = pos1 - offset * thickness;
+    Vector3f v3 = pos2 + offset * thickness;
+    Vector3f v4 = pos2 - offset * thickness;
+
+    _DrawQuad(color, &v1, &v2, &v3, batcher, &v4);
+
+    Moho::CPrimBatcher::FlushBatcher(batcher);
+    return 0;
+}
+
+UIRegFunc DrawLineReg{"UI_DrawLine", "UI_DrawLine(pos1:vector, pos2:vector, color:string, thickness?=0.15:float)", LuaDrawLine};
 
 float delta_frame = 0;
 
