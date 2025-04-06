@@ -213,7 +213,7 @@ FuncDesc Funcs[] = {
 
 #include "global.h"
 
-typedef __stdcall void* LoadLibrary_t(char *lpLibFileName);
+typedef __stdcall void* LoadLibrary_t(const char *lpLibFileName);
 typedef __stdcall int VirtualProtect_t(void *lpAddress, int dwSize, int flNewProtect, int *lpflOldProtect);
 
 void FAExtLoad()
