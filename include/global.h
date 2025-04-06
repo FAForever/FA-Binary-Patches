@@ -1,9 +1,4 @@
 #pragma once
-
-#include <cstdint>
-#include "../workflow.cpp"
-#include <type_traits>
-
 #define SHARED extern "C"
 
 #define GPtr(addr, type) \
@@ -97,6 +92,11 @@ float sqrtf(float) asm("0x452FC0");
 #define QueryPerformanceFrequency WDecl(0xC0F46C, __stdcall bool (*)(int64_t*))
 
 #define DebugLog(_s) LogF("%s", (_s))
+
+
+#include <cstdint>
+#include "../workflow.cpp"
+#include <type_traits>
 
 template<typename T>
 struct basic_string;
