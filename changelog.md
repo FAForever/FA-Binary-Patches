@@ -239,8 +239,9 @@ These new features have been added in a backwards compatible manner
 
   - `UI_DrawRect(pos:vector, size:float, color:string, thickness?=0.15:float)`
   - `UI_DrawCircle(pos:vector, radius:float, color:string, thickness?=0.15:float)`
+  - `UI_DrawLine(pos1:vector, pos2:vector, color:string, thickness?=0.15:float)`
 
-  Both functions must be called within `WorldView:OnRenderWorld(delta_time)`. To enable CWR call `WorldView:SetCustomRender(true)` of WorldView you want to draw in. To disable call `WorldView:SetCustomRender(false)` respectively.
+  These functions must be called within `WorldView:OnRenderWorld(delta_time)`. To enable CWR call `WorldView:SetCustomRender(true)` of WorldView you want to draw in. To disable call `WorldView:SetCustomRender(false)` respectively.
 
 - Adds Strategic icon scale support:
 

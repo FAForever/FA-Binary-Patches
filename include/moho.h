@@ -6,51 +6,50 @@ typedef int BOOL;
 typedef int unk_t;
 
 struct luaFuncDescReg
-{	// 0x1C bytes
-	void **RegisterFunc;  // call for register lua function. 0x00E45E90 is std func
-	const char *FuncName;       // lua name function
-	const char *ClassName;      // lua class name. 0x00E00D90 - <global> if none
-	const char *FuncDesc;       // for log
-	luaFuncDescReg *Next; // reg func of chain
+{						   // 0x1C bytes
+	void **RegisterFunc;   // call for register lua function. 0x00E45E90 is std func
+	const char *FuncName;  // lua name function
+	const char *ClassName; // lua class name. 0x00E00D90 - <global> if none
+	const char *FuncDesc;  // for log
+	luaFuncDescReg *Next;  // reg func of chain
 	lua_CFunction FuncPtr; // code address
-	void *ClassPtr;       // C++ class type address. NULL if class none
+	void *ClassPtr;		   // C++ class type address. NULL if class none
 };
 VALIDATE_SIZE(luaFuncDescReg, 0x1C)
 
 // Probably from visual c++ 9
 struct vtable;
 struct typeInfo
-{	// 0x8+ bytes
+{ // 0x8+ bytes
 	void *vtable;
 	int zero;
 	char name[];
 };
 
 struct classDesc
-{	// 0x30+ bytes
+{ // 0x30+ bytes
 	// at 0x4
 	uint32_t trueDataOffset; // Subtraction
 	// at 0xC
 	void *typeInfo;
 	// at 0x20
 	void *beginParents; // +0x4
-	void *endParents; // -0x4
+	void *endParents;	// -0x4
 	// at 0x28
 	classDesc *parents[];
-	//void* typeInfo;
+	// void* typeInfo;
 };
 
 struct vtable
-{	// 0x8+ bytes
+{ // 0x8+ bytes
 	// at -0x4
-	void* classDesc;
-	void* methods[];
+	void *classDesc;
+	void *methods[];
 };
 
-
-template<typename T>
+template <typename T>
 struct vector
-{	// 0x10 bytes
+{ // 0x10 bytes
 	uint32_t pad;
 	T *begin, *end, *capacity_end;
 
@@ -59,9 +58,9 @@ struct vector
 };
 VALIDATE_SIZE(vector<unk_t>, 0x10)
 
-template<typename T>
+template <typename T>
 struct list
-{       // 0xC bytes
+{ // 0xC bytes
 	T *begin, *end, *capacity_end;
 
 	T operator[](int i) { return begin[i]; }
@@ -69,15 +68,15 @@ struct list
 };
 VALIDATE_SIZE(list<unk_t>, 0xC)
 
-template<typename T>
+template <typename T>
 struct linked_list
-{	// 0x8 bytes
+{ // 0x8 bytes
 	T *next;
 	T *prev;
 };
 
 struct moho_set
-{	// 0x20 bytes
+{ // 0x20 bytes
 	int baseI;
 	int unk1;
 	uint32_t *begin, *end, *capacity_end;
@@ -85,17 +84,22 @@ struct moho_set
 	uint32_t value; // Memory for 'Short Set Optimization'
 	void *unk3;
 
-	void set(uint32_t item, bool set) {
+	void set(uint32_t item, bool set)
+	{
 		auto *itemPtr = &begin[item >> 5 - baseI];
-		if (itemPtr >= end) end = itemPtr + 1;
+		if (itemPtr >= end)
+			end = itemPtr + 1;
 		item = 1 << (item & 0x1F);
 		if (set)
-			*itemPtr |= item; else
+			*itemPtr |= item;
+		else
 			*itemPtr &= ~item;
 	}
-	bool operator[](int item) {
+	bool operator[](int item)
+	{
 		auto *itemPtr = &begin[item >> 5 - baseI];
-		if (itemPtr >= end) return false;
+		if (itemPtr >= end)
+			return false;
 		return *itemPtr & (1 << (item & 0x1F));
 	}
 };
@@ -105,33 +109,122 @@ typedef int SOCKET;
 // GPGCore
 
 struct Vector2f
-{	// 0x8 bytes
-	float x,z;
+{ // 0x8 bytes
+	float x, z;
 };
 
-struct Vector3f
-{	// 0xC bytes
-	float x,y,z;
+class Vector3f
+{
+public:
+	float x, y, z;
+
+	Vector3f() : x(0.0f), y(0.0f), z(0.0f) {}
+	Vector3f(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+
+	Vector3f(const Vector3f &other) : x(other.x), y(other.y), z(other.z) {}
+
+	Vector3f &operator=(const Vector3f &other)
+	{
+		if (this != &other)
+		{
+			x = other.x;
+			y = other.y;
+			z = other.z;
+		}
+		return *this;
+	}
+
+	Vector3f operator+(const Vector3f &other) const
+	{
+		return Vector3f(x + other.x, y + other.y, z + other.z);
+	}
+
+	Vector3f operator-(const Vector3f &other) const
+	{
+		return Vector3f(x - other.x, y - other.y, z - other.z);
+	}
+
+	Vector3f operator*(float scalar) const
+	{
+		return Vector3f(x * scalar, y * scalar, z * scalar);
+	}
+
+	friend Vector3f operator*(float scalar, const Vector3f &vec)
+	{
+		return vec * scalar;
+	}
+
+	float dot(const Vector3f &other) const
+	{
+		return x * other.x + y * other.y + z * other.z;
+	}
+
+	Vector3f cross(const Vector3f &other) const
+	{
+		return Vector3f(
+			y * other.z - z * other.y,
+			z * other.x - x * other.z,
+			x * other.y - y * other.x);
+	}
+
+	float length() const
+	{
+		return sqrtf(x * x + y * y + z * z);
+	}
+
+	Vector3f normalized() const
+	{
+		float len = length();
+		if (len > 0)
+			return {x / len, y / len, z / len};
+
+		return *this;
+	}
+
+	Vector3f &operator+=(const Vector3f &other)
+	{
+		x += other.x;
+		y += other.y;
+		z += other.z;
+		return *this;
+	}
+
+	Vector3f &operator-=(const Vector3f &other)
+	{
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
+		return *this;
+	}
+
+	Vector3f &operator*=(float scalar)
+	{
+		x *= scalar;
+		y *= scalar;
+		z *= scalar;
+		return *this;
+	}
 };
 
 struct Vector4f
-{	// 0x10 bytes
-	float x,y,z,w;
+{ // 0x10 bytes
+	float x, y, z, w;
 };
 
 struct RObject
-{	// 0x4 bytes
+{ // 0x4 bytes
 	void *vtable;
 };
 
 template <int T, int TInfo>
-struct ObjectType {
+struct ObjectType
+{
 	const static int Type = T;
 	const static int Info = TInfo;
 };
 
 struct CScriptObject : RObject
-{//0x004C6F8A, 0x34 bytes
+{ // 0x004C6F8A, 0x34 bytes
 	linked_list<CScriptObject> ll;
 	LuaObject UserData;
 	LuaObject Table;
@@ -139,7 +232,7 @@ struct CScriptObject : RObject
 VALIDATE_SIZE(CScriptObject, 0x34)
 
 struct WeakObject
-{	// 0x8 bytes?
+{ // 0x8 bytes?
 	void *vtable;
 	void *Unk1;
 };
@@ -151,20 +244,20 @@ struct gpg_mutex
 };
 
 struct Stream
-{	// 0x1C bytes
+{ // 0x1C bytes
 	void *vtable;
 };
 
 struct PipeStream : Stream
-{	// 0x48 bytes
+{ // 0x48 bytes
 };
 
 struct FileStream : Stream
-{//0x00956DB4, 0x34 bytes
+{ // 0x00956DB4, 0x34 bytes
 };
 
 struct StatItem // : class TDatTreeItem<class Moho::StatItem>
-{	// 0xA0 bytes
+{				// 0xA0 bytes
 	void *vtable;
 	// at 0x24
 	int value; // int/float
@@ -175,34 +268,34 @@ struct StatItem // : class TDatTreeItem<class Moho::StatItem>
 	int unk2;
 	// at 0x98
 	void *criticalSection; // Result RtlInitializeCriticalSection
-	bool unk1; // Set 1 at 00AC1A69, at 00AC1AB0 check(0 -> WaitForSingleObject, 1 -> RtlEnterCriticalSection)
+	bool unk1;			   // Set 1 at 00AC1A69, at 00AC1AB0 check(0 -> WaitForSingleObject, 1 -> RtlEnterCriticalSection)
 };
 
 struct EngineStats // : class Stats<class Moho::StatItem>
-{	// 0x50 bytes
+{				   // 0x50 bytes
 	void *vtable;
 	StatItem *stat;
 	void *criticalSection; // Result RtlInitializeCriticalSection
-	BOOL unk1; // Set 1 at 00AC1A69
-	string str1; // Written "stats.log"
+	BOOL unk1;			   // Set 1 at 00AC1A69
+	string str1;		   // Written "stats.log"
 	string str2;
 	int unk2;
 	BOOL unk3;
 };
 
 struct Camera // : RCamCamera
-{//0x007A7972, 0x858 bytes
+{			  // 0x007A7972, 0x858 bytes
 };
 
 struct CMauiControl : CScriptObject
-{//0x004C6F8A, 0x11C bytes
+{ // 0x004C6F8A, 0x11C bytes
 	using Type = ObjectType<0x10C7700, 0xF83314>;
 };
 
 struct CWldSession;
 
 struct CUIWorldView : CMauiControl
-{//0x004C6F8A, 0x2A8 bytes
+{ // 0x004C6F8A, 0x2A8 bytes
 	using Type = ObjectType<0x10C77E4, 0xF8A71C>;
 	// at 0x120
 	Camera *camera;
@@ -210,36 +303,36 @@ struct CUIWorldView : CMauiControl
 	CWldSession *session;
 	void *unk1; // If shift pressed
 
-	bool GetCustomRenderingEnabled()const
+	bool GetCustomRenderingEnabled() const
 	{
-		return *(char*)((int)this + 377);
+		return *(char *)((int)this + 377);
 	}
 
 	void SetCustomRenderingEnabled(bool state)
 	{
-		*(char*)((int)this + 377) = state;
+		*(char *)((int)this + 377) = state;
 	}
 };
 
 struct RBlueprint;
 
 struct RRuleGameRules
-{//0x00529158, 0xD0 bytes
+{ // 0x00529158, 0xD0 bytes
 	void *vtable;
 	// at 0x2C
-	//list L1;
+	// list L1;
 	// at 0x48
-	//list L2;
+	// list L2;
 	// at 0xB8
-	list<RBlueprint*> Blueprints;
-	//list L3;
-	// at 0xC4
-	//void *Blueprints;
-	//void *Start, *End;
+	list<RBlueprint *> Blueprints;
+	// list L3;
+	//  at 0xC4
+	// void *Blueprints;
+	// void *Start, *End;
 };
 
 struct LaunchInfoNew
-{//0x005423CC, 0xA4 bytes
+{ // 0x005423CC, 0xA4 bytes
 	void *vtable;
 	RRuleGameRules *rules;
 	void *STIMap;
@@ -263,11 +356,11 @@ struct REffectBlueprint : RObject
 };
 
 struct RBeamBlueprint : REffectBlueprint
-{//0x0050EEFD, 0x84 bytes
+{ // 0x0050EEFD, 0x84 bytes
 };
 
 struct RBlueprint : RObject
-{	// ~0x60 bytes
+{ // ~0x60 bytes
 	// at 0x4
 	RRuleGameRules *owner;
 	string name;
@@ -278,18 +371,19 @@ struct RBlueprint : RObject
 };
 
 struct RMeshBlueprint : RBlueprint
-{//0x0050DD83, 0x80 bytes
+{ // 0x0050DD83, 0x80 bytes
 	// at 0x70
 	float IconFadeInZoom;
 };
 
 struct REntityBlueprint : RBlueprint
-{	// ~0x17C bytes
+{ // ~0x17C bytes
 	// at 0x60
 	vector<string> Categories;
 
 	// at 0xD8
-	struct SFootprint {
+	struct SFootprint
+	{
 		char SizeX;
 		char SizeZ;
 		char OccupancyCaps;
@@ -301,41 +395,47 @@ struct REntityBlueprint : RBlueprint
 };
 
 struct RPropBlueprint : REntityBlueprint
-{//0x0050DD83, 0x1AC bytes
+{ // 0x0050DD83, 0x1AC bytes
 };
 
 struct RProjectileBlueprint : REntityBlueprint
-{//0x0050DD83, 0x268 bytes
+{ // 0x0050DD83, 0x268 bytes
 };
 
 struct RUnitBlueprintWeapon
-{	// 0x184 bytes
+{ // 0x184 bytes
 };
 
 struct RUnitBlueprint : REntityBlueprint
-{//0x0050DD83, 0x568 bytes
+{ // 0x0050DD83, 0x568 bytes
 	// at 0x17C
-	struct RUnitBlueprintGeneral {
+	struct RUnitBlueprintGeneral
+	{
 	} General;
 
 	// at 0x200
-	struct RUnitBlueprintDisplay {
+	struct RUnitBlueprintDisplay
+	{
 	} Display;
 
 	// at 0x278
-	struct RUnitBlueprintPhysics {
+	struct RUnitBlueprintPhysics
+	{
 	} Physics;
 
 	// at 0x330
-	struct RUnitBlueprintIntel {
+	struct RUnitBlueprintIntel
+	{
 	} Intel;
 
 	// at 0x368
-	struct RUnitBlueprintAir {
+	struct RUnitBlueprintAir
+	{
 	} Air;
 
 	// at 0x3F8
-	struct RUnitBlueprintTransport {
+	struct RUnitBlueprintTransport
+	{
 		// at 0x400
 		int T2ClassSize;
 		int T3ClassSize;
@@ -344,13 +444,15 @@ struct RUnitBlueprint : REntityBlueprint
 	} Transport;
 
 	// at 0x420
-	struct RUnitBlueprintDefense {
+	struct RUnitBlueprintDefense
+	{
 		// at 0x43C
 		string ArmorType;
 	} Defense;
 
 	// at 0x460
-	struct RUnitBlueprintAI {
+	struct RUnitBlueprintAI
+	{
 		float GuardScanRadius;
 		float GuardReturnRadius;
 		float StagingPlatformScanRadius;
@@ -372,27 +474,28 @@ struct RUnitBlueprint : REntityBlueprint
 	vector<RUnitBlueprintWeapon> Weapon;
 
 	// at 0x4E8
-	struct RUnitBlueprintEconomy {
+	struct RUnitBlueprintEconomy
+	{
 		// at 0x564
 		float MaxBuildDistance;
 	} Economy;
 };
 
 struct CUIManager // : IUIManager
-{//0x0084C9CB, 0x78 bytes
+{				  // 0x0084C9CB, 0x78 bytes
 	// at 0x30
 	LuaState *LState; // from [10A6478]
 };
 
 struct CAiReconDBImpl // : IAiReconDB
-{//0x005BFFB8, 0xB0 bytes
+{					  // 0x005BFFB8, 0xB0 bytes
 	void *vtable;
 	// at 0xA8
 	bool FogOfWar;
 };
 
 struct CIntelGrid
-{	// 0x24 bytes
+{ // 0x24 bytes
 };
 
 struct IClientManager
@@ -402,7 +505,7 @@ struct IClientManager
 
 struct IClient
 {
-	void* vtable;
+	void *vtable;
 };
 
 struct CWldMap
@@ -413,21 +516,21 @@ struct CWldMap
 };
 
 struct SSTICommandSource
-{       // 0x24 bytes
+{ // 0x24 bytes
 	int index;
 	string name;
 	int protocol; // -1 SinglePlayer, 3 MultiPlayer
 };
 
 struct Deposit
-{	// 0x14 bytes
-	int X1,Z1,X2,Z2; // Rect
-	int Type; // 1 - Mass, 2 - Energy
+{						// 0x14 bytes
+	int X1, Z1, X2, Z2; // Rect
+	int Type;			// 1 - Mass, 2 - Energy
 };
 VALIDATE_SIZE(Deposit, 0x14);
 
 struct CSimResources // : ISimResources // : IResources
-{//0x007444EF, 0x1C bytes
+{					 // 0x007444EF, 0x1C bytes
 	void *vtable;
 	// at 0x8 in vtable
 	// ecx:CreateResourceDeposit(type, x, y, z, size)
@@ -441,7 +544,7 @@ struct CSimResources // : ISimResources // : IResources
 VALIDATE_SIZE(CSimResources, 0x1C)
 
 struct SWldSessionInfo
-{	// 0x30 bytes
+{ // 0x30 bytes
 	string map_name;
 
 	// at 0x1C
@@ -461,26 +564,26 @@ struct SWldSessionInfo
 };
 
 struct SimArmyEconomyInfo
-{	// 0x60 bytes
+{ // 0x60 bytes
 	void *unk1;
 	int unk2;
-	float _incomeEnergy;    // div 10
-	float _incomeMass;      // div 10
+	float _incomeEnergy; // div 10
+	float _incomeMass;	 // div 10
 
 	float baseIncomeEnergy; // div 10
-	float baseIncomeMass;   // div 10
+	float baseIncomeMass;	// div 10
 	float storedEnergy;
 	float storedMass;
 
-	float incomeEnergy;     // div 10
-	float incomeMass;       // div 10
+	float incomeEnergy; // div 10
+	float incomeMass;	// div 10
 	float reclaimedEnergy;
 	float reclaimedMass;
 
-	float requestedEnergy;  // div 10
-	float requestedMass;    // div 10
-	float expenseEnergy;    // div 10
-	float expenseMass;      // div 10
+	float requestedEnergy; // div 10
+	float requestedMass;   // div 10
+	float expenseEnergy;   // div 10
+	float expenseMass;	   // div 10
 
 	uint32_t maxEnergy;
 	int unk3;
@@ -494,7 +597,7 @@ struct SimArmyEconomyInfo
 };
 
 struct BaseArmy
-{	// 0x1DC bytes
+{ // 0x1DC bytes
 	// struct 0x80 bytes
 	int armyIndex;
 	string name;
@@ -506,14 +609,14 @@ struct BaseArmy
 	// struct 0x15C bytes
 	float storedEnergy;
 	float storedMass;
-	float incomeEnergy;    // div 10
-	float incomeMass;      // div 10
+	float incomeEnergy; // div 10
+	float incomeMass;	// div 10
 	float reclaimedEnergy;
 	float reclaimedMass;
 	float requestedEnergy; // div 10
 	float requestedMass;   // div 10
 	float expenseEnergy;   // div 10
-	float expenseMass;     // div 10
+	float expenseMass;	   // div 10
 	// at 0xA8
 	uint32_t maxEnergy;
 	int unk2; // =0
@@ -558,7 +661,7 @@ struct BaseArmy
 VALIDATE_SIZE(BaseArmy, 0x1DC);
 
 struct UserArmy : BaseArmy
-{	// 0x210 bytes
+{ // 0x210 bytes
 	// at 0x1DC
 	uint8_t unk12[8];
 	// at 0x1E4
@@ -570,7 +673,7 @@ VALIDATE_SIZE(UserArmy, 0x210);
 struct Sim;
 
 struct SimArmy // : IArmy, BaseArmy
-{//0x006FD332, 0x288 bytes
+{			   // 0x006FD332, 0x288 bytes
 	void *vtable;
 	void *unk1;
 	// at 0x8, BaseArmy
@@ -584,14 +687,14 @@ struct SimArmy // : IArmy, BaseArmy
 	// at 0x88 Copy from [[self+1F4]+18]
 	float storedEnergy;
 	float storedMass;
-	float incomeEnergy;    // div 10
-	float incomeMass;      // div 10
+	float incomeEnergy; // div 10
+	float incomeMass;	// div 10
 	float reclaimedEnergy;
 	float reclaimedMass;
 	float requestedEnergy; // div 10
 	float requestedMass;   // div 10
 	float expenseEnergy;   // div 10
-	float expenseMass;     // div 10
+	float expenseMass;	   // div 10
 
 	uint32_t maxEnergy;
 	int unk2; // =0
@@ -646,18 +749,18 @@ struct SimArmy // : IArmy, BaseArmy
 VALIDATE_SIZE(SimArmy, 0x288);
 
 struct CArmyImpl : SimArmy
-{//0x006FD332, 0x288 bytes
+{ // 0x006FD332, 0x288 bytes
 };
 
 struct Entities
-{	// 0x50 bytes
+{ // 0x50 bytes
 };
 
 struct EntityChain // [[Entities+4]+4]
 {
 	void *next;
-	//void *?;
-	//void *?;
+	// void *?;
+	// void *?;
 	int ID;
 	void *entity;
 };
@@ -665,7 +768,7 @@ struct EntityChain // [[Entities+4]+4]
 struct Sim;
 struct Unit;
 struct Entity : CScriptObject
-{	// 0x270 bytes
+{ // 0x270 bytes
 	// at 0x68
 	uint32_t EntityID; // For units x|xx|xxxxxx Type,Army,Num. Uses for UserSync
 	REntityBlueprint *Blueprint;
@@ -675,38 +778,38 @@ struct Entity : CScriptObject
 };
 
 struct Projectile : Entity
-{//0x004C702B, 0x380 bytes
+{ // 0x004C702B, 0x380 bytes
 	// at 0x6C
 	using Type = ObjectType<0x10C7578, 0xF77914>;
 	RProjectileBlueprint *Blueprint;
 };
 
 struct Prop : Entity
-{//0x004C702B, 0x288 bytes
+{ // 0x004C702B, 0x288 bytes
 	// at 0x6C
 	RPropBlueprint *Blueprint;
 };
 
 struct CUnitCommand;
 struct CCommandTask
-{	//0x34 bytes
-	void* vtable;
-	void* unk0; // self+4;
+{ // 0x34 bytes
+	void *vtable;
+	void *unk0; // self+4;
 	// at 0x10
 	CCommandTask *prevTask; // ?
 	// at 0x1C
 	Unit *owner;
 	Sim *sim;
 	// at 0x28
-	//CCommandTask *prevTask; -0x2C
+	// CCommandTask *prevTask; -0x2C
 };
 
 struct CUnitMobileBuildTask : CCommandTask
-{	//0xE8 bytes
+{ // 0xE8 bytes
 	// at 0xC
 	Unit *owner;
 	Sim *sim;
-	Unit *target0; // -4
+	Unit *target0;		// -4
 	CCommandTask *next; // ?
 	// at 0x2C
 	string name;
@@ -720,7 +823,7 @@ struct CUnitMobileBuildTask : CCommandTask
 };
 
 struct CUnitRepairTask : CCommandTask
-{	//0x9C bytes
+{ // 0x9C bytes
 	// at 0xC
 	Unit *owner;
 	Sim *sim;
@@ -732,7 +835,7 @@ struct CUnitRepairTask : CCommandTask
 };
 
 struct CUnitCommand : CScriptObject
-{	// 0x178 bytes
+{ // 0x178 bytes
 	// at 0x34
 	CCommandTask *task; // -4
 	// at 0x40
@@ -742,7 +845,7 @@ struct CUnitCommand : CScriptObject
 	// at 0x5C
 	float unk4;
 	// at 0x60
-	RUnitBlueprint* BpBuild;
+	RUnitBlueprint *BpBuild;
 	string unk5;
 	// at 0x98
 	uint32_t CommandType;
@@ -759,13 +862,13 @@ struct CUnitCommand : CScriptObject
 };
 
 struct SCommand
-{	// 0x8 bytes
+{						// 0x8 bytes
 	void *CUnitCommand; // +0x4
 	void *nil;
 };
 
 struct CommandQueue
-{	// 0x28 bytes
+{ // 0x28 bytes
 	void *unk1;
 	void *unk2;
 	Unit *Owner;
@@ -776,10 +879,10 @@ struct CommandQueue
 };
 
 struct UnitWeapon //: CScriptEvent
-{//0x006D3114, 0x188 bytes
-	void* vtable;
+{				  // 0x006D3114, 0x188 bytes
+	void *vtable;
 	// at 0x10
-	void* vtable2;
+	void *vtable2;
 	// at 0x1C
 	LuaObject UserData;
 	LuaObject Table;
@@ -790,25 +893,25 @@ struct UnitWeapon //: CScriptEvent
 	float SquaredMinRadius;
 	float SquaredMaxRadius;
 	// at 0xA0
-	Unit* Owner;
+	Unit *Owner;
 };
 
 struct CAiAttackerImpl // : IAiAttacker
-{//0x005D6ABF, 0xA4 bytes
-	void* vtable;
+{					   // 0x005D6ABF, 0xA4 bytes
+	void *vtable;
 	// at 0x58
-	vector<UnitWeapon*> Weapons;
+	vector<UnitWeapon *> Weapons;
 };
 
 struct UserUnitWeapon
-{	// 0x98 bytes
+{ // 0x98 bytes
 	// at 0x54
 	float MinRadius;
 	float MaxRadius;
 };
 
 struct UnitIntel
-{	// 0x20 bytes, AND 7FFFFFFF
+{ // 0x20 bytes, AND 7FFFFFFF
 	int VisionRadius;
 	int WaterVisionRadius;
 	int RadarRadius;
@@ -820,13 +923,13 @@ struct UnitIntel
 };
 
 struct Unit : WeakObject
-{//0x006A5422, 0x6A8 bytes
+{ // 0x006A5422, 0x6A8 bytes
 	using Type = ObjectType<0x010C6FC8, 0x00F6A1E4>;
-	//WeakObject WeakObject;
-	// at 0x8
-	//Entity Entity; to 0x278
-	// at 0x50
-	void* self1;
+	// WeakObject WeakObject;
+	//  at 0x8
+	// Entity Entity; to 0x278
+	//  at 0x50
+	void *self1;
 	// at 0x70
 	uint32_t UnitID;
 	RUnitBlueprint *Blueprint;
@@ -863,13 +966,13 @@ struct Unit : WeakObject
 	char pad3[3];
 	void *unk21;
 	UnitIntel UnitIntel; // at 0x130
-	Sim *sim; // at 0x150
+	Sim *sim;			 // at 0x150
 	SimArmy *owner;
 	Vector4f Rot3;
 	Vector3f Pos3;
 	// at 0x17C
 	int TickCount1; // Readonly
-	void* CColPrimitiveBase;
+	void *CColPrimitiveBase;
 	// at 0x248
 	Vector3f Pos4;
 	Vector3f Pos5;
@@ -883,24 +986,24 @@ struct Unit : WeakObject
 	// at 0x2CC
 	string customUnitName;
 	// at 0x380
-	UserUnitWeapon* Weapons;
+	UserUnitWeapon *Weapons;
 	list<unk_t> unk22; // Weapons?
-	void *unk23; // Weapons?
+	void *unk23;	   // Weapons?
 	// at 0x4B0
 	void *MotionEngine; // +0xC FuelUseTime
 	void *CommandQueue;
-	int Enum; //0..4
+	int Enum; // 0..4
 	// at 0x534
 	void *workValues; // +0x8
 	bool Flag;
 	// at 0x53C
 	float WorkRate;
 	// at 0x544
-	void* IAiAttacker;
-	void* IAiCommandDispatch;
+	void *IAiAttacker;
+	void *IAiCommandDispatch;
 	// at 0x558
-	void* IAiSiloBuild;
-	void* IAiTransport;
+	void *IAiSiloBuild;
+	void *IAiTransport;
 	// at 0x59C
 	Vector3f Pos6;
 	// at 0x668
@@ -910,7 +1013,7 @@ struct Unit : WeakObject
 };
 
 struct UserEntity : WeakObject
-{	// 0x148 bytes
+{ // 0x148 bytes
 	// at 0x44
 	int entityID;
 	RPropBlueprint *blueprint;
@@ -929,7 +1032,7 @@ struct UserEntity : WeakObject
 	// at 0xB0
 	float fractionComplete;
 	// at 0xD0
-	//float x1,y1,x2,y2;
+	// float x1,y1,x2,y2;
 	// at 0x100
 	UnitIntel unitIntel;
 	UserArmy *owner; // at 0x120
@@ -938,7 +1041,7 @@ struct UserEntity : WeakObject
 };
 
 struct UserUnit : UserEntity
-{//0x008B8601, 0x3E8 bytes
+{ // 0x008B8601, 0x3E8 bytes
 	using Type = ObjectType<0x10C77AC, 0xF881E0>;
 	// at 0x44
 	uint32_t UnitID;
@@ -964,7 +1067,7 @@ struct CMauiBitmap : public CMauiControl
 };
 
 struct ReconBlip : Entity
-{	// 0x4D0 bytes
+{ // 0x4D0 bytes
 	Entity entity;
 	// at 0x270
 	void *originUnit; // -0x4
@@ -983,29 +1086,29 @@ struct ReconBlip : Entity
 	void *unk4;
 	// at 0x390, size 0x30?
 	list<unk_t> unk5; // Weapons?
-	void *unk6; // Weapons?
+	void *unk6;		  // Weapons?
 	// at 0x450, size 0x30?
 	list<unk_t> unk7;
 	void *unk8;
 	// at 0x4C4
-	void *armyesData[]; //size 0x34
+	void *armyesData[]; // size 0x34
 };
 
 struct STIMap;
 struct Sim // : ICommandSink
-{	// 0xAF8 bytes
+{		   // 0xAF8 bytes
 	void *vtable;
 	uint8_t pad1[0x4C];
 	// at 0x50
 	char dynamicHash[16];
 	char hashTrash[0x50];
-	char simHashes[16*128]; // at 0xB0-8B0
+	char simHashes[16 * 128]; // at 0xB0-8B0
 	uint8_t pad2[0x10];
 	// at 0x8C0
 	void *CEffectManager;	// 0x18 bytes
 	void *CSimSoundManager; // 0x720 bytes
 	RRuleGameRules *rules;	// From CSimDriver.LaunchInfoNew
-	STIMap *STIMap;		// From CSimDriver.LaunchInfoNew
+	STIMap *STIMap;			// From CSimDriver.LaunchInfoNew
 	CSimResources *res;
 	uint8_t pad3[4];
 	// at 0x8D8
@@ -1021,7 +1124,7 @@ struct Sim // : ICommandSink
 	// at 0x904
 	void *unk2; // 0x9CC bytes
 	void *unk3; // 0x68 bytes
-	vector<SimArmy*> armies;
+	vector<SimArmy *> armies;
 	uint8_t pad6[4];
 	// at 0x920
 	list<SSTICommandSource> cmdSources;
@@ -1029,7 +1132,7 @@ struct Sim // : ICommandSink
 	int ourCmdSource; // Possibly just current in simulation.
 	uint8_t pad7[0x4C];
 	// at 0x97C
-	void **unk4; // 0x30 bytes
+	void **unk4;		  // 0x30 bytes
 	void *CAiFormationDB; // 0x40 bytes
 	// at 0x984
 	void *Entities;
@@ -1048,23 +1151,23 @@ struct Sim // : ICommandSink
 VALIDATE_SIZE(Sim, 0xAF8)
 
 struct CWldSession
-{//0x0089318A, 0x508 bytes
+{ // 0x0089318A, 0x508 bytes
 	CWldSession *self1;
 	CWldSession *self2;
 	void *self_weird1; // this + 0x8
 	void *self_weird2; // this + 0x8
 	// at 0x10
 	LuaState *LState; // Set from constructor argument
-	void *unk1; // 0x14 bytes
+	void *unk1;		  // 0x14 bytes
 	RRuleGameRules *rules;
 	CWldMap *map;
 	LaunchInfoNew *launchInfo;
-	void *unk2; //class detail::boost::sp_counted_impl_p<struct Moho::LaunchInfoNew>
+	void *unk2; // class detail::boost::sp_counted_impl_p<struct Moho::LaunchInfoNew>
 	string mapName;
 	Entities entities;
 	uint8_t pad1[0x3A8];
 	// at 0x3F0
-	list<UserArmy*> armies;
+	list<UserArmy *> armies;
 	// at 0x3FC
 	void *unk3; // 0xCC0 bytes
 	void *unk4; // 0x64 bytes
@@ -1086,7 +1189,8 @@ struct CWldSession
 	BOOL isGameOver;
 	uint8_t pad4[0x10];
 	// at 0x4A0
-	struct {
+	struct
+	{
 		int unk1;
 		void **SelList; //+0x10
 		int SelCount;
@@ -1094,7 +1198,7 @@ struct CWldSession
 	} selectedUnits;
 	// at 0x4B0
 	struct
-	{	// size 0x24
+	{ // size 0x24
 		void *unk1;
 		float mouseWorldPosX;
 		float mouseWorldPosY;
@@ -1116,7 +1220,7 @@ struct CWldSession
 VALIDATE_SIZE(CWldSession, 0x508)
 
 struct CSimDriver // : ISTIDriver
-{//0x0073B59E, 0x230 bytes
+{				  // 0x0073B59E, 0x230 bytes
 	void *vtable;
 	Sim *sim;
 	IClientManager *ClientManager;
@@ -1142,19 +1246,19 @@ struct CSimDriver // : ISTIDriver
 VALIDATE_SIZE(CSimDriver, 0x230);
 
 struct CHeightField // : class detail::boost::sp_counted_base
-{//0x00579121, 0x10 bytes
-	void* vtable;
+{					// 0x00579121, 0x10 bytes
+	void *vtable;
 };
 
 struct MapData
-{	// 0x1C bytes
+{							  // 0x1C bytes
 	uint32_t *TerrainHeights; // Word(TerrainHeights+(Y*SizeX+X)*2)
-	int SizeX; // +1
-	int SizeY; // +1
+	int SizeX;				  // +1
+	int SizeY;				  // +1
 };
 
 struct STIMap
-{	// 0x1548 bytes
+{ // 0x1548 bytes
 	MapData *MapData;
 	CHeightField *HeightField;
 	uint32_t unk1[4];
@@ -1187,10 +1291,10 @@ typedef CPushTask CPullTask;
 
 struct INetConnector
 {
-	void* vtable;
+	void *vtable;
 };
 struct CLobby
-{//0x004C702B, 0xC8 bytes
+{ // 0x004C702B, 0xC8 bytes
 	// at 0x20
 	LuaObject unk1;
 
@@ -1208,7 +1312,7 @@ struct CLobby
 	bool hosted_or_joined; // Has CLobby been used to host/join yet?
 
 	// at 0x88
-	void* not_host; // 0 if we're host
+	void *not_host; // 0 if we're host
 
 	// at 0x90
 	string our_name;
@@ -1218,17 +1322,17 @@ struct CLobby
 	// at 0xB0
 	struct
 	{
-		INetConnector* first_element;
-		INetConnector* last_element; // It will probably always be our CNetXXXConnector
-	} peer_list; // Probably singly-linked list
+		INetConnector *first_element;
+		INetConnector *last_element; // It will probably always be our CNetXXXConnector
+	} peer_list;					 // Probably singly-linked list
 };
 
 struct sub_10392B10_ret
-{	// 0x20 bytes
+{ // 0x20 bytes
 
-	void* zero1;
-	void* zero2;
-	void* zero3;
+	void *zero1;
+	void *zero2;
+	void *zero3;
 	int unk1;
 
 	// at 0x10
@@ -1237,27 +1341,27 @@ struct sub_10392B10_ret
 };
 
 struct CLobbyPeer
-{	// 0x50 bytes
+{ // 0x50 bytes
 
-	CLobbyPeer* next; // Doubly linked list pointers
-	CLobbyPeer* prev;
+	CLobbyPeer *next; // Doubly linked list pointers
+	CLobbyPeer *prev;
 
 	string playerName;
 
 	// at 0x24
-	int ownerID;	// User UID
+	int ownerID; // User UID
 	int const1;
 	short const2;
 	char pad1[2];
 
 	// at 0x30
-	int const3;	// enum?
-	float const4;	// = 0
+	int const3;	  // enum?
+	float const4; // = 0
 	int const5;
 	int unk1;
 
 	// at 0x40
-	sub_10392B10_ret* unk2; // made in sub_10394180
+	sub_10392B10_ret *unk2; // made in sub_10394180
 	int zero1;
 	int cmdSourceIndex; // == 255 => Unassigned
 	int playerNo;
@@ -1274,13 +1378,13 @@ struct CLobbyPeer
 };
 
 struct CClientManagerImpl : IClientManager
-{	// 0x184D0 bytes
+{ // 0x184D0 bytes
 	// at 0x40C
 	gpg_mutex mLock;
 
 	// at 0x420
-	list<IClient*> mClients;
-	INetConnector* mConnector;
+	list<IClient *> mClients;
+	INetConnector *mConnector;
 
 	// at 0x434
 	bool mWeAreReady;
@@ -1291,8 +1395,8 @@ struct CClientManagerImpl : IClientManager
 	int mFullyQueuedBeat;
 	int mPartiallyQueuedBeat;
 	int gameSpeedChangeCounter; // mGameSpeedClock
-	int mGameSpeedRequester;    // Always 0
-	int gameSpeedRequested;     // mGameSpeed
+	int mGameSpeedRequester;	// Always 0
+	int gameSpeedRequested;		// mGameSpeed
 	bool speedControlEnabled;
 	// at 0x458
 	uint32_t hEvent; // for KERNEL32.SetEvent
@@ -1302,15 +1406,19 @@ struct CClientManagerImpl : IClientManager
 	bool unk1; // if value is 1 then KERNEL32.SetEvent is bypassed
 };
 
-typedef struct mRequest {IClient* mRequester; int mAfterBeat;};
+typedef struct mRequest
+{
+	IClient *mRequester;
+	int mAfterBeat;
+};
 
 struct CClientBase : IClient
-{//0x0053B5E9, 0xD8 bytes
+{ // 0x0053B5E9, 0xD8 bytes
 	string mNickname;
 	// at 0x20
 	int mIndex; // client index
 	int mUID;
-	IClientManager* clientManager;
+	IClientManager *clientManager;
 
 	// at 0x30
 	moho_set unk1;
@@ -1335,26 +1443,26 @@ struct CClientBase : IClient
 };
 
 struct CLocalClient : CClientBase
-{//0x0053B5E9, 0xD8 bytes
-};	// equal CClientBase
+{ // 0x0053B5E9, 0xD8 bytes
+}; // equal CClientBase
 
 struct CReplayClient : CClientBase
-{	// 0x160 bytes
+{ // 0x160 bytes
 	// before 0xD8 it CClientBase
 	// at 0xD8
-	FileStream* stream;
+	FileStream *stream;
 	// at 0xE0
-	void* ptr1; // self+0xF0
-	void* ptr2; // self+0xF0
-	void* ptr3; // self+0x130
-	void* ptr4; // self+0xF0
-	void* unk1;
+	void *ptr1; // self+0xF0
+	void *ptr2; // self+0xF0
+	void *ptr3; // self+0x130
+	void *ptr4; // self+0xF0
+	void *unk1;
 	// at 0x130
-	void* unk2;
+	void *unk2;
 	// at 0x138
 	uint32_t replayBeat;
 	bool unk3;
-	void* unk4;
+	void *unk4;
 	uint32_t hSemaphore1;
 	uint32_t hSemaphore2;
 	uint32_t hMutex;
@@ -1363,17 +1471,19 @@ struct CReplayClient : CClientBase
 	bool unk6;
 };
 
-struct CNetUDPConnection {};
+struct CNetUDPConnection
+{
+};
 
 struct CNetUDPConnetor // : INetConnector
-{	// 0x18090 bytes
-	void* vtable;
-	void* smth; // Listen socket fd?
+{					   // 0x18090 bytes
+	void *vtable;
+	void *smth; // Listen socket fd?
 	gpg_mutex mMutex;
 	// at 0x14
 	SOCKET mSocket;
 	// at 0x24
-	linked_list<CNetUDPConnection*> mConnections;
+	linked_list<CNetUDPConnection *> mConnections;
 };
 /*Game Types
   Multiplayer - CLobby::LaunchGame
@@ -1393,50 +1503,50 @@ struct CNetUDPConnetor // : INetConnector
 */
 
 struct MapImager
-{	// 0x14 bytes
-	void* vtable;
+{ // 0x14 bytes
+	void *vtable;
 };
 
 struct MeshThumbnailRenderer
-{	// 0x3C bytes
-	void* vtable;
+{ // 0x3C bytes
+	void *vtable;
 };
 
 struct RangeRenderer
-{	// 0x94 bytes
-	void* vtable;
+{ // 0x94 bytes
+	void *vtable;
 };
 
 struct VisionRenderer
-{	// 0x78 bytes
-	void* vtable;
+{ // 0x78 bytes
+	void *vtable;
 };
 
 struct BoundaryRenderer
-{	// 0x68 bytes
-	void* vtable;
+{ // 0x68 bytes
+	void *vtable;
 };
 
 struct Shadow
-{	// 0x318 bytes
-	void* vtable;
+{ // 0x318 bytes
+	void *vtable;
 };
 
 struct Clutter
-{	// 0x192C bytes
-	void* vtable;
+{ // 0x192C bytes
+	void *vtable;
 };
 
 struct Silhouette
-{	// 0x74? bytes
-	void* vtable;
+{ // 0x74? bytes
+	void *vtable;
 	// at 0xC
 	CUIWorldView *worldView;
 };
 
 struct WRenViewport // : WD3DViewport
-{//0x0097977D, 0x21A8 bytes
-	void* vtable;
+{					// 0x0097977D, 0x21A8 bytes
+	void *vtable;
 	// at 0x32C
 	MapImager mapImager;
 	// at 0x340
@@ -1455,7 +1565,8 @@ struct WRenViewport // : WD3DViewport
 	Silhouette silhouette;
 };
 
-namespace incomplete {
+namespace incomplete
+{
 	struct Command
 	{
 		Command *self;
