@@ -8,6 +8,10 @@
 #define GPtr(addr, type) \
   (*(type*)addr)
 
+#define CSTR(name, addr) \
+extern const char name[] asm(#addr);
+
+
 #define GDecl(name, addr, type) \
   extern type name asm(#addr);
 
@@ -40,18 +44,18 @@ GDecl(range_RenderBuild,		0x10A6414, bool)
 GDecl(d3d_WindowsCursor,		0x10A636E, bool)
 GDecl(debugSelect,			0x10A645E, bool)
 
-GDecl(s_FACTORY,			0xE19824, const char*)
-GDecl(s_EXPERIMENTAL,			0xE204B8, const char*)
-GDecl(s_ExpectedButGot,			0xE0A220, const char*) // "%s\n  expected %d args, but got %d"
-GDecl(s_ExpectedBetweenButGot,		0xE0A270, const char*) // "%s\n  expected between %d and %d args, but got %d"
-GDecl(s_Global,				0xE00D90, const char*) // "<global>"
-GDecl(s_CMauiBitmap,			0xE37438, const char*) // "CMauiBitmap"
-GDecl(s_UserUnit,			0xE4D090, const char*) // "UserUnit"
-GDecl(s_ExpectedAGameObject,		0xE09860, const char*) // "Expected a game object. (Did you call with '.' instead of ':'?)"
-GDecl(s_GameObjectHasBeenDestroyed,	0xE098A0, const char*) // "Game object has been destroyed"
-GDecl(s_IncorrectTypeOfGameObject,	0xE098C0, const char*) // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
-GDecl(s_UnknownColor,			0x4B2D54, const char*) // "Unknown color: %s"
-GDecl(s_c_object,			0xE016DC, const char*) // "_c_object"
+CSTR(s_FACTORY,			0xE19824)
+CSTR(s_EXPERIMENTAL,			0xE204B8)
+CSTR(s_ExpectedButGot,			0xE0A220) // "%s\n  expected %d args, but got %d"
+CSTR(s_ExpectedBetweenButGot,		0xE0A270) // "%s\n  expected between %d and %d args, but got %d"
+CSTR(s_Global,				0xE00D90) // "<global>"
+CSTR(s_CMauiBitmap,			0xE37438) // "CMauiBitmap"
+CSTR(s_UserUnit,			0xE4D090) // "UserUnit"
+CSTR(s_ExpectedAGameObject,		0xE09860) // "Expected a game object. (Did you call with '.' instead of ':'?)"
+CSTR(s_GameObjectHasBeenDestroyed,	0xE098A0) // "Game object has been destroyed"
+CSTR(s_IncorrectTypeOfGameObject,	0xE098C0) // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
+CSTR(s_UnknownColor,			0xE07D14) // "Unknown color: %s"
+CSTR(s_c_object,			0xE016DC) // "_c_object"
 
 GDecl(g_ExeVersion1,			0x876666, const int)
 GDecl(g_ExeVersion2,			0x87612d, const int)
