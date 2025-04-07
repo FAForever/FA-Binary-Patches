@@ -292,14 +292,14 @@ int LuaDrawLine(lua_State *l)
     float lod = std::max(lod1, lod2);
     float a = std::max(thickness / lod, 2.f);
 
-    Vector3f offset = FindNormalVector(pos1, pos2);
-
     thickness = a * lod * 0.5;
 
-    Vector3f v1 = pos1 + offset * thickness;
-    Vector3f v2 = pos1 - offset * thickness;
-    Vector3f v3 = pos2 + offset * thickness;
-    Vector3f v4 = pos2 - offset * thickness;
+    Vector3f offset = FindNormalVector(pos1, pos2) * thickness;
+
+    Vector3f v1 = pos1 + offset;
+    Vector3f v2 = pos1 - offset;
+    Vector3f v3 = pos2 + offset;
+    Vector3f v4 = pos2 - offset;
 
     _DrawQuad(color, &v1, &v2, &v3, batcher, &v4);
 
