@@ -273,7 +273,7 @@ int LuaDrawLine(lua_State *l)
     }
     if (!is_in_render_world)
     {
-        luaL_error(l, "Attempt to call DrawCircle outside of OnRenderWorld");
+        luaL_error(l, "Attempt to call DrawLine outside of OnRenderWorld");
         return 0;
     }
     Vector3f pos1 = ToVector(l, 1);
@@ -294,7 +294,7 @@ int LuaDrawLine(lua_State *l)
 
     Vector3f offset = FindNormalVector(pos1, pos2);
 
-    thickness = a * lod;
+    thickness = a * lod * 0.5;
 
     Vector3f v1 = pos1 + offset * thickness;
     Vector3f v2 = pos1 - offset * thickness;
