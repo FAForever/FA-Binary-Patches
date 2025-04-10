@@ -204,7 +204,7 @@ int LuaDrawRect(lua_State *l)
 
     Vector3f pos = ToVector(l, 1);
     float size = luaL_checknumber(l, 2);
-    const char *s = lua_tostring(l, 3);
+    const char *s = luaL_checklstring(l, 3, nullptr);
     float thickness = luaL_optnumber(l, 4, 0.15);
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
@@ -237,7 +237,7 @@ int LuaDrawCircle(lua_State *l)
     }
     Vector3f pos = ToVector(l, 1);
     float r = luaL_checknumber(l, 2);
-    const char *s = lua_tostring(l, 3);
+    const char *s = luaL_checklstring(l, 3, nullptr);
     float thickness = luaL_optnumber(l, 4, 0.15);
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
@@ -278,7 +278,7 @@ int LuaDrawLine(lua_State *l)
     }
     Vector3f pos1 = ToVector(l, 1);
     Vector3f pos2 = ToVector(l, 2);
-    const char *s = lua_tostring(l, 3);
+    const char *s = luaL_checklstring(l, 3, nullptr);
     float thickness = luaL_optnumber(l, 4, 0.15);
     uint32_t color;
     if (!Moho::TryConvertToColor(s, color))
