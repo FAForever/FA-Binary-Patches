@@ -54,7 +54,7 @@ void _DrawRect(
           NON_GENERAL_REG(batcher),
           NON_GENERAL_REG(v3),
           NON_GENERAL_REG(heightmap)
-        : "xmm0");
+        : "xmm0", "memory");
 }
 
 void DrawRect(
