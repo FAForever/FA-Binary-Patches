@@ -24,7 +24,7 @@ void _DrawQuad(
           [esi0] "S"(esi0),
           [a5] "g"(batcher),
           [a6] "g"(a6)
-        :);
+        : "memory");
 }
 
 void _DrawRect(
@@ -54,7 +54,7 @@ void _DrawRect(
           NON_GENERAL_REG(batcher),
           NON_GENERAL_REG(v3),
           NON_GENERAL_REG(heightmap)
-        : "xmm0");
+        : "xmm0", "memory");
 }
 
 void DrawRect(
@@ -218,7 +218,6 @@ int LuaDrawRect(lua_State *l)
     Vector3f a{0, 0, size};
     Vector3f b{size, 0, 0};
     DrawRect(a, b, color, thick * lod, batcher, pos, nullptr, -10000);
-    Moho::CPrimBatcher::FlushBatcher(batcher);
     return 0;
 }
 UIRegFunc DrawRectReg{"UI_DrawRect", "UI_DrawRect(pos:vector, size:float, color:string, thickness?=0.15:float)", LuaDrawRect};
@@ -249,8 +248,6 @@ int LuaDrawCircle(lua_State *l)
     float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos);
     float a = std::max(thickness / lod, 2.f);
     _DrawCircle(batcher, &pos, r, lod * a, color, &orientation);
-
-    Moho::CPrimBatcher::FlushBatcher(batcher);
     return 0;
 }
 
@@ -303,7 +300,6 @@ int LuaDrawLine(lua_State *l)
 
     _DrawQuad(color, &v1, &v2, &v3, batcher, &v4);
 
-    Moho::CPrimBatcher::FlushBatcher(batcher);
     return 0;
 }
 
