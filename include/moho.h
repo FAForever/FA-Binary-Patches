@@ -17,35 +17,7 @@ struct luaFuncDescReg
 };
 VALIDATE_SIZE(luaFuncDescReg, 0x1C)
 
-// Probably from visual c++ 9
-struct vtable;
-struct typeInfo
-{ // 0x8+ bytes
-	void *vtable;
-	int zero;
-	char name[];
-};
 
-struct classDesc
-{ // 0x30+ bytes
-	// at 0x4
-	uint32_t trueDataOffset; // Subtraction
-	// at 0xC
-	void *typeInfo;
-	// at 0x20
-	void *beginParents; // +0x4
-	void *endParents;	// -0x4
-	// at 0x28
-	classDesc *parents[];
-	// void* typeInfo;
-};
-
-struct vtable
-{ // 0x8+ bytes
-	// at -0x4
-	void *classDesc;
-	void *methods[];
-};
 
 template <typename T>
 struct vector
@@ -211,9 +183,22 @@ struct Vector4f
 	float x, y, z, w;
 };
 
-struct RObject
+struct Rect2i
+{
+	int x0;
+	int z0;
+	int x1;
+	int z1;
+};
+
+struct RObject : VirtualClass
 { // 0x4 bytes
-	void *vtable;
+    using vtable_t = struct vtable_RObject : vtable_ {
+		gpg::RType *(__thiscall *GetClass)(RObject *);
+		RRef *(__thiscall *GetDerivedObjectRef)(RObject *, RRef *);
+		void (__thiscall *dtr)(RObject *);
+	};
+	vtable_t* Virt() const { return reinterpret_cast<vtable_t*>(vtable); }
 };
 
 template <int T, int TInfo>
@@ -225,6 +210,12 @@ struct ObjectType
 
 struct CScriptObject : RObject
 { // 0x004C6F8A, 0x34 bytes
+    using vtable_t = struct vtable_CScriptObject : vtable_RObject {
+		string * (__thiscall *GetErrorDescription)(CScriptObject *);
+		
+	};
+	vtable_t* Virt() const { return reinterpret_cast<vtable_t*>(vtable); }
+
 	linked_list<CScriptObject> ll;
 	LuaObject UserData;
 	LuaObject Table;
@@ -287,9 +278,49 @@ struct Camera // : RCamCamera
 {			  // 0x007A7972, 0x858 bytes
 };
 
+struct CD3DPrimBatcher;
+
+struct SMauiEventData
+{
+	int eventType;
+	float mouseX;
+	float mouseY;
+	int wheelRotation;
+	int wheelData;
+	int keycode;
+	int rawKeyCode;
+	int modifiers;
+	CScriptObject *control;
+};
+
+
 struct CMauiControl : CScriptObject
 { // 0x004C6F8A, 0x11C bytes
 	using Type = ObjectType<0x10C7700, 0xF83314>;
+	
+    using vtable_t = struct vtable_CScriptObject : vtable_RObject {
+		void (__thiscall *OnInit)(CMauiControl *);
+		void (__thiscall *Draw)(CMauiControl *, CD3DPrimBatcher *batcher, int renderPass);
+		void (__thiscall *SetHidden)(CMauiControl *, BOOL hidden);
+		BOOL (__thiscall *IsHidden)(CMauiControl *);
+		BOOL (__thiscall *HitTest)(CMauiControl *, float x, float y);
+		void (__thiscall *DisableHitTest)(CMauiControl *, BOOL value, bool applyChildren);
+		bool (__thiscall *IsHitTestDisabled)(CMauiControl *);
+		bool (__thiscall *HandleEvent)(CMauiControl *, SMauiEventData * evt);
+		void (__thiscall *OnFrame)(CMauiControl *, float delta);
+		void (__thiscall *AcquireKeyboardFocus)(CMauiControl *, BOOL);
+		void (__thiscall *AbandonKeyboardFocus)(CMauiControl *);
+		void (__thiscall *LoseKeyboardFocus)(CMauiControl *);
+		void (__thiscall *KeyboardFocusChange)(CMauiControl *);
+		bool (__thiscall *IsScrollable)(CMauiControl *, int axis);
+		Rect2i* (__thiscall *GetScrollValues)(CMauiControl *, Rect2i* dest, int axis);
+		void (__thiscall *ScrollLines)(CMauiControl *, int axis, float delta);
+		void (__thiscall *ScrollLines2)(CMauiControl *, int axis, float delta);
+		void (__thiscall *ScrollSetTop)(CMauiControl *, int axis, float delta);
+		CMauiControl* (__thiscall *LastChild)(CMauiControl *, int unknown);
+		void (__thiscall *Dump)(CMauiControl *);
+	};
+	vtable_t* Virt() const { return reinterpret_cast<vtable_t*>(vtable); }
 };
 
 struct CWldSession;
