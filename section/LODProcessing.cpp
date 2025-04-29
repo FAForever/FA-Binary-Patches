@@ -28,6 +28,9 @@ void FirstLODCheck()
         
         "mov eax, dword ptr [eax+0x14];"  //Mesh
         "mov eax, dword ptr [eax+0x20];"  //RMeshBlueprint
+        "cmp eax, 0x0;"
+        "je Exit;"                        //No MeshBP (projectiles don't have it for some reason)
+        
         "mov ecx, 0x00000000;"
         "mov cl, byte ptr [eax+0x42];"
         "cmp cl, 0x0;"                     
@@ -74,6 +77,9 @@ void MeshComputeLOD()
         "xorps xmm7, xmm7;"
         "mov eax, dword ptr [esp+0x8];"
         "mov eax, dword ptr [eax+0x20];"
+        "cmp eax, 0x0;"  
+        "je Exit2;"        
+        
         "mov bl, byte ptr [eax+0x42];"
         "cmp bl, 0x0;"
         "je Exit2;"                      //No groupId
