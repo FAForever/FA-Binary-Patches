@@ -4,6 +4,7 @@
 
 char LODMultTable[508]; //127*4
 bool applyToWorstOnly = false;
+float smallShadowCutoff = 0;
 
 
 void FirstLODCheck()
@@ -31,6 +32,27 @@ void FirstLODCheck()
         "cmp eax, 0x0;"
         "je Exit;"                        //No MeshBP (projectiles don't have it for some reason)
         
+        "mov ecx, %[smallShadowCutoff];"
+        "test ecx, ecx;"
+        "je NoSmallCutoff;"               //smallShadowCutoff disabled
+        
+        
+        "mov ecx, dword ptr [esp+0x38];"   //[esp+0x38] Moho::CGeomSolid3
+        "cmp dword ptr [ecx+0x148], 0x0;"  //When filtering meshes for shadow mask there is 
+                                           //a simplified CGeomSolid3 without gameTime, mouse pos, zoom etc
+                                           //values in it. Here we check for gameTime (seconds)
+                                           //float CGeomSolid3 + 0x148. If there is no gameTime, we proceed
+        "jne NoSmallCutoff;"
+        "cmp byte ptr [eax+0x43], 0x0;"
+        "je NoSmallCutoff;"                //MeshBp.IsSmallObject = False
+        "movss xmm7, %[smallShadowCutoff];"   
+        "comiss xmm1, xmm7;"               
+        "jbe NoSmallCutoff;"               //Distance < smallShadowCutoff
+        "pxor xmm0, xmm0;"
+        "jmp Exit;"
+        
+        
+        "NoSmallCutoff:;"
         "mov ecx, 0x00000000;"
         "mov cl, byte ptr [eax+0x42];"
         "cmp cl, 0x0;"                     
@@ -52,7 +74,8 @@ void FirstLODCheck()
         "jmp 0x005039F9;"
         
         :
-        : NON_GENERAL_REG(LODMultTable)
+        : NON_GENERAL_REG(LODMultTable),
+          [smallShadowCutoff]"m"(smallShadowCutoff)
         :
 	);
 }
@@ -208,3 +231,13 @@ int LuaApplyMultToWorstLOD(lua_State *l)
 }
 
 UIRegFunc ApplyMultToWorstLOD{"ApplyMultToWorstLODOnly", "ApplyMultToWorstLODOnly(apply:bool)", LuaApplyMultToWorstLOD};
+
+
+int LuaSetSmallShadowCutoff(lua_State *l)
+{
+    smallShadowCutoff = luaL_optnumber(l, 1, 0);
+   
+    return 0;
+}
+
+UIRegFunc SetSmallShadowCutoff{"SetSmallShadowCutoff", "SetSmallShadowCutoff(distance:float)", LuaSetSmallShadowCutoff};
