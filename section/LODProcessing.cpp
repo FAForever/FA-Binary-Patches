@@ -1,8 +1,9 @@
 #include "moho.h"
+#include "global.h"
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
-char LODMultTable[508]; //127*4
+float LODMultTable[128];
 bool applyToWorstOnly = false;
 float smallShadowCutoff = 0;
 
@@ -80,124 +81,88 @@ void FirstLODCheck()
 	);
 }
 
-char savedMult[4];
-char null[4];
 
-void MeshComputeLOD()
-{
-    //Moho::Mesh::ComputeLOD
-    //this is where best LOD is picked from all avalaible
-    //ProcessBestLOD and ProcessWorstLOD are subparts of it
-	asm(
-        //default
-        "movss xmm0, dword ptr [eax+0x8];"
-        
-        "push eax;"
-        "push ebx;"
-        
-        "mov eax, 0x0;"
-        "mov %[savedMult], 0x0;"
-        "xorps xmm7, xmm7;"
-        "mov eax, dword ptr [esp+0x8];"
-        "mov eax, dword ptr [eax+0x20];"
-        "cmp eax, 0x0;"  
-        "je Exit2;"        
-        
-        "mov bl, byte ptr [eax+0x42];"
-        "cmp bl, 0x0;"
-        "je Exit2;"                      //No groupId
-        
-        "mov al, 0x4;"
-        "mul bl;"
-        "mov ebx, %[LODMultTable];"
-        "add bx, ax;"
-        "mov eax, dword ptr[ebx];"
-        "cmp eax, 0;"
-        "je Exit2;"                      //No mult
-        
-        "mov ebx, dword ptr[ebx];"
-        "mov %[savedMult], eax;"
-        
-        "Exit2:;"
-        "pop ebx;"
-        "pop eax;"
-        
-        "comiss xmm0, xmm2;"
-        "jbe RETURN1;"
-        
-        "jmp 0x007DDA7D;"
-        
-        "RETURN1:;"
-        "movss xmm7, xmm0;" //Save modified LODCuttof to xmm7 for futher use in some checks            
-        "pop esi;"
-        "ret;"
-        
-        :
-        : [applyToWorstOnly]"m"(applyToWorstOnly),
-          NON_GENERAL_REG(LODMultTable),
-          [savedMult]"m"(savedMult),
-          [null]"m"(null)
-        :
-	);
-}
+//A copy of Moho::Mesh::ComputeLOD (0x007DDA50) with the support of LOD multipliers
+//Only "mesh" and "distance" args are used, others is just a workaround to trick compiler
+//Default function uses eax and xmm1 so there is no clear solution
 
-void ProcessBestLOD()
+int __cdecl ComputeLOD(int null, int null2, int null3, void *mesh, int null5, int null6, int null7, int null8, int null9, float distance)
 {
+    int *LODsArray = reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(mesh) + 0x30);
+    int *meshBpPtr = reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(mesh) + 0x20);
+    
+    float LODmult = 1;
+    
+    if (not *LODsArray)
+    {
+        return 0;
+    }
+    
+    if (*meshBpPtr)
+    {
+        int *meshBp = reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(mesh) + 0x20);
+        int8_t meshGroupID = *reinterpret_cast<int8_t*>((*meshBp) + 0x42);
+
+        if (meshGroupID)
+        {
+            if (LODMultTable[meshGroupID])
+            {
+                LODmult = LODMultTable[meshGroupID];
+            }
+        }
+    }
+
+    int numOfLODs = (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(mesh) + 0x34) - *LODsArray) >> 2;
+    int finalMeshLOD = 0;
+    float finalCutoff = 0;
+    
+    for (int i = 0; i != numOfLODs; ++i)
+    {
+        int *meshLOD = reinterpret_cast<int*>(*LODsArray);
+        meshLOD = reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(meshLOD) + (0x4 * i));
+
+        
+        bool worstLOD = *reinterpret_cast<bool*>((*meshLOD) + 0x4);
+        float LODCutoff = *reinterpret_cast<float*>((*meshLOD) + 0x8);
+        
+        if (not worstLOD)
+        {
+            if (not applyToWorstOnly)
+            {
+                LODCutoff = LODCutoff * LODmult;
+            }
+            
+            if (distance <= LODCutoff)
+            {
+                finalMeshLOD = *meshLOD;
+                finalCutoff = LODCutoff;
+                break;
+            }
+
+        } else
+        { 
+            LODCutoff = LODCutoff * LODmult; 
+            if (distance <= LODCutoff + 20) //20 is default ren_MeshDissolve (0x00F57F00)    
+            {
+                finalMeshLOD = *meshLOD;
+                finalCutoff = LODCutoff;
+                break;
+            }
+        }     
+        
+    }
+    
     asm(
-        "push eax;"
-        "mov al, %[applyToWorstOnly];"
-        "cmp al, 0x1;"
-        "je Exit3;"
-        
-        "mov eax, %[savedMult];"
-        "cmp eax, 0x0;"
-        "je Exit3;"
-        
-        "mulss xmm0, %[savedMult];"
-        
-        
-        "Exit3:;"
-        "pop eax;"
-        
-        //default
-        "comiss xmm1, xmm0;"
-        "jbe RETURN1;"
-        
-        "jmp 0x007DDA88;"
-        
+        "movss xmm3, %[distance];"     //restore xmm3 because it's used later by default code
+        "movss xmm7, %[finalCutoff];"  //also save modified cutoff for further use
+
         :
-        : [applyToWorstOnly]"m"(applyToWorstOnly),
-          [savedMult]"m"(savedMult)
+        : [finalCutoff] "m"(finalCutoff),
+          [distance] "m"(distance)
         :
     );
-}
-
-void ProcessWorstLOD()
-{
-    asm(
-        //default
-        "addss xmm0, dword ptr ds:[0x00F57F00];"
-        
-        "push eax;"
-        "mov eax, %[savedMult];"
-        "cmp eax, 0x0;"
-        "je Exit4;"
-        "mulss xmm0, %[savedMult];"
-        
-        "Exit4:;"
-        "pop eax;"
-        "comiss xmm1, xmm0;"
-        "jbe RETURN1;"
-        
-        //default
-        "xor eax, eax;"
-        "pop esi;"
-        "ret;"
-
-        :
-        : [savedMult]"m"(savedMult)
-        :
-    );
+    
+    return finalMeshLOD;
 }
 
 int LuaSetLODMult(lua_State *l)
@@ -210,12 +175,7 @@ int LuaSetLODMult(lua_State *l)
     }
     float mult = luaL_optnumber(l, 2, 0);
     
-    unsigned char *ch = reinterpret_cast<unsigned char *>(&mult);
-    
-    for (int i = 0; i != 5; ++i)
-    {
-        LODMultTable[4*groupID + i] = ch[i];
-    }
+    LODMultTable[groupID] = mult;
 
     return 0;
 }
