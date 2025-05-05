@@ -1,7 +1,6 @@
 #include "moho.h"
 
-const char *meshGroupField = "MeshGroupID";
-const char *isSmallObjectField = "IsSmallObject";
+const char *meshGroupField = "LODGroup";
 
 char eaxStorage[4];
 char espStorage[4];
@@ -14,7 +13,7 @@ char *rBlueprint;
 
 
 //Blueprint loading on game start. We are inside Moho::SCR_LuaBuildObject (recursive function)
-//For now it is used for "MeshGroupID", but additional fields can be added in the future if needed.
+//For now it is used for "LODGroup", but additional fields can be added in the future if needed.
  
 void GetBpFieldValues()
 {
@@ -56,14 +55,6 @@ void ProcessBpFieldValues()
         }
     }
     
-    if (not strcmp(fieldName, isSmallObjectField))
-    {
-        if (bool(fieldValue)) //IsSmallObject = True
-        {
-            *(rBlueprint + 0x43) = true;
-        }
-    }
-    
     asm(
         //fixing registers
         "mov eax, %[eaxStorage];"
@@ -96,7 +87,6 @@ void InitRMeshBlueprint()
         
         //new clear mem
         "mov byte ptr [esi+0x42], 0x0;"
-        "mov byte ptr [esi+0x43], 0x0;"
         
         "jmp 0x005283DB;"
 	);

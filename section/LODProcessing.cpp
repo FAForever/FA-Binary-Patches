@@ -4,8 +4,8 @@
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
 float LODMultTable[128];
+float shadowMultTable[128];
 bool applyToWorstOnly = false;
-float smallShadowCutoff = 0;
 
 
 void FirstLODCheck()
@@ -33,28 +33,30 @@ void FirstLODCheck()
         "cmp eax, 0x0;"
         "je Exit;"                        //No MeshBP (projectiles don't have it for some reason)
         
-        "mov ecx, %[smallShadowCutoff];"
-        "test ecx, ecx;"
-        "je NoSmallCutoff;"               //smallShadowCutoff disabled
-        
-        
+             
         "mov ecx, dword ptr [esp+0x38];"   //[esp+0x38] Moho::CGeomSolid3
         "cmp dword ptr [ecx+0x148], 0x0;"  //When filtering meshes for shadow mask there is 
                                            //a simplified CGeomSolid3 without gameTime, mouse pos, zoom etc
                                            //values in it. Here we check for gameTime (seconds)
                                            //float CGeomSolid3 + 0x148. If there is no gameTime, we proceed
-        "jne NoSmallCutoff;"
-        "cmp byte ptr [eax+0x43], 0x0;"
-        "je NoSmallCutoff;"                //MeshBp.IsSmallObject = False
-        "movss xmm7, %[smallShadowCutoff];"   
-        "comiss xmm1, xmm7;"               
-        "jbe NoSmallCutoff;"               //Distance < smallShadowCutoff
-        "pxor xmm0, xmm0;"
+        "jne NoShadowCutoff;"
+        
+        "mov ecx, 0x0;"
+        "mov cl, byte ptr [eax+0x42];"
+        "cmp cl, 0x0;"                     
+        "je Exit;"                          //No groupId in mesh bp
+        "mov al, 0x4;"
+        "mul cl;"
+        "mov ecx, %[shadowMultTable];"
+        "add cx, ax;"
+        "cmp dword ptr[ecx], 0x0;"
+        "je Exit;"                         //No shadow mult
+        
+        "mulss xmm0, dword ptr[ecx];"
         "jmp Exit;"
         
-        
-        "NoSmallCutoff:;"
-        "mov ecx, 0x00000000;"
+        "NoShadowCutoff:;"
+        "mov ecx, 0x0;"
         "mov cl, byte ptr [eax+0x42];"
         "cmp cl, 0x0;"                     
         "je Exit;"                        //No groupId in mesh bp
@@ -63,9 +65,8 @@ void FirstLODCheck()
         "mul cl;"
         "mov ecx, %[LODMultTable];"
         "add cx, ax;"
-        "mov eax, dword ptr[ecx];"
-        "cmp eax, 0;"
-        "je Exit;"                       //No mult
+        "cmp dword ptr[ecx], 0x0;"
+        "je Exit;"                       //No LOD mult
         
         "mulss xmm0, dword ptr[ecx];"
         
@@ -76,7 +77,7 @@ void FirstLODCheck()
         
         :
         : NON_GENERAL_REG(LODMultTable),
-          [smallShadowCutoff]"m"(smallShadowCutoff)
+          NON_GENERAL_REG(shadowMultTable)
         :
 	);
 }
@@ -180,7 +181,7 @@ int LuaSetLODMult(lua_State *l)
     return 0;
 }
 
-UIRegFunc SetGroupLODMult{"SetGroupLODMult", "SetGroupLODMult(group:int, mult:float)", LuaSetLODMult};
+UIRegFunc SetLODGroupMultiplier{"SetLODGroupMultiplier", "SetLODGroupMultiplier(group:int, mult:float)", LuaSetLODMult};
 
 
 int LuaApplyMultToWorstLOD(lua_State *l)
@@ -193,11 +194,24 @@ int LuaApplyMultToWorstLOD(lua_State *l)
 UIRegFunc ApplyMultToWorstLOD{"ApplyMultToWorstLODOnly", "ApplyMultToWorstLODOnly(apply:bool)", LuaApplyMultToWorstLOD};
 
 
-int LuaSetSmallShadowCutoff(lua_State *l)
+int LuaSetShadowCutoffMult(lua_State *l)
 {
-    smallShadowCutoff = luaL_optnumber(l, 1, 0);
-   
+    int groupID = luaL_checknumber(l, 1);
+    if  (groupID < 1 || groupID > 127)
+    {
+        luaL_error(l, "groupID should be from 1 to 127");
+        return 0;
+    }
+    float mult = luaL_optnumber(l, 2, 1);
+    
+    if (mult < 0 or mult > 1)
+    {
+        mult = 1;
+    }
+    
+    shadowMultTable[groupID] = mult;
+
     return 0;
 }
 
-UIRegFunc SetSmallShadowCutoff{"SetSmallShadowCutoff", "SetSmallShadowCutoff(distance:float)", LuaSetSmallShadowCutoff};
+UIRegFunc SetShadowCutoffGroupMultiplier{"SetShadowCutoffGroupMultiplier", "SetShadowCutoffGroupMultiplier(group:int, mult:float)", LuaSetShadowCutoffMult};
