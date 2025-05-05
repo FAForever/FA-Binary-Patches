@@ -4,7 +4,7 @@
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
 float LODMultTable[128];
-float shadowMultTable[128];
+float shadowCutoffDistance[128];
 bool applyToWorstOnly = false;
 
 
@@ -39,7 +39,7 @@ void FirstLODCheck()
                                            //a simplified CGeomSolid3 without gameTime, mouse pos, zoom etc
                                            //values in it. Here we check for gameTime (seconds)
                                            //float CGeomSolid3 + 0x148. If there is no gameTime, we proceed
-        "jne NoShadowCutoff;"
+        "jne NotAShadowMask;"
         
         "mov ecx, 0x0;"
         "mov cl, byte ptr [eax+0x42];"
@@ -47,15 +47,25 @@ void FirstLODCheck()
         "je Exit;"                          //No groupId in mesh bp
         "mov al, 0x4;"
         "mul cl;"
-        "mov ecx, %[shadowMultTable];"
+        "mov ecx, %[shadowCutoffDistance];"
         "add cx, ax;"
         "cmp dword ptr[ecx], 0x0;"
-        "je Exit;"                         //No shadow mult
+        "je NoShadowCutoffDist;"            //No shadow distance
         
-        "mulss xmm0, dword ptr[ecx];"
+        "movss xmm0, dword ptr[ecx];"
         "jmp Exit;"
         
-        "NoShadowCutoff:;"
+        "NoShadowCutoffDist:;"
+        "mov ecx, %[LODMultTable];"       //If there is no shadowCutoff distance
+        "add cx, ax;"                     //we still try to apply LOD mult on it 
+        "cmp dword ptr[ecx], 0x0;"        //so it has same cutoff as mesh
+        "je Exit;"
+        
+        "mulss xmm0, dword ptr[ecx];"
+        "jmp Exit;"        
+        
+        
+        "NotAShadowMask:;"
         "mov ecx, 0x0;"
         "mov cl, byte ptr [eax+0x42];"
         "cmp cl, 0x0;"                     
@@ -68,7 +78,7 @@ void FirstLODCheck()
         "cmp dword ptr[ecx], 0x0;"
         "je Exit;"                       //No LOD mult
         
-        "mulss xmm0, dword ptr[ecx];"
+        "mulss xmm0, dword ptr[ecx];"    //Apply LOD mult
         
         "Exit:;"
         "pop ecx;"
@@ -77,7 +87,7 @@ void FirstLODCheck()
         
         :
         : NON_GENERAL_REG(LODMultTable),
-          NON_GENERAL_REG(shadowMultTable)
+          NON_GENERAL_REG(shadowCutoffDistance)
         :
 	);
 }
@@ -194,7 +204,7 @@ int LuaApplyMultToWorstLOD(lua_State *l)
 UIRegFunc ApplyMultToWorstLOD{"ApplyMultToWorstLODOnly", "ApplyMultToWorstLODOnly(apply:bool)", LuaApplyMultToWorstLOD};
 
 
-int LuaSetShadowCutoffMult(lua_State *l)
+int LuaSetShadowCutoffDistance(lua_State *l)
 {
     int groupID = luaL_checknumber(l, 1);
     if  (groupID < 1 || groupID > 127)
@@ -202,16 +212,16 @@ int LuaSetShadowCutoffMult(lua_State *l)
         luaL_error(l, "groupID should be from 1 to 127");
         return 0;
     }
-    float mult = luaL_optnumber(l, 2, 1);
+    float distance = luaL_optnumber(l, 2, 0);
     
-    if (mult < 0 or mult > 1)
+    if (distance < 0)
     {
-        mult = 1;
+        distance = 0;
     }
     
-    shadowMultTable[groupID] = mult;
+    shadowCutoffDistance[groupID] = distance;
 
     return 0;
 }
 
-UIRegFunc SetShadowCutoffGroupMultiplier{"SetShadowCutoffGroupMultiplier", "SetShadowCutoffGroupMultiplier(group:int, mult:float)", LuaSetShadowCutoffMult};
+UIRegFunc SetShadowCutoffGroupDistance{"SetShadowCutoffGroupDistance", "SetShadowCutoffGroupDistance(group:int, mult:distance)", LuaSetShadowCutoffDistance};
