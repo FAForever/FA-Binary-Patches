@@ -1,0 +1,5 @@
+//Moho::SSTIEntityVariableData::SSTIEntityVariableData
+0x00558823:
+    mov dword ptr [eax+0x0A4], ecx // 0x0A5 bool forceAltFootprint
+                                   // 0x0A6 bool isForceReclaim
+                                   // 0x0A7 bool isForceReverseMove
