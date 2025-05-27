@@ -1,0 +1,8 @@
+0x007E1A66:
+    jmp @SetMeshFxTextures
+    
+0x00800E7F:
+    jmp @StoreTerrainFxData
+    nop
+    nop
+    nop
