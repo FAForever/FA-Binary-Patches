@@ -49,6 +49,21 @@ void SetNewFramefxVars()
         "movss dword ptr ss:[esp], xmm0;"  // default
         "call eax;"                         
         
+        "cmp ebx, 0x0;"
+        "je notVisionTechnique;"
+        "mov ebx, [ebx+0x4];"
+        "cmp ebx, 0x69736956;"             //char "Visi"
+        "jne notVisionTechnique;"
+        
+        //WRenViewport->camera->WorldToProjectionMatrix/InverseWldToProj
+        "mov ebx, [esp+0x58];"             
+        "mov ebx, [ebx+0x219C];"
+        "lea ebx, [ebx+0x9C];"
+        "mov %[wldToProjArray], ebx;"
+        "add ebx, 0xC0;"
+        "mov %[InvWldToProjArray], ebx;"
+        
+        "notVisionTechnique:;"
         
         //InverseWorldToProjectMatrix
         "mov esi, %[inverseMatrixVar];"
@@ -116,65 +131,6 @@ void SetNewFramefxVars()
     );
 }
 
-void InverseMat4x4()
-{
-    const float *m = wldToProjArray;
-    float inv[16];
-    float det;
-    int i;
-
-    inv[0]  =  m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] + m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
-    inv[4]  = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] - m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
-    inv[8]  =  m[4] * m[9]  * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] + m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[9];
-    inv[12] = -m[4] * m[9]  * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] - m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[9];
-    inv[1]  = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] - m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10];
-    inv[5]  =  m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] + m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
-    inv[9]  = -m[0] * m[9]  * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] - m[8] * m[3] * m[13] - m[12] * m[1] * m[11] + m[12] * m[3] * m[9];
-    inv[13] =  m[0] * m[9]  * m[14] - m[0] * m[10] * m[13] - m[8] * m[1] * m[14] + m[8] * m[2] * m[13] + m[12] * m[1] * m[10] - m[12] * m[2] * m[9];
-    inv[2]  =  m[1] * m[6]  * m[15] - m[1] * m[7]  * m[14] - m[5] * m[2] * m[15] + m[5] * m[3] * m[14] + m[13] * m[2] * m[7]  - m[13] * m[3] * m[6];
-    inv[6]  = -m[0] * m[6]  * m[15] + m[0] * m[7]  * m[14] + m[4] * m[2] * m[15] - m[4] * m[3] * m[14] - m[12] * m[2] * m[7]  + m[12] * m[3] * m[6];
-    inv[10] =  m[0] * m[5]  * m[15] - m[0] * m[7]  * m[13] - m[4] * m[1] * m[15] + m[4] * m[3] * m[13] + m[12] * m[1] * m[7]  - m[12] * m[3] * m[5];
-    inv[14] = -m[0] * m[5]  * m[14] + m[0] * m[6]  * m[13] + m[4] * m[1] * m[14] - m[4] * m[2] * m[13] - m[12] * m[1] * m[6]  + m[12] * m[2] * m[5];
-    inv[3]  = -m[1] * m[6]  * m[11] + m[1] * m[7]  * m[10] + m[5] * m[2] * m[11] - m[5] * m[3] * m[10] - m[9]  * m[2] * m[7]  + m[9]  * m[3] * m[6];
-    inv[7]  =  m[0] * m[6]  * m[11] - m[0] * m[7]  * m[10] - m[4] * m[2] * m[11] + m[4] * m[3] * m[10] + m[8]  * m[2] * m[7]  - m[8]  * m[3] * m[6];
-    inv[11] = -m[0] * m[5]  * m[11] + m[0] * m[7]  * m[9]  + m[4] * m[1] * m[11] - m[4] * m[3] * m[9]  - m[8]  * m[1] * m[7]  + m[8]  * m[3] * m[5];
-    inv[15] =  m[0] * m[5]  * m[10] - m[0] * m[6]  * m[9]  - m[4] * m[1] * m[10] + m[4] * m[2] * m[9]  + m[8]  * m[1] * m[6]  - m[8]  * m[2] * m[5];
-
-    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
-
-    if (det != 0)
-    {
-        det = 1.0 / det;
-    }
-    
-    for (i = 0; i < 16; i++)
-        InverseWorldToProjectionMatrix[i] = inv[i] * det;
-}
-
-//Save WorldToProjection matrix from particle.fx
-//Also make inverse version of it in InverseMat4x4
-//TODO: call InverseMat4x4()once per frame instead of every time particle.fx is called
-//probably by comparinig some floats in matrix and if they stay unchanged
-//then we are in same frame or camera isn't moving so no need to call InverseMat4x4
-void SaveMatrices()
-{
-    asm(
-        "lea eax, ds:[ebx+0x9C];"
-        "mov %[wldToProjArray], eax;" //Save matrix
-        "push eax;"
-        "call edx;"
-        
-        "call %[InverseMat4x4];"
-
-        "jmp 0x00495342;"
-        :
-        :[wldToProjArray]"m"(wldToProjArray),
-         [InverseMat4x4]"i"(InverseMat4x4)
-        :
-    );
-}
-
-
 //////////DEBUG PART////////////////
 
 int LuaMousePosXYZ(lua_State *l)
@@ -208,8 +164,6 @@ int LuaMousePosXYZ(lua_State *l)
     float viewY = line2_1*mX + line2_2*mY + line2_3*mZ + line2_4*mW;
     float viewZ = line3_1*mX + line3_2*mY + line3_3*mZ + line3_4*mW;
     float viewW = line4_1*mX + line4_2*mY + line4_3*mZ + line4_4*mW;
-    
-    InverseMat4x4();
     
     float inViewX = InvWldToProjArray[0]*viewX + InvWldToProjArray[4]*viewY + InvWldToProjArray[8]*viewZ + InvWldToProjArray[12]*viewW;
     float inViewY = InvWldToProjArray[1]*viewX + InvWldToProjArray[5]*viewY + InvWldToProjArray[9]*viewZ + InvWldToProjArray[13]*viewW;

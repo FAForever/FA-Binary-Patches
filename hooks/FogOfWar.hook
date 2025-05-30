@@ -1,7 +1,3 @@
-0x00495339:
-    jmp @SaveMatrices
-    nop
-
 0x007F6136:
     jmp @SetNewFramefxVars
     
