@@ -2,24 +2,7 @@
 
 #include <cstdint>
 #include "../workflow.cpp"
-
-#define SHARED extern "C"
-
-#define GPtr(addr, type) \
-  (*(type*)addr)
-
-#define CSTR(name, addr) \
-extern const char name[] asm(#addr);
-
-
-#define GDecl(name, addr, type) \
-  extern type name asm(#addr);
-
-#define WDecl(addr, type) \
-  ((type)*(uintptr_t*)addr)
-
-#define VALIDATE_SIZE(struc, size) \
-  static_assert(sizeof(struc) == size, "Invalid structure size of " #struc);
+#include "PatchBase.h"
 
 #define g_CSimDriver			GPtr(0x10C4F50, CSimDriver*)
 #define g_SWldSessionInfo		GPtr(0x10C4F58, SWldSessionInfo*)

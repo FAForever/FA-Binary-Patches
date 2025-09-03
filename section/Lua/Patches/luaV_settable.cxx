@@ -18,7 +18,7 @@ static void callTM(
     luaD_call(L, L->top - 4, 0);
 }
 
-void __cdecl luaV_settable(lua::lua_State *L, const lua::TObject *t, const lua::TObject *key, const lua::TObject *val)
+SHARED void __cdecl luaV_settable_fix(lua::lua_State *L, const lua::TObject *t, const lua::TObject *key, const lua::TObject *val)
 {
     lua::TObject temp;
     for (int loop = 0; loop < MAXTAGLOOP; loop++)

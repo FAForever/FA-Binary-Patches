@@ -1,8 +1,6 @@
 #pragma once
 #include <cstdint>
-
-#define VALIDATE_SIZE(struc, size) \
-    static_assert(sizeof(struc) == size, "Invalid structure size of " #struc);
+#include "PatchBase.h"
 
 #define LUA_TNONE (-1)
 #define LUA_TNIL 0
