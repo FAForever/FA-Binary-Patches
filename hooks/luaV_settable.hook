@@ -1,0 +1,4 @@
+0x00929450:
+    jmp @luaV_settable_fix
+    nop
+    nop

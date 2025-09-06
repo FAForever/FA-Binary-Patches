@@ -1,6 +1,7 @@
 #pragma once
 
 #include "global.h"
+#include "lua/lua.h"
 
 #define LUA_IDSIZE 60
 
@@ -49,20 +50,6 @@ typedef struct luaL_reg {
 #define LUA_ERRSYNTAX 3
 #define LUA_ERRMEM 4
 #define LUA_ERRERR 5
-
-#define LUA_TNONE (-1)
-#define LUA_TNIL 0
-#define LUA_TBOOLEAN 1
-#define LUA_TLIGHTUSERDATA 2
-#define LUA_TNUMBER 3
-#define LUA_TSTRING 4
-#define LUA_TTABLE 5
-#define LUA_CFUNCTION 6
-#define LUA_TFUNCTION 7
-#define LUA_TUSERDATA 8
-#define LUA_TTHREAD 9
-#define LUA_TPROTO 10
-#define LUA_TUPVALUE 11
 
 #define LUA_HOOKCALL 0
 #define LUA_HOOKRET 1
@@ -139,41 +126,6 @@ struct TObject {
 };
 
 VALIDATE_SIZE(TObject, 8)
-
-namespace lua
-{
-    struct TObject
-    {
-        int tt;
-        void *value;
-    };
-
-    struct Node
-    {
-        TObject i_key;
-        TObject i_val;
-        Node *next;
-    };
-
-    struct Table
-    {
-        /* lua::GCObject*/ void *next;
-        uint8_t tt;
-        uint8_t marked;
-        uint16_t gap;
-        uint8_t flags;
-        uint8_t lsizenode;
-        // padding byte
-        // padding byte
-        Table *metatable;
-        TObject *array;
-        lua::Node *node;
-        lua::Node *firstfree;
-        /*lua::GCObject*/ void *gclist;
-        int sizearray;
-    };
-
-} // namespace lua
 
 // namespace gpg
 namespace gpg
