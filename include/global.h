@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mscrt.h"
 #include <cstdint>
 #include "../workflow.cpp"
 #include "PatchBase.h"
