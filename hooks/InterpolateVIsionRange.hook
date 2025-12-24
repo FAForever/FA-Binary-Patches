@@ -1,0 +1,23 @@
+
+
+# update previous vision radius on vision handles to actually be the previous
+# radius; this lets the vision renderer interpolate the ring smoothly
+
+# instead of storing the new radius from xmm1 in both the current and previous
+# radius, we will load the old radius in xmm2 and store that in the previous
+# radius before it gets overriden
+0x008B83B7: #Moho::VisionDB::Handle::Update+0x7
+    # There's a redundant `mov eax, [ebx+8]` here, seemingly because the
+    # compiler couldn't prove the pointer wasn't aliased in [eax+0xD]; since we
+    # know the `mVis` bool would never have been the database entry node, we can
+    # use this space. Unforunately, it needs to be a `movss` instruction, which
+    # is two bytes longer and no longer fits, so we need to instead use this
+    # space to jump to the alignment gap above the function to fit it in before
+    # returning back to continue
+    jmp     .-0xF # redundant eax move
+0x008B83A8: #Moho::VisionDB::Handle::Update-0x7
+    movss   xmm2, dword ptr [eax+0x24] # xmm2 = node->mCurCircle.Radius
+    jmp     .+0xD
+
+0x008B83D8: #Moho::VisionDB::Handle::Update+0x28
+    movss   dword ptr [eax+0x18], xmm2 # node->mPrevCircle.Radius = xmm2
