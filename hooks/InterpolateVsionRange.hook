@@ -3,6 +3,8 @@
 # update previous vision radius on vision handles to actually be the previous
 # radius; this lets the vision renderer interpolate the ring smoothly
 
+# this will affect 0x0081B4ED for those curious
+
 # instead of storing the new radius from xmm1 in both the current and previous
 # radius, we will load the old radius in xmm2 and store that in the previous
 # radius before it gets overriden
@@ -10,7 +12,7 @@
     # There's a redundant `mov eax, [ebx+8]` here, seemingly because the
     # compiler couldn't prove the pointer wasn't aliased in [eax+0xD]; since we
     # know the `mVis` bool would never have been the database entry node, we can
-    # use this space. Unforunately, it needs to be a `movss` instruction, which
+    # use this space. Unfortunately, it needs to be a `movss` instruction, which
     # is two bytes longer and no longer fits, so we need to instead use this
     # space to jump to the alignment gap above the function to fit it in before
     # returning back to continue
