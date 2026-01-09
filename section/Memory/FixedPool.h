@@ -303,30 +303,7 @@ class Chunk
             return AllocNCellsSmall(cells);
         }
 
-        // if (top_index.Raw() <= CELLS_IN_CHUNK - cells)
-        // {
-        //     BitIndex top = top_index;
-        //     top_index += cells;
-        //     return UseNCells(top, cells);
-        // }
-
-        // size_t i = 0;
-        // for (; i < CELLS_IN_CHUNK / NUM_BITS; i++)
-        // {
-        //     size_t sector = bits.GetSection(i);
-        //     if (sector)
-        //         break;
-        // }
-
-        // for (BitIndex start{i, 0}; start.Raw() <= CELLS_IN_CHUNK - cells; ++start)
-        // {
-        //     size_t free_cells = CountFree(start, cells);
-        //     if (free_cells == cells)
-        //     {
-        //         return UseNCells(start, cells);
-        //     }
-        //     start += free_cells;
-        // }
+      // ! logic for large chunks rn not supported
 
         return nullptr;
     }
