@@ -605,7 +605,6 @@ public:
 
         num_chunks++;
         return cur->template AllocCells<Cells>();
-        ;
     }
 
     void *Alloc(size_t size)
