@@ -229,7 +229,7 @@ class Chunk
 
     size_t CountFree(BitIndex start, size_t max_count)
     {
-        if ((start + max_count).Raw() >= CHUNK_SIZE)
+        if ((start + max_count).Raw() >= CELLS_IN_CHUNK)
             return 0;
 
         for (size_t offset = 0; offset < max_count; ++offset)
