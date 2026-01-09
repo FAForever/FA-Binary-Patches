@@ -1,4 +1,5 @@
 #include "LuaAPI.h"
+#include <new>
 
 void *__cdecl luaHelper_ReallocFunction(void *ptr, unsigned int oldsize, unsigned int size, void *data, const char *allocName, unsigned int flags) asm("0x923F20");
 void __cdecl luaHelper_FreeFunction(void *ptr, unsigned int oldsize, void *data) asm("0x923F40");

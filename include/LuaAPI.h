@@ -463,3 +463,8 @@ void ThrowLuaException(const char *message) {
   ThrowLuaException(#e)
 
 LuaObject SCR_Import(LuaState *state, const char *name);
+
+void *lua_getMemData(lua_State *L)
+{
+  return GetField<void *>(GetField<void *>(L, 0x10), 0x138);
+}
