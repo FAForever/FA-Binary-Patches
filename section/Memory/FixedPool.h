@@ -530,13 +530,9 @@ public:
 
 public:
     FixedPool()
-        : num_chunks{0},
-          head{new (std::nothrow) Chunk<CELL_SIZE, CELLS_IN_CHUNK>()}
+        : num_chunks{1},
+          head{new Chunk<CELL_SIZE, CELLS_IN_CHUNK>()}
     {
-        if (head != nullptr)
-        {
-            num_chunks = 1;
-        }
     }
 
     void *Realloc(void *ptr, size_t old_size, size_t new_size)
@@ -557,19 +553,20 @@ public:
 
         ChunkT *cur = head;
         ChunkT *prev = nullptr;
+        void *new_ptr = nullptr;
         while (cur != nullptr)
         {
-            void *ptr = cur->Extend(ptr, old_size, new_size);
-            if (ptr != nullptr)
+            new_ptr = cur->Extend(ptr, old_size, new_size);
+            if (new_ptr != nullptr)
             {
-                return ptr;
+                return new_ptr;
             }
             prev = cur;
             cur = cur->NextChunk();
         }
         // couldn't extend
 
-        void *new_ptr = Alloc(new_size);
+        new_ptr = Alloc(new_size);
         if (new_ptr)
         {
             memcpy(new_ptr, ptr, std::min(old_size, new_size));
