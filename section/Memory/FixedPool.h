@@ -531,7 +531,7 @@ public:
 public:
     FixedPool()
         : num_chunks{1},
-          head{new Chunk<CELL_SIZE, CELLS_IN_CHUNK>()}
+          head{new ChunkT()}
     {
     }
 
