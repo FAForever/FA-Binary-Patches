@@ -3,21 +3,11 @@
 #include <new>
 #include <concepts>
 #include <limits>
+#include <bit>
 
 constexpr bool IsPowerOf2(size_t value)
 {
     return (value > 0) && ((value & (value - 1)) == 0);
-}
-
-constexpr size_t PowerOf2RoundUp(size_t x)
-{
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    return x + 1;
 }
 
 template <auto V>
@@ -254,7 +244,7 @@ class Chunk
 
     void *AllocNCellsSmall(size_t cells)
     {
-        size_t step = IsPowerOf2(cells) ? cells : PowerOf2RoundUp(cells);
+        size_t step = IsPowerOf2(cells) ? cells : std::bit_ceil(cells);
         size_t mask = Mask(cells);
 
         if (!ReachedEnd())
@@ -303,7 +293,7 @@ class Chunk
             return AllocNCellsSmall(cells);
         }
 
-      // ! logic for large chunks rn not supported
+        // ! logic for large chunks rn not supported
 
         return nullptr;
     }
