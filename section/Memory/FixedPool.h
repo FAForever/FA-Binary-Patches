@@ -535,6 +535,12 @@ public:
     {
     }
 
+    ~FixedPool()
+    {
+        num_chunks = 0;
+        delete head;
+    }
+
     void *Realloc(void *ptr, size_t old_size, size_t new_size)
     {
         if (ptr == nullptr)
