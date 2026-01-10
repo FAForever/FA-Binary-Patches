@@ -599,6 +599,9 @@ public:
 
     bool Free(void *ptr, size_t old_size)
     {
+        if (ptr == nullptr || old_size == 0)
+            return true;
+
         ChunkT *cur = head;
         while (cur != nullptr)
         {
