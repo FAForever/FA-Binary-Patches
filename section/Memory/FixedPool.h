@@ -167,12 +167,14 @@ class Chunk
 
     void *Use1Cell(BitIndex bit_index)
     {
+        used_cells++;
         bits.Reset(bit_index);
         return At(bit_index);
     }
 
     void *UseNCells(BitIndex bit_index, size_t count)
     {
+        used_cells += count;
         for (size_t offset = 0; offset < count; ++offset)
         {
             bits.Reset(bit_index + offset);
@@ -189,6 +191,16 @@ class Chunk
             index++;
         }
         return index;
+    }
+
+    static constexpr size_t Mask(size_t bits)
+    {
+        if (bits >= std::numeric_limits<size_t>::digits)
+        {
+            return std::numeric_limits<size_t>::max();
+        }
+
+        return ((size_t)1 << bits) - 1;
     }
 
     void *Alloc1Cell()
@@ -220,7 +232,7 @@ class Chunk
         return nullptr;
     }
 
-    size_t CountFree(BitIndex start, size_t max_count)
+    size_t CountFree(BitIndex start, size_t max_count) const
     {
         if ((start + max_count).Raw() >= CELLS_IN_CHUNK)
             return 0;
@@ -235,16 +247,6 @@ class Chunk
         return max_count;
     }
 
-    static constexpr size_t Mask(size_t bits)
-    {
-        if (bits >= std::numeric_limits<size_t>::digits)
-        {
-            return std::numeric_limits<size_t>::max();
-        }
-
-        return ((size_t)1 << bits) - 1;
-    }
-
     void *AllocNCellsSmall(size_t cells)
     {
         size_t step = IsPowerOf2(cells) ? cells : std::bit_ceil(cells);
@@ -255,12 +257,15 @@ class Chunk
             for (size_t i = top_index; i < bits.GetSize(); i++)
             {
                 size_t section = bits.GetSection(i);
-                for (size_t offset = 0; offset < NUM_BITS; offset += step)
+                if (section)
                 {
-                    if (((section >> offset) & mask) == mask)
+                    for (size_t offset = 0; offset < NUM_BITS; offset += step)
                     {
-                        top_index = i;
-                        return UseNCells(BitIndex{i, offset}, cells);
+                        if (((section >> offset) & mask) == mask)
+                        {
+                            top_index = i;
+                            return UseNCells(BitIndex{i, offset}, cells);
+                        }
                     }
                 }
             }
@@ -286,9 +291,7 @@ class Chunk
 
     void *AllocNCells(size_t cells)
     {
-        if (cells == 0)
-            return nullptr;
-        if (cells > CELLS_IN_CHUNK)
+        if (cells == 0 || cells > CELLS_IN_CHUNK)
             return nullptr;
 
         if (cells <= NUM_BITS) [[likely]]
@@ -307,7 +310,11 @@ public:
         return bytes / CELL_SIZE + (bytes % CELL_SIZE == 0 ? 0 : 1);
     }
 
-    Chunk() : top_index{0}, next{nullptr}, bits{}
+    Chunk()
+        : top_index{0},
+          used_cells{0},
+          next{nullptr},
+          bits{}
     {
         for (size_t i = 0; i < bits.GetSize(); i++)
         {
@@ -317,6 +324,8 @@ public:
 
     ~Chunk()
     {
+        top_index = 0;
+        used_cells = 0;
         delete next;
     }
 
@@ -335,9 +344,11 @@ public:
         BitIndex pos = GetIndexByPtr(ptr);
         if (old_cells < new_cells) // more space needed
         {
-            size_t free_cells = CountFree(pos + old_cells, new_cells - old_cells);
-            if (free_cells == new_cells - old_cells)
+            size_t diff = new_cells - old_cells;
+            size_t free_cells = CountFree(pos + old_cells, diff);
+            if (free_cells == diff)
             {
+                used_cells += diff;
                 for (size_t offset = old_cells; offset < new_cells; ++offset)
                 {
                     bits.Reset(pos + offset);
@@ -347,6 +358,7 @@ public:
         }
         else // less space needed
         {
+            used_cells -= old_cells - new_cells;
             for (size_t i = new_cells; i < old_cells; i++)
             {
                 bits.Set(pos + i);
@@ -409,12 +421,9 @@ public:
     void *Alloc(size_t size)
     {
         size_t cells_count = CountCells(size);
-        if (cells_count == 1) // Trivial
-        {
-            return Alloc1Cell();
-        }
-
-        return AllocNCells(cells_count);
+        return cells_count == 1
+                   ? Alloc1Cell()
+                   : AllocNCells(cells_count);
     }
 
     bool Free(void *ptr, size_t old_size)
@@ -428,6 +437,7 @@ public:
         size_t old_cells = CountCells(old_size);
         BitIndex bit_index{GetIndexByPtr(ptr)};
 
+        used_cells -= old_cells;
         for (size_t i = 0; i < old_cells; i++)
         {
             bits.Set(bit_index + i);
@@ -440,25 +450,10 @@ public:
         return top_index >= bits.GetSize();
     }
 
-    Byte *Begin()
-    {
-        return data;
-    }
-
-    Byte *End()
-    {
-        return data + CHUNK_SIZE;
-    }
-
-    const Byte *Begin() const
-    {
-        return data;
-    }
-
-    const Byte *End() const
-    {
-        return data + CHUNK_SIZE;
-    }
+    Byte *Begin() { return data; }
+    Byte *End() { return data + CHUNK_SIZE; }
+    const Byte *Begin() const { return data; }
+    const Byte *End() const { return data + CHUNK_SIZE; }
 
     bool BelongsToChunk(void *ptr) const
     {
@@ -466,15 +461,8 @@ public:
         return Begin() <= ptrb && ptrb < End();
     }
 
-    SelfT *NextChunk()
-    {
-        return next;
-    }
-
-    const SelfT *NextChunk() const
-    {
-        return next;
-    }
+    SelfT *NextChunk() { return next; }
+    const SelfT *NextChunk() const { return next; }
 
     SelfT *CreateNextChunk()
     {
@@ -484,6 +472,7 @@ public:
 
 private:
     size_t top_index;
+    size_t used_cells;
     SelfT *next;
     BitArray<CELLS_IN_CHUNK> bits;
     Byte data[CHUNK_SIZE];
