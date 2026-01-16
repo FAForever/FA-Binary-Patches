@@ -137,6 +137,10 @@ public:
         *p_value = new_value;
     }
 
+    size_t GetSize() const { return SIZE; }
+
+    size_t GetSizeBits() const { return BITS_COUNT; }
+
 private:
     size_t bits[SIZE]{};
 };
@@ -148,7 +152,6 @@ class Chunk
     static_assert(CELLS_IN_CHUNK % NUM_BITS == 0, "CELLS_PER_CHUNK");
 
     static const size_t CHUNK_SIZE = CELL_SIZE * CELLS_IN_CHUNK;
-    static const size_t BITS_SIZE = CELLS_IN_CHUNK / NUM_BITS;
 
     using SelfT = Chunk<CELL_SIZE, CELLS_IN_CHUNK>;
 
@@ -192,7 +195,7 @@ class Chunk
     {
         if (!ReachedEnd())
         {
-            for (size_t i = top_index; i < BITS_SIZE; i++)
+            for (size_t i = top_index; i < bits.GetSize(); i++)
             {
                 size_t sector = bits.GetSection(i);
                 if (sector)
@@ -202,9 +205,9 @@ class Chunk
                     return Use1Cell(BitIndex{i, bit});
                 }
             }
-            top_index = BITS_SIZE;
+            top_index = bits.GetSize();
         }
-        for (size_t i = 0; i < BITS_SIZE; i++)
+        for (size_t i = 0; i < bits.GetSize(); i++)
         {
             size_t sector = bits.GetSection(i);
             if (sector)
@@ -249,7 +252,7 @@ class Chunk
 
         if (!ReachedEnd())
         {
-            for (size_t i = top_index; i < BITS_SIZE; i++)
+            for (size_t i = top_index; i < bits.GetSize(); i++)
             {
                 size_t section = bits.GetSection(i);
                 for (size_t offset = 0; offset < NUM_BITS; offset += step)
@@ -261,10 +264,10 @@ class Chunk
                     }
                 }
             }
-            top_index = BITS_SIZE;
+            top_index = bits.GetSize();
         }
 
-        for (size_t i = 0; i < BITS_SIZE; i++)
+        for (size_t i = 0; i < bits.GetSize(); i++)
         {
             size_t section = bits.GetSection(i);
             if (section)
@@ -306,7 +309,7 @@ public:
 
     Chunk() : top_index{0}, next{nullptr}, bits{}
     {
-        for (size_t i = 0; i < BITS_SIZE; i++)
+        for (size_t i = 0; i < bits.GetSize(); i++)
         {
             bits.GetSection(i) = std::numeric_limits<size_t>::max();
         }
@@ -362,7 +365,7 @@ public:
         constexpr size_t mask = Mask(Cells);
         if (!ReachedEnd())
         {
-            for (size_t i = top_index; i < BITS_SIZE; i++)
+            for (size_t i = top_index; i < bits.GetSize(); i++)
             {
                 size_t section = bits.GetSection(i);
                 if (section)
@@ -377,10 +380,10 @@ public:
                     }
                 }
             }
-            top_index = BITS_SIZE;
+            top_index = bits.GetSize();
         }
 
-        for (size_t i = 0; i < BITS_SIZE; i++)
+        for (size_t i = 0; i < bits.GetSize(); i++)
         {
             size_t section = bits.GetSection(i);
             if (section)
@@ -434,7 +437,7 @@ public:
 
     bool ReachedEnd() const
     {
-        return top_index >= BITS_SIZE;
+        return top_index >= bits.GetSize();
     }
 
     Byte *Begin()
