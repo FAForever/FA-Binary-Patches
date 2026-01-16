@@ -69,12 +69,11 @@ SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries li
 SHARED void __thiscall UI_StateDestroy(LuaState *_this)
 {
     LogF("UI_StateDestroy: %p", _this);
-    void *memData = lua_getMemData(_this->m_state);
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(_this->m_state));
+
     _this->~LuaState();
-    if (memData)
-    {
-        delete (LuaAllocator *)memData;
-    }
+
+    delete memData;
 
     // LogF("Total Allocations: %u, Total Cycles: %llu", total_alloc, CyclesToMicroSeconds(total_cycles));
     // total_alloc = 0;
@@ -86,6 +85,7 @@ SHARED void __thiscall UI_StateDestroy(LuaState *_this)
 
 // SIM
 //  Fixed pool Total Allocations: 8953037, Total Cycles: 5922986
+//       info: Total Allocations: 8864595, Total Cycles: 5018217
 //  default    Total Allocations: 9075016, Total Cycles:  641968
 
 SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries libs)
@@ -96,7 +96,7 @@ SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries l
     pool = new (std::nothrow) LuaAllocator();
 
     if (pool)
-        lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, pool);
+        lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
 
     new (_this) LuaState(libs);
 
@@ -108,12 +108,13 @@ SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries l
 SHARED void __thiscall SIM_StateDestroy(LuaState *_this)
 {
     LogF("SIM_StateDestroy: %p", _this);
-    void *memData = lua_getMemData(_this->m_state);
+
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(_this->m_state));
+
     _this->~LuaState();
-    if (memData)
-    {
-        delete (LuaAllocator *)memData;
-    }
+
+    delete memData;
+
     LogF("Total Allocations: %u, Total Cycles: %llu", total_alloc, CyclesToMicroSeconds(total_cycles));
     total_alloc = 0;
     total_cycles = 0;
