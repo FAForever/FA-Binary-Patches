@@ -416,11 +416,11 @@ public:
 
     bool Free(void *ptr, size_t old_size)
     {
-        if (!BelongsToChunk(ptr))
-            return false;
-
         if (ptr == nullptr)
             return true;
+
+        if (!BelongsToChunk(ptr))
+            return false;
 
         size_t old_cells = CountCells(old_size);
         BitIndex bit_index{GetIndexByPtr(ptr)};
