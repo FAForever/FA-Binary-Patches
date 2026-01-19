@@ -279,6 +279,24 @@ class Chunk
             top_index = bits.GetSize();
         }
 
+        size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[0];
+
+        // then we check free list
+        for (size_t i = 0; i < std::size(bucket); i++)
+        {
+            size_t index = bucket[i];
+            size_t section = bits.GetSection(index);
+
+            if (section == 0) // invalidate
+            {
+                bucket[i] = 0;
+                continue;
+            }
+
+            size_t bit = GetFirstSetBit(section);
+            return Use1Cell(BitIndex{index, bit});
+        }
+
         for (size_t i = start_index; i < bits.GetSize(); i++)
         {
             size_t sector = bits.GetSection(i);
