@@ -4,6 +4,7 @@
 #include <concepts>
 #include <limits>
 #include <bit>
+#include <array>
 
 constexpr bool IsPowerOf2(size_t value)
 {
@@ -22,7 +23,8 @@ constexpr size_t NUM_BITS = std::numeric_limits<size_t>::digits;
 constexpr size_t BITS_MASK = NUM_BITS - 1;
 constexpr size_t INDEX_MASK = ~BITS_MASK;
 constexpr size_t OFFSET = FloorLog2(NUM_BITS);
-constexpr size_t FREE_SECTIONS_SIZE = 32;
+constexpr size_t FREE_SECTIONS_SIZE = 64;
+constexpr size_t MAX_INDEX_DIST = 64;
 
 using Byte = unsigned char;
 
@@ -212,6 +214,46 @@ class Chunk
         return value;
     }
 
+    bool AddToFreeList(size_t index)
+    {
+        size_t min_diff = std::numeric_limits<size_t>::max();
+        ptrdiff_t min_diff_index = 0;
+        for (size_t i = 0; i < std::size(free_sections); i++)
+        {
+            size_t sect_index = free_sections[i];
+
+            size_t diff = std::abs((ptrdiff_t)sect_index - (ptrdiff_t)index);
+            if (diff < min_diff)
+            {
+                min_diff = diff;
+                min_diff_index = i;
+            }
+        }
+        // replace with nearest possible
+        if (min_diff <= MAX_INDEX_DIST)
+        {
+            size_t sect_index = free_sections[min_diff_index];
+            if (index < sect_index)
+            {
+                free_sections[min_diff_index] = index;
+            }
+            return true;
+        }
+
+        // add to free slot
+        for (size_t i = 0; i < std::size(free_sections); i++)
+        {
+            size_t sect_index = free_sections[i];
+            if (sect_index == 0)
+            {
+                free_sections[i] = index;
+                return true;
+            }
+        }
+        // no free slot
+        return false;
+    }
+
     void *Alloc1Cell()
     {
         if (!ReachedEnd())
@@ -264,6 +306,7 @@ class Chunk
         size_t step = IsPowerOf2(cells) ? cells : std::bit_ceil(cells);
         size_t mask = Mask(cells);
 
+        // First go forward
         if (!ReachedEnd())
         {
             for (size_t i = top_index; i < bits.GetSize(); i++)
@@ -282,6 +325,27 @@ class Chunk
                 }
             }
             top_index = bits.GetSize();
+        }
+
+        // then we check free list
+        for (size_t i = 0; i < std::size(free_sections); i++)
+        {
+            size_t index = free_sections[i];
+            size_t section = bits.GetSection(index);
+
+            if (section == 0) // invalidate
+            {
+                free_sections[i] = 0;
+                continue;
+            }
+
+            for (size_t offset = 0; offset < NUM_BITS; offset += step)
+            {
+                if (((section >> offset) & mask) == mask)
+                {
+                    return UseNCells(BitIndex{index, offset}, cells);
+                }
+            }
         }
 
         for (size_t i = start_index; i < bits.GetSize(); i++)
@@ -325,6 +389,7 @@ class Chunk
         {
             bits.Set(bit_index + i);
         }
+        AddToFreeList(bit_index.Index());
     }
 
 public:

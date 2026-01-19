@@ -88,10 +88,6 @@ public:
             result = table_hash_pool.Realloc(ptr, old_size, new_size);
         else if (flags.is_table_array)
             result = table_array_pool.Realloc(ptr, old_size, new_size);
-        else if (flags.is_table)
-            result = table_pool.Realloc(ptr, old_size, new_size);
-        else if (flags.is_upvalue)
-            result = upvalue_pool.Realloc(ptr, old_size, new_size);
         else if (flags.is_parser)
             result = parser_pool.Realloc(ptr, old_size, new_size);
         else if (flags.is_small)
@@ -100,7 +96,7 @@ public:
         if (result != nullptr)
             return result;
 
-        void *new_ptr = Alloc(new_size);
+        void *new_ptr = InternalAlloc(new_size, flags);
         if (new_ptr)
         {
             memcpy(new_ptr, ptr, std::min(old_size, new_size));
@@ -112,7 +108,8 @@ public:
 
     void *Alloc(size_t size)
     {
-        void *ptr = InternalAlloc(size);
+        TypeFlags flags = GetTypeFlags(size);
+        void *ptr = InternalAlloc(size, flags);
         DBG_LOG("Alloc: %p %d", ptr, size);
         return ptr;
     }
@@ -152,10 +149,8 @@ public:
     }
 
 private:
-    void *InternalAlloc(size_t size)
+    void *InternalAlloc(size_t size, const TypeFlags &flags)
     {
-        TypeFlags flags = GetTypeFlags(size);
-
         if (flags.is_table_hash)
             return table_hash_pool.Alloc(size);
         else if (flags.is_table_array)
@@ -183,10 +178,10 @@ private:
     }
 
 private:
-    FixedPool<36, 1024 * 1024> table_pool;
-    FixedPool<80, 1024 * 1024> table_hash_pool;
-    FixedPool<32, 1024 * 1024> table_array_pool;
-    FixedPool<20, 1024 * 1024> upvalue_pool;
-    FixedPool<12, 1024 * 1024> parser_pool;
-    FixedPool<32, 2 * 1024 * 1024> small_pool;
+    FixedPool<36, 16 * 1024> table_pool;
+    FixedPool<80, 16 * 1024> table_hash_pool;
+    FixedPool<32, 16 * 1024> table_array_pool;
+    FixedPool<20, 16 * 1024> upvalue_pool;
+    FixedPool<12, 16 * 1024> parser_pool;
+    FixedPool<32, 16 * 1024> small_pool;
 };
