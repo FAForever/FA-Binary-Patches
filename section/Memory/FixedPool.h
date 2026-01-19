@@ -14,15 +14,15 @@ constexpr bool IsPowerOf2(size_t value)
 template <auto V>
 concept is_power_of_two = IsPowerOf2(V);
 
-constexpr size_t FloorLog2(size_t x)
+constexpr size_t CeilLog2(size_t x)
 {
-    return x <= 1 ? 0 : 1 + FloorLog2(x >> 1);
+    return x <= 1 ? 0 : std::bit_width(x - 1);
 }
 
 constexpr size_t NUM_BITS = std::numeric_limits<size_t>::digits;
 constexpr size_t BITS_MASK = NUM_BITS - 1;
 constexpr size_t INDEX_MASK = ~BITS_MASK;
-constexpr size_t OFFSET = FloorLog2(NUM_BITS);
+constexpr size_t OFFSET = CeilLog2(NUM_BITS);
 constexpr size_t FREE_SECTIONS_SIZE = 64;
 constexpr size_t MAX_INDEX_DIST = 64;
 
@@ -208,26 +208,27 @@ class Chunk
         return ((size_t)1 << bits) - 1;
     }
 
-    size_t MinNotZeroFreeIndex()
-    {
-        size_t value = 0;
-        for (size_t index : free_sections)
-        {
-            if ((value == 0 || value > index) && index != 0)
-            {
-                value = index;
-            }
-        }
-        return value;
-    }
+    // size_t MinNotZeroFreeIndex()
+    // {
+    //     size_t value = 0;
+    //     for (size_t index : free_sections)
+    //     {
+    //         if ((value == 0 || value > index) && index != 0)
+    //         {
+    //             value = index;
+    //         }
+    //     }
+    //     return value;
+    // }
 
-    bool AddToFreeList(size_t index)
+    bool AddToFreeList(size_t index, size_t pow)
     {
         size_t min_diff = std::numeric_limits<size_t>::max();
         ptrdiff_t min_diff_index = 0;
-        for (size_t i = 0; i < std::size(free_sections); i++)
+        size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[pow];
+        for (size_t i = 0; i < std::size(bucket); i++)
         {
-            size_t sect_index = free_sections[i];
+            size_t sect_index = bucket[i];
 
             size_t diff = std::abs((ptrdiff_t)sect_index - (ptrdiff_t)index);
             if (diff < min_diff)
@@ -239,21 +240,21 @@ class Chunk
         // replace with nearest possible
         if (min_diff <= MAX_INDEX_DIST)
         {
-            size_t sect_index = free_sections[min_diff_index];
+            size_t sect_index = bucket[min_diff_index];
             if (index < sect_index)
             {
-                free_sections[min_diff_index] = index;
+                bucket[min_diff_index] = index;
             }
             return true;
         }
 
         // add to free slot
-        for (size_t i = 0; i < std::size(free_sections); i++)
+        for (size_t i = 0; i < std::size(bucket); i++)
         {
-            size_t sect_index = free_sections[i];
+            size_t sect_index = bucket[i];
             if (sect_index == 0)
             {
-                free_sections[i] = index;
+                bucket[i] = index;
                 return true;
             }
         }
@@ -289,7 +290,7 @@ class Chunk
             }
         }
         // start with first free section index
-        start_index = MinNotZeroFreeIndex();
+        start_index = 0; // MinNotZeroFreeIndex();
         return nullptr;
     }
 
@@ -334,15 +335,18 @@ class Chunk
             top_index = bits.GetSize();
         }
 
+        size_t pow = CeilLog2(cells);
+        size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[pow];
+
         // then we check free list
-        for (size_t i = 0; i < std::size(free_sections); i++)
+        for (size_t i = 0; i < std::size(bucket); i++)
         {
-            size_t index = free_sections[i];
+            size_t index = bucket[i];
             size_t section = bits.GetSection(index);
 
             if (section == 0) // invalidate
             {
-                free_sections[i] = 0;
+                bucket[i] = 0;
                 continue;
             }
 
@@ -396,7 +400,7 @@ class Chunk
         {
             bits.Set(bit_index + i);
         }
-        AddToFreeList(bit_index.Index());
+        AddToFreeList(bit_index.Index(), CeilLog2(cells));
     }
 
 public:
@@ -521,7 +525,7 @@ private:
     size_t start_index;
     size_t used_cells;
     SelfT *next;
-    size_t free_sections[FREE_SECTIONS_SIZE];
+    size_t free_sections[OFFSET + 1][FREE_SECTIONS_SIZE];
     BitArray<CELLS_IN_CHUNK> bits;
     Byte data[CHUNK_SIZE];
 };
