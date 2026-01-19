@@ -26,7 +26,7 @@ constexpr size_t OFFSET = CeilLog2(NUM_BITS);
 constexpr size_t FREE_SECTIONS_SIZE = 64;
 constexpr size_t MAX_INDEX_DIST = 64;
 
-using Byte = unsigned char;
+using Byte = std::byte;
 
 class BitIndex
 {
@@ -279,23 +279,23 @@ class Chunk
             top_index = bits.GetSize();
         }
 
-        size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[0];
+        // size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[0];
 
-        // then we check free list
-        for (size_t i = 0; i < std::size(bucket); i++)
-        {
-            size_t index = bucket[i];
-            size_t section = bits.GetSection(index);
+        // // then we check free list
+        // for (size_t i = 0; i < std::size(bucket); i++)
+        // {
+        //     size_t index = bucket[i];
+        //     size_t section = bits.GetSection(index);
 
-            if (section == 0) // invalidate
-            {
-                bucket[i] = 0;
-                continue;
-            }
+        //     if (section == 0) // invalidate
+        //     {
+        //         bucket[i] = 0;
+        //         continue;
+        //     }
 
-            size_t bit = GetFirstSetBit(section);
-            return Use1Cell(BitIndex{index, bit});
-        }
+        //     size_t bit = GetFirstSetBit(section);
+        //     return Use1Cell(BitIndex{index, bit});
+        // }
 
         for (size_t i = start_index; i < bits.GetSize(); i++)
         {
@@ -418,6 +418,12 @@ class Chunk
         {
             bits.Set(bit_index + i);
         }
+
+        if (cells == 1)
+        {
+            start_index = std::min(start_index, bit_index.Index());
+            return;
+        }
         AddToFreeList(bit_index.Index(), CeilLog2(cells));
     }
 
@@ -449,16 +455,22 @@ public:
         delete next;
     }
 
-    void *Extend(void *ptr, size_t old_size, size_t new_size)
+    struct ExtendResult
+    {
+        void *ptr;
+        bool belongs;
+    };
+
+    ExtendResult Extend(void *ptr, size_t old_size, size_t new_size)
     {
         if (!BelongsToChunk(ptr))
-            return nullptr;
+            return {nullptr, false};
 
         size_t old_cells = CountCells(old_size);
         size_t new_cells = CountCells(new_size);
         if (old_cells == new_cells)
         {
-            return ptr;
+            return {ptr, true};
         }
 
         BitIndex pos = GetIndexByPtr(ptr);
@@ -473,7 +485,7 @@ public:
                 {
                     bits.Reset(pos + offset);
                 }
-                return ptr;
+                return {ptr, true};
             }
         }
         else // less space needed
@@ -483,10 +495,10 @@ public:
             {
                 bits.Set(pos + i);
             }
-            return ptr;
+            return {ptr, true};
         }
 
-        return nullptr;
+        return {nullptr, true};
     }
 
     void *Alloc(size_t size)
@@ -572,36 +584,26 @@ public:
 
     void *Realloc(void *ptr, size_t old_size, size_t new_size)
     {
-        if (ptr == nullptr)
-        {
-            return Alloc(new_size);
-        }
-
-        if (new_size == 0)
-        {
-            Free(ptr, old_size);
-            return nullptr;
-        }
-
-        if (!BelongsToPool(ptr))
-            return nullptr;
-
         ChunkT *cur = head;
         ChunkT *prev = nullptr;
-        void *new_ptr = nullptr;
+        bool belongs = false;
         while (cur != nullptr)
         {
-            new_ptr = cur->Extend(ptr, old_size, new_size);
-            if (new_ptr != nullptr)
+            auto r = cur->Extend(ptr, old_size, new_size);
+            if (r.ptr)
             {
-                return new_ptr;
+                return r.ptr;
             }
+            belongs = belongs || r.belongs;
             prev = cur;
             cur = cur->NextChunk();
         }
         // couldn't extend
 
-        new_ptr = Alloc(new_size);
+        if (!belongs)
+            return nullptr;
+
+        void *new_ptr = Alloc(new_size);
         if (new_ptr)
         {
             memcpy(new_ptr, ptr, std::min(old_size, new_size));

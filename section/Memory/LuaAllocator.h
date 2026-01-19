@@ -39,6 +39,11 @@ public:
         bool is_table_hash;
         bool is_table_array;
         bool is_small;
+
+        operator bool() const
+        {
+            return is_parser || is_table || is_upvalue || is_table_hash || is_table_array || is_small;
+        }
     };
 
     TypeFlags GetTypeFlags(size_t size)
@@ -119,32 +124,20 @@ public:
         DBG_LOG("Free: %p %d", ptr, size);
         TypeFlags flags = GetTypeFlags(size);
 
-        bool cleared = false;
-        if (flags.is_table_hash || flags.is_upvalue) // 20
-        {
-            cleared = cleared ||
-                      table_hash_pool.Free(ptr, size) ||
-                      upvalue_pool.Free(ptr, size);
-        }
-
-        if (flags.is_parser || flags.is_table) // 12
-        {
-            cleared = cleared ||
-                      table_pool.Free(ptr, size) ||
-                      parser_pool.Free(ptr, size);
-        }
-
-        if (flags.is_table_array || flags.is_small) //  <= 128 or % 8
-        {
-            cleared = cleared ||
-                      table_array_pool.Free(ptr, size) ||
-                      small_pool.Free(ptr, size);
-        }
-
-        if (cleared)
+        if (flags.is_table && table_pool.Free(ptr, size))
+            return;
+        if (flags.is_table_hash && table_hash_pool.Free(ptr, size))
+            return;
+        if (flags.is_table_array && table_array_pool.Free(ptr, size))
+            return;
+        if (flags.is_upvalue && upvalue_pool.Free(ptr, size))
+            return;
+        if (flags.is_parser && parser_pool.Free(ptr, size))
+            return;
+        if (flags.is_small && small_pool.Free(ptr, size))
             return;
 
-        if (!FreeFromAll(ptr, size))
+        if (!flags || !FreeFromAll(ptr, size))
             free(ptr);
     }
 
@@ -169,6 +162,7 @@ private:
 
     bool FreeFromAll(void *ptr, size_t size)
     {
+        WarningF("Free miss: %p %d", ptr, size);
         return small_pool.Free(ptr, size) ||
                table_array_pool.Free(ptr, size) ||
                table_hash_pool.Free(ptr, size) ||
@@ -178,10 +172,10 @@ private:
     }
 
 private:
-    FixedPool<36, 16 * 1024> table_pool;
-    FixedPool<80, 16 * 1024> table_hash_pool;
-    FixedPool<32, 16 * 1024> table_array_pool;
-    FixedPool<20, 16 * 1024> upvalue_pool;
-    FixedPool<12, 16 * 1024> parser_pool;
-    FixedPool<32, 16 * 1024> small_pool;
+    FixedPool<36, 64 * 1024> table_pool;
+    FixedPool<80, 64 * 1024> table_hash_pool;
+    FixedPool<32, 64 * 1024> table_array_pool;
+    FixedPool<20, 64 * 1024> upvalue_pool;
+    FixedPool<12, 64 * 1024> parser_pool;
+    FixedPool<32, 64 * 1024> small_pool;
 };
