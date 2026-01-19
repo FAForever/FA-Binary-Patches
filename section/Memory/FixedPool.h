@@ -319,15 +319,15 @@ class Chunk
             for (size_t i = top_index; i < bits.GetSize(); i++)
             {
                 size_t section = bits.GetSection(i);
-                if (section)
+                if (section == 0)
+                    continue;
+
+                for (size_t offset = 0; offset < NUM_BITS; offset += step)
                 {
-                    for (size_t offset = 0; offset < NUM_BITS; offset += step)
+                    if (((section >> offset) & mask) == mask)
                     {
-                        if (((section >> offset) & mask) == mask)
-                        {
-                            top_index = i;
-                            return UseNCellsSmall(i, offset, cells, mask);
-                        }
+                        top_index = i;
+                        return UseNCellsSmall(i, offset, cells, mask);
                     }
                 }
             }
@@ -358,14 +358,14 @@ class Chunk
         for (size_t i = start_index; i < bits.GetSize(); i++)
         {
             size_t section = bits.GetSection(i);
-            if (section)
+            if (section == 0)
+                continue;
+
+            for (size_t offset = 0; offset < NUM_BITS; offset += step)
             {
-                for (size_t offset = 0; offset < NUM_BITS; offset += step)
+                if (((section >> offset) & mask) == mask)
                 {
-                    if (((section >> offset) & mask) == mask)
-                    {
-                        return UseNCellsSmall(i, offset, cells, mask);
-                    }
+                    return UseNCellsSmall(i, offset, cells, mask);
                 }
             }
         }
