@@ -155,7 +155,7 @@ class Chunk
 
     void *At(BitIndex bit_index)
     {
-        return data + bit_index.Raw() * CELL_SIZE;
+        return Begin() + bit_index.Raw() * CELL_SIZE;
     }
 
     size_t GetIndexByPtr(void *ptr)
@@ -168,6 +168,13 @@ class Chunk
         used_cells++;
         bits.Reset(bit_index);
         return At(bit_index);
+    }
+
+    void *UseNCellsSmall(size_t index, size_t offset, size_t count, size_t mask)
+    {
+        used_cells += count;
+        bits.GetSection(index) &= ~(mask << offset);
+        return At(BitIndex{index, offset});
     }
 
     void *UseNCells(BitIndex bit_index, size_t count)
@@ -319,7 +326,7 @@ class Chunk
                         if (((section >> offset) & mask) == mask)
                         {
                             top_index = i;
-                            return UseNCells(BitIndex{i, offset}, cells);
+                            return UseNCellsSmall(i, offset, cells, mask);
                         }
                     }
                 }
@@ -343,7 +350,7 @@ class Chunk
             {
                 if (((section >> offset) & mask) == mask)
                 {
-                    return UseNCells(BitIndex{index, offset}, cells);
+                    return UseNCellsSmall(index, offset, cells, mask);
                 }
             }
         }
@@ -357,7 +364,7 @@ class Chunk
                 {
                     if (((section >> offset) & mask) == mask)
                     {
-                        return UseNCells(BitIndex{i, offset}, cells);
+                        return UseNCellsSmall(i, offset, cells, mask);
                     }
                 }
             }
@@ -462,10 +469,10 @@ public:
 
     void *Alloc(size_t size)
     {
-        if (used_cells >= CELLS_IN_CHUNK)
+        size_t cells_count = CountCells(size);
+        if (used_cells + cells_count > CELLS_IN_CHUNK)
             return nullptr;
 
-        size_t cells_count = CountCells(size);
         return cells_count == 1
                    ? Alloc1Cell()
                    : AllocNCells(cells_count);
