@@ -108,6 +108,11 @@ SHARED void __thiscall UI_StateDestroy(LuaState *_this)
 //             Total Allocations: 8967810, Total Cycles:  890016
 //  default    Total Allocations: 9075016, Total Cycles:  641968
 //             Total Allocations: 8685327, Total Cycles:  590648
+// malloc/free    Total Allocations: 11474933, Total Cycles: 846484
+// Lua allocator  Total Allocations: 11474955, Total Cycles: 942172
+
+// malloc/free   Total Allocations: 11474954, Total Cycles: 842949
+// Lua allocator Total Allocations: 11474925, Total Cycles: 962590
 
 SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries libs)
 {
@@ -121,7 +126,9 @@ SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries l
     }
 
     if (pool)
-        lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
+        lua_setdefaultmemoryfunctions(MPPerf_ReallocFunction, MP_FreeFunction, pool);
+    else
+        lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, nullptr);
 
     new (_this) LuaState(libs);
 
