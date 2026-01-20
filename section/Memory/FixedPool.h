@@ -572,13 +572,15 @@ public:
 public:
     FixedPool()
         : num_chunks{1},
-          head{new ChunkT()}
+          head{new ChunkT()},
+          last_successful{nullptr}
     {
     }
 
     ~FixedPool()
     {
         num_chunks = 0;
+        last_successful = nullptr;
         delete head;
     }
 
@@ -640,14 +642,29 @@ public:
 
     void *Alloc(size_t size)
     {
+        ChunkT *last = last_successful;
+        if (last != nullptr)
+        {
+            void *ptr = last->Alloc(size);
+            if (ptr != nullptr)
+            {
+                return ptr;
+            }
+        }
+        last_successful = nullptr;
+
         ChunkT *cur = head;
         ChunkT *prev = nullptr;
         while (cur != nullptr)
         {
-            void *ptr = cur->Alloc(size);
-            if (ptr != nullptr)
+            if (cur != last)
             {
-                return ptr;
+                void *ptr = cur->Alloc(size);
+                if (ptr != nullptr)
+                {
+                    last_successful = cur;
+                    return ptr;
+                }
             }
             prev = cur;
             cur = cur->NextChunk();
@@ -658,6 +675,7 @@ public:
             return nullptr;
 
         num_chunks++;
+        last_successful = cur;
         return cur->Alloc(size);
     }
 
@@ -700,4 +718,5 @@ public:
 private:
     size_t num_chunks;
     ChunkT *head;
+    ChunkT *last_successful;
 };
