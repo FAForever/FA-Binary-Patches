@@ -48,25 +48,21 @@ public:
 
     TypeFlags GetTypeFlags(size_t size)
     {
+        if (size == UPVALUE_SIZE)
+            return {.is_upvalue = true};
+
         bool is_parser = size % PARSER_LOCAL_SIZE == 0 && size <= 12 * 32;
+        if (size == TABLE_SIZE)
+            return {
+                .is_parser = is_parser,
+                .is_table = true,
+            };
+
         //*
         return {
-            .is_parser = is_parser,
-            .is_table = size == TABLE_SIZE,
-            .is_upvalue = size == UPVALUE_SIZE,
             .is_table_hash = size % TABLE_HASH_SIZE == 0 && size <= 80 * 32,
             .is_table_array = size % TABLE_ARRAY_SIZE == 0 && size <= 32 * 32 && !is_parser,
             .is_small = size <= SMALL_SIZE,
-        };
-        //*/
-
-        /*
-        return {
-            .is_table = size == TABLE_SIZE,
-            .is_upvalue = size == UPVALUE_SIZE,
-            .is_table_hash = size % TABLE_HASH_SIZE == 0 && size <= 80 * 32,
-            .is_small = size <= SMALL_SIZE,
-            // .is_table_array = size % TABLE_ARRAY_SIZE == 0 && size <= 32 * 32,
         };
         //*/
     }

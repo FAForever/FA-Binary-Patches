@@ -421,7 +421,7 @@ class Chunk
 
         if (cells == 1)
         {
-            start_index = std::min(start_index, bit_index.Index());
+            // start_index = std::min(start_index, bit_index.Index());
             return;
         }
         AddToFreeList(bit_index.Index(), CeilLog2(cells));
