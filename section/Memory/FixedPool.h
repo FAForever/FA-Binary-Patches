@@ -223,6 +223,8 @@ class Chunk
 
     bool AddToFreeList(size_t index, size_t pow)
     {
+        failed_bits.Reset(pow);
+
         size_t min_diff = std::numeric_limits<size_t>::max();
         ptrdiff_t min_diff_index = 0;
         size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[pow];
@@ -331,6 +333,10 @@ class Chunk
     {
         size_t step = IsPowerOf2(cells) ? cells : std::bit_ceil(cells);
         size_t mask = Mask(cells);
+        size_t pow = CeilLog2(cells);
+
+        if (failed_bits.Get(pow))
+            return nullptr;
 
         // First go forward
         if (!ReachedEnd())
@@ -353,7 +359,6 @@ class Chunk
             top_index = bits.GetSize();
         }
 
-        size_t pow = CeilLog2(cells);
         size_t (&bucket)[FREE_SECTIONS_SIZE] = free_sections[pow];
 
         // then we check free list
@@ -391,6 +396,8 @@ class Chunk
                 }
             }
         }
+
+        failed_bits.Set(pow);
         return nullptr;
     }
 
@@ -438,6 +445,7 @@ public:
           top_index{0},
           start_index{0},
           used_cells{0},
+          failed_bits{},
           free_sections{},
           bits{}
     {
@@ -555,6 +563,7 @@ private:
     size_t top_index;
     size_t start_index;
     size_t used_cells;
+    BitArray<32> failed_bits;
     size_t free_sections[OFFSET + 1][FREE_SECTIONS_SIZE];
     BitArray<CELLS_IN_CHUNK> bits;
     Byte data[CHUNK_SIZE];
