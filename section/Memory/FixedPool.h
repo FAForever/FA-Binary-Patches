@@ -223,7 +223,7 @@ class Chunk
 
     bool AddToFreeList(size_t index, size_t pow)
     {
-        failed_bits.Reset(pow);
+        failed_powers[pow] = false;
 
         size_t min_diff = std::numeric_limits<size_t>::max();
         ptrdiff_t min_diff_index = 0;
@@ -335,7 +335,7 @@ class Chunk
         size_t mask = Mask(cells);
         size_t pow = CeilLog2(cells);
 
-        if (failed_bits.Get(pow))
+        if (failed_powers[pow])
             return nullptr;
 
         // First go forward
@@ -397,7 +397,7 @@ class Chunk
             }
         }
 
-        failed_bits.Set(pow);
+        failed_powers[pow] = true;
         return nullptr;
     }
 
@@ -445,7 +445,7 @@ public:
           top_index{0},
           start_index{0},
           used_cells{0},
-          failed_bits{},
+          failed_powers{},
           free_sections{},
           bits{}
     {
@@ -563,7 +563,7 @@ private:
     size_t top_index;
     size_t start_index;
     size_t used_cells;
-    BitArray<32> failed_bits;
+    bool failed_powers[OFFSET + 1];
     size_t free_sections[OFFSET + 1][FREE_SECTIONS_SIZE];
     BitArray<CELLS_IN_CHUNK> bits;
     Byte data[CHUNK_SIZE];
@@ -600,8 +600,9 @@ private:
 
     public:
         ChunksList()
-            : head{new Entry()},
-              tail{head}
+            : head{nullptr},
+              tail{nullptr},
+              count{0}
         {
         }
 
@@ -616,19 +617,32 @@ private:
             }
             head = nullptr;
             tail = nullptr;
+            count = 0;
         }
 
         ChunkT *Add()
         {
-            Entry *new_entry = new Entry(tail);
-            tail->next = new_entry;
+            Entry *new_entry = new (std::nothrow) Entry(tail);
+            if (new_entry == nullptr)
+                return nullptr;
+
+            if (tail == nullptr)
+            {
+                head = new_entry;
+            }
+            else
+            {
+                tail->next = new_entry;
+            }
             tail = new_entry;
+            count++;
             return &new_entry->chunk;
         }
 
     private:
         Entry *head;
         Entry *tail;
+        size_t count;
     };
 
 public:
