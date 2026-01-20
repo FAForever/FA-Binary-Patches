@@ -86,7 +86,7 @@ struct moho_set
 
 	void set(uint32_t item, bool set)
 	{
-		auto *itemPtr = &begin[item >> 5 - baseI];
+		auto *itemPtr = &begin[(item >> 5) - baseI];
 		if (itemPtr >= end)
 			end = itemPtr + 1;
 		item = 1 << (item & 0x1F);
@@ -97,7 +97,7 @@ struct moho_set
 	}
 	bool operator[](int item)
 	{
-		auto *itemPtr = &begin[item >> 5 - baseI];
+		auto *itemPtr = &begin[(item >> 5) - baseI];
 		if (itemPtr >= end)
 			return false;
 		return *itemPtr & (1 << (item & 0x1F));
@@ -1406,7 +1406,7 @@ struct CClientManagerImpl : IClientManager
 	bool unk1; // if value is 1 then KERNEL32.SetEvent is bypassed
 };
 
-typedef struct mRequest
+struct mRequest
 {
 	IClient *mRequester;
 	int mAfterBeat;

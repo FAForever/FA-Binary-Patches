@@ -1,9 +1,15 @@
 #include "Allocator.h"
 #include "LuaAllocator.h"
 
+#include "magic_classes.h"
+
+bool use_custom_allocator = false;
+
+ConDescReg use_sim_allocator_convar{"sim_allocator", "", &use_custom_allocator};
+
 int64_t total_cycles = 0;
 size_t total_alloc = 0;
-void *__cdecl MP_ReallocFunction(
+void *__cdecl MPPerf_ReallocFunction(
     void *ptr,
     size_t oldsize,
     size_t size,
@@ -17,6 +23,17 @@ void *__cdecl MP_ReallocFunction(
     total_alloc++;
     total_cycles += end - start;
     return result;
+}
+
+void *__cdecl MP_ReallocFunction(
+    void *ptr,
+    size_t oldsize,
+    size_t size,
+    void *data,
+    const char *allocName,
+    size_t flags)
+{
+    return static_cast<LuaAllocator *>(data)->Realloc(ptr, oldsize, size);
 }
 
 void __cdecl MP_FreeFunction(void *ptr, size_t oldsize, void *data)
@@ -85,15 +102,23 @@ SHARED void __thiscall UI_StateDestroy(LuaState *_this)
 
 // SIM
 //  Fixed pool Total Allocations: 8953037, Total Cycles: 5922986
-//       info: Total Allocations: 8864595, Total Cycles: 5018217
+//             Total Allocations: 8864595, Total Cycles: 5018217
+//             Total Allocations: 9041332, Total Cycles: 5513742
+//             Total Allocations: 8754166, Total Cycles: 5834894
+//             Total Allocations: 8967810, Total Cycles:  890016
 //  default    Total Allocations: 9075016, Total Cycles:  641968
+//             Total Allocations: 8685327, Total Cycles:  590648
 
 SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries libs)
 {
     LogF("SIM_StateCreate: %p", _this);
 
     LuaAllocator *pool = nullptr;
-    pool = new (std::nothrow) LuaAllocator();
+
+    if (use_custom_allocator)
+    {
+        pool = new (std::nothrow) LuaAllocator();
+    }
 
     if (pool)
         lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);

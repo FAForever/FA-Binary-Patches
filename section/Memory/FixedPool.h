@@ -434,10 +434,10 @@ public:
     }
 
     Chunk()
-        : top_index{0},
+        : next{nullptr},
+          top_index{0},
           start_index{0},
           used_cells{0},
-          next{nullptr},
           free_sections{},
           bits{}
     {
@@ -551,10 +551,10 @@ public:
     }
 
 private:
+    SelfT *next;
     size_t top_index;
     size_t start_index;
     size_t used_cells;
-    SelfT *next;
     size_t free_sections[OFFSET + 1][FREE_SECTIONS_SIZE];
     BitArray<CELLS_IN_CHUNK> bits;
     Byte data[CHUNK_SIZE];
@@ -563,12 +563,66 @@ private:
 template <size_t CELL_SIZE, size_t CELLS_IN_CHUNK>
 class FixedPool
 {
+    using ChunkT = Chunk<CELL_SIZE, CELLS_IN_CHUNK>;
+
+private:
     static_assert(CELL_SIZE % sizeof(size_t) == 0, "CELL_SIZE must be divisible by size pointer");
     static_assert(CELLS_IN_CHUNK % NUM_BITS == 0, "CELLS_IN_CHUNK");
 
-public:
-    using ChunkT = Chunk<CELL_SIZE, CELLS_IN_CHUNK>;
+    class ChunksList
+    {
+        struct Entry
+        {
+            ChunkT *next;
+            ChunkT *prev;
+            ChunkT chunk;
 
+            Entry(Entry *prev = nullptr)
+                : next{nullptr},
+                  prev{prev},
+                  chunk{}
+            {
+            }
+
+            ~Entry()
+            {
+            }
+        };
+
+    public:
+        ChunksList()
+            : head{new Entry()},
+              tail{head}
+        {
+        }
+
+        ~ChunksList()
+        {
+            Entry *cur = head;
+            while (cur != nullptr)
+            {
+                Entry *next = cur->next;
+                delete cur;
+                cur = next;
+            }
+            head = nullptr;
+            tail = nullptr;
+        }
+
+        ChunkT *Add()
+        {
+            Entry *new_entry = new Entry(tail);
+            tail->next = new_entry;
+            tail = new_entry;
+            return &new_entry->chunk;
+        }
+
+    private:
+        Entry *head;
+        Entry *tail;
+    };
+
+public:
 public:
     FixedPool()
         : num_chunks{1},
