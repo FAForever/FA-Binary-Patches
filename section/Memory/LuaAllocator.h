@@ -83,6 +83,12 @@ public:
         DBG_LOG("Realloc: %p %d %d", ptr, old_size, new_size);
 
         TypeFlags flags = GetTypeFlags(new_size);
+        if (!flags)
+        {
+            TypeFlags prev_flags = GetTypeFlags(old_size);
+            if (!prev_flags)
+                return realloc(ptr, new_size);
+        }
 
         void *result = nullptr;
         if (flags.is_table_hash)
@@ -152,8 +158,8 @@ private:
             return parser_pool.Alloc(size);
         else if (flags.is_small)
             return small_pool.Alloc(size);
-        else
-            return malloc(size);
+
+        return malloc(size);
     }
 
     bool FreeFromAll(void *ptr, size_t size)
