@@ -142,19 +142,15 @@ public:
     void Set(BitIndex bit_index)
     {
         size_t bit = bit_index.Bit();
-        size_t *p_value = &GetSection(bit_index.Index());
-        size_t cur_value = *p_value;
-        size_t new_value = cur_value | ((size_t)1 << bit);
-        *p_value = new_value;
+        size_t index = bit_index.Index();
+        GetSection(index) |= ((size_t)1 << bit);
     }
 
     void Reset(BitIndex bit_index)
     {
         size_t bit = bit_index.Bit();
-        size_t *p_value = &GetSection(bit_index.Index());
-        size_t cur_value = *p_value;
-        size_t new_value = cur_value & ~((size_t)1 << bit);
-        *p_value = new_value;
+        size_t index = bit_index.Index();
+        GetSection(index) &= ~((size_t)1 << bit);
     }
 
     size_t GetSize() const { return SIZE; }
