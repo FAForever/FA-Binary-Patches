@@ -5,6 +5,7 @@
 #include <limits>
 #include <bit>
 #include <array>
+#include <compare>
 
 constexpr bool IsPowerOf2(size_t value)
 {
@@ -17,6 +18,27 @@ concept is_power_of_two = IsPowerOf2(V);
 constexpr size_t CeilLog2(size_t x)
 {
     return x <= 1 ? 0 : std::bit_width(x - 1);
+}
+
+constexpr size_t Mask(size_t bits)
+{
+    if (bits >= std::numeric_limits<size_t>::digits)
+    {
+        return std::numeric_limits<size_t>::max();
+    }
+
+    return ((size_t)1 << bits) - 1;
+}
+
+size_t GetFirstSetBit(size_t value)
+{
+    assert(value != 0);
+    size_t index = 0;
+    while ((value & ((size_t)1 << index)) == 0)
+    {
+        index++;
+    }
+    return index;
 }
 
 constexpr size_t NUM_BITS = std::numeric_limits<size_t>::digits;
@@ -146,6 +168,7 @@ private:
 template <size_t CELL_SIZE, size_t CELLS_IN_CHUNK>
 class Chunk
 {
+private:
     static_assert(CELL_SIZE % sizeof(size_t) == 0, "CELL_SIZE must be divisible by size pointer");
     static_assert(CELLS_IN_CHUNK % NUM_BITS == 0, "CELLS_PER_CHUNK");
 
@@ -163,6 +186,21 @@ class Chunk
         return (static_cast<Byte *>(ptr) - Begin()) / CELL_SIZE;
     }
 
+    size_t CountFree(BitIndex start, size_t max_count) const
+    {
+        if ((start + max_count).Raw() >= CELLS_IN_CHUNK)
+            return 0;
+
+        for (size_t offset = 0; offset < max_count; ++offset)
+        {
+            if (!bits.Get(start + offset))
+            {
+                return offset;
+            }
+        }
+        return max_count;
+    }
+
     void *Use1Cell(BitIndex bit_index)
     {
         used_cells++;
@@ -170,42 +208,21 @@ class Chunk
         return At(bit_index);
     }
 
-    void *UseNCellsSmall(size_t index, size_t offset, size_t count, size_t mask)
+    void *UseNCellsSmall(size_t index, size_t offset, size_t cells, size_t mask)
     {
-        used_cells += count;
+        used_cells += cells;
         bits.GetSection(index) &= ~(mask << offset);
         return At(BitIndex{index, offset});
     }
 
-    void *UseNCells(BitIndex bit_index, size_t count)
+    void *UseNCells(BitIndex bit_index, size_t cells)
     {
-        used_cells += count;
-        for (size_t offset = 0; offset < count; ++offset)
+        used_cells += cells;
+        for (size_t offset = 0; offset < cells; ++offset)
         {
             bits.Reset(bit_index + offset);
         }
         return At(bit_index);
-    }
-
-    static size_t GetFirstSetBit(size_t value)
-    {
-        assert(value != 0);
-        size_t index = 0;
-        while ((value & ((size_t)1 << index)) == 0)
-        {
-            index++;
-        }
-        return index;
-    }
-
-    static constexpr size_t Mask(size_t bits)
-    {
-        if (bits >= std::numeric_limits<size_t>::digits)
-        {
-            return std::numeric_limits<size_t>::max();
-        }
-
-        return ((size_t)1 << bits) - 1;
     }
 
     // size_t MinNotZeroFreeIndex()
@@ -270,13 +287,13 @@ class Chunk
         {
             for (size_t i = top_index; i < bits.GetSize(); i++)
             {
-                size_t sector = bits.GetSection(i);
-                if (sector)
-                {
-                    size_t bit = GetFirstSetBit(sector);
-                    top_index = i;
-                    return Use1Cell(BitIndex{i, bit});
-                }
+                size_t section = bits.GetSection(i);
+                if (section == 0)
+                    continue;
+
+                size_t bit = GetFirstSetBit(section);
+                top_index = i;
+                return Use1Cell(BitIndex{i, bit});
             }
             top_index = bits.GetSize();
         }
@@ -301,32 +318,17 @@ class Chunk
 
         for (size_t i = start_index; i < bits.GetSize(); i++)
         {
-            size_t sector = bits.GetSection(i);
-            if (sector)
-            {
-                start_index = i;
-                size_t bit = GetFirstSetBit(sector);
-                return Use1Cell(BitIndex{i, bit});
-            }
+            size_t section = bits.GetSection(i);
+            if (section == 0)
+                continue;
+
+            start_index = i;
+            size_t bit = GetFirstSetBit(section);
+            return Use1Cell(BitIndex{i, bit});
         }
         // start with first free section index
         start_index = 0; // MinNotZeroFreeIndex();
         return nullptr;
-    }
-
-    size_t CountFree(BitIndex start, size_t max_count) const
-    {
-        if ((start + max_count).Raw() >= CELLS_IN_CHUNK)
-            return 0;
-
-        for (size_t offset = 0; offset < max_count; ++offset)
-        {
-            if (!bits.Get(start + offset))
-            {
-                return offset;
-            }
-        }
-        return max_count;
     }
 
     void *AllocNCellsSmall(size_t cells)
@@ -380,6 +382,9 @@ class Chunk
                     return UseNCellsSmall(index, offset, cells, mask);
                 }
             }
+
+            // invalidate too
+            bucket[i] = 0;
         }
 
         for (size_t i = start_index; i < bits.GetSize(); i++)
@@ -435,11 +440,6 @@ class Chunk
     }
 
 public:
-    static size_t CountCells(size_t bytes)
-    {
-        return bytes / CELL_SIZE + (bytes % CELL_SIZE == 0 ? 0 : 1);
-    }
-
     Chunk()
         : next{nullptr},
           top_index{0},
@@ -469,13 +469,11 @@ public:
         bool belongs;
     };
 
-    ExtendResult Extend(void *ptr, size_t old_size, size_t new_size)
+    ExtendResult Extend(void *ptr, size_t old_cells, size_t new_cells)
     {
         if (!BelongsToChunk(ptr))
             return {nullptr, false};
 
-        size_t old_cells = CountCells(old_size);
-        size_t new_cells = CountCells(new_size);
         if (old_cells == new_cells)
         {
             return {ptr, true};
@@ -509,18 +507,17 @@ public:
         return {nullptr, true};
     }
 
-    void *Alloc(size_t size)
+    void *Alloc(size_t cells)
     {
-        size_t cells_count = CountCells(size);
-        if (used_cells + cells_count > CELLS_IN_CHUNK)
+        if (used_cells + cells > CELLS_IN_CHUNK)
             return nullptr;
 
-        return cells_count == 1
+        return cells == 1
                    ? Alloc1Cell()
-                   : AllocNCells(cells_count);
+                   : AllocNCells(cells);
     }
 
-    bool Free(void *ptr, size_t old_size)
+    bool Free(void *ptr, size_t cells)
     {
         if (ptr == nullptr)
             return true;
@@ -528,8 +525,7 @@ public:
         if (!BelongsToChunk(ptr))
             return false;
 
-        size_t old_cells = CountCells(old_size);
-        FreeCells(ptr, old_cells);
+        FreeCells(ptr, cells);
         return true;
     }
 
@@ -574,7 +570,6 @@ class FixedPool
 {
     using ChunkT = Chunk<CELL_SIZE, CELLS_IN_CHUNK>;
 
-private:
     static_assert(CELL_SIZE % sizeof(size_t) == 0, "CELL_SIZE must be divisible by size pointer");
     static_assert(CELLS_IN_CHUNK % NUM_BITS == 0, "CELLS_IN_CHUNK");
 
@@ -645,84 +640,12 @@ private:
         size_t count;
     };
 
-public:
-public:
-    FixedPool()
-        : num_chunks{1},
-          head{new ChunkT()},
-          last_successful{nullptr}
-    {
-    }
-
-    ~FixedPool()
-    {
-        num_chunks = 0;
-        last_successful = nullptr;
-        delete head;
-    }
-
-    void *Realloc(void *ptr, size_t old_size, size_t new_size)
-    {
-        ChunkT *cur = head;
-        ChunkT *prev = nullptr;
-        bool belongs = false;
-        while (cur != nullptr)
-        {
-            auto r = cur->Extend(ptr, old_size, new_size);
-            if (r.ptr)
-            {
-                return r.ptr;
-            }
-            belongs = belongs || r.belongs;
-            prev = cur;
-            cur = cur->NextChunk();
-        }
-        // couldn't extend
-
-        if (!belongs)
-            return nullptr;
-
-        void *new_ptr = Alloc(new_size);
-        if (new_ptr)
-        {
-            memcpy(new_ptr, ptr, std::min(old_size, new_size));
-            Free(ptr, old_size);
-            return new_ptr;
-        }
-        return nullptr;
-    }
-
-    template <size_t Cells>
-        requires is_power_of_two<Cells>
-    void *AllocCells()
-    {
-        ChunkT *cur = head;
-        ChunkT *prev = nullptr;
-        while (cur != nullptr)
-        {
-            void *ptr = cur->template AllocCells<Cells>();
-            if (ptr != nullptr)
-            {
-                return ptr;
-            }
-            prev = cur;
-            cur = cur->NextChunk();
-        }
-
-        cur = prev->CreateNextChunk();
-        if (cur == nullptr) // can't create more!
-            return nullptr;
-
-        num_chunks++;
-        return cur->template AllocCells<Cells>();
-    }
-
-    void *Alloc(size_t size)
+    void *InternalAlloc(size_t cells)
     {
         ChunkT *last = last_successful;
         if (last != nullptr)
         {
-            void *ptr = last->Alloc(size);
+            void *ptr = last->Alloc(cells);
             if (ptr != nullptr)
             {
                 return ptr;
@@ -736,7 +659,7 @@ public:
         {
             if (cur != last)
             {
-                void *ptr = cur->Alloc(size);
+                void *ptr = cur->Alloc(cells);
                 if (ptr != nullptr)
                 {
                     last_successful = cur;
@@ -753,18 +676,15 @@ public:
 
         num_chunks++;
         last_successful = cur;
-        return cur->Alloc(size);
+        return cur->Alloc(cells);
     }
 
-    bool Free(void *ptr, size_t old_size)
+    bool InternalFree(void *ptr, size_t cells)
     {
-        if (ptr == nullptr || old_size == 0)
-            return true;
-
         ChunkT *cur = head;
         while (cur != nullptr)
         {
-            if (cur->Free(ptr, old_size))
+            if (cur->Free(ptr, cells))
             {
                 return true;
             }
@@ -773,9 +693,83 @@ public:
         return false;
     }
 
-    bool BelongsToPool(void *ptr)
+    void *InternalRealloc(void *ptr, size_t old_cells, size_t new_cells)
     {
+        bool belongs = false;
+
         ChunkT *cur = head;
+        ChunkT *prev = nullptr;
+        while (cur != nullptr)
+        {
+            auto r = cur->Extend(ptr, old_cells, new_cells);
+            if (r.ptr)
+            {
+                return r.ptr;
+            }
+            belongs = belongs || r.belongs;
+            prev = cur;
+            cur = cur->NextChunk();
+        }
+        // couldn't extend
+
+        if (!belongs)
+            return nullptr;
+
+        void *new_ptr = InternalAlloc(new_cells);
+        if (new_ptr)
+        {
+            // it is faster to copy aligned memory
+            memcpy(new_ptr, ptr, CELL_SIZE * std::min(old_cells, new_cells));
+            InternalFree(ptr, old_cells);
+            return new_ptr;
+        }
+        return nullptr;
+    }
+
+public:
+    static size_t CountCells(size_t bytes)
+    {
+        return bytes / CELL_SIZE + (bytes % CELL_SIZE == 0 ? 0 : 1);
+    }
+
+    FixedPool()
+        : num_chunks{1},
+          head{new ChunkT()},
+          last_successful{nullptr}
+    {
+    }
+
+    ~FixedPool()
+    {
+        num_chunks = 0;
+        last_successful = nullptr;
+        delete head;
+    }
+
+    void *Realloc(void *ptr, size_t old_size, size_t new_size)
+    {
+        size_t old_cells = CountCells(old_size);
+        size_t new_cells = CountCells(new_size);
+        return InternalRealloc(ptr, old_cells, new_cells);
+    }
+
+    void *Alloc(size_t size)
+    {
+        size_t cells = CountCells(size);
+        return InternalAlloc(cells);
+    }
+
+    bool Free(void *ptr, size_t size)
+    {
+        if (ptr == nullptr || size == 0)
+            return true;
+
+        return InternalFree(ptr, CountCells(size));
+    }
+
+    bool BelongsToPool(void *ptr) const
+    {
+        const ChunkT *cur = head;
         while (cur != nullptr)
         {
             if (cur->BelongsToChunk(ptr))
