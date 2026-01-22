@@ -455,6 +455,11 @@ public:
         }
     }
 
+    Chunk(const Chunk &) = delete;
+    Chunk(Chunk &&) = delete;
+    Chunk &operator=(const Chunk &) = delete;
+    Chunk &operator=(Chunk &&) = delete;
+
     ~Chunk()
     {
         top_index = 0;
@@ -738,6 +743,11 @@ public:
           last_successful{nullptr}
     {
     }
+
+    FixedPool(const FixedPool &) = delete;
+    FixedPool(FixedPool &&) = delete;
+    FixedPool &operator=(const FixedPool &) = delete;
+    FixedPool &operator=(FixedPool &&) = delete;
 
     ~FixedPool()
     {
