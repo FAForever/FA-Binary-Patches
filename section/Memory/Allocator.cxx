@@ -1,11 +1,15 @@
 #include "Allocator.h"
 #include "LuaAllocator.h"
-
 #include "magic_classes.h"
+#include "LuaAPI.h"
 
-bool use_custom_allocator = false;
+bool sim_custom_allocator = true;
 
-ConDescReg use_sim_allocator_convar{"sim_allocator", "", &use_custom_allocator};
+ConDescReg use_sim_allocator_convar{"sim_allocator", "", &sim_custom_allocator};
+
+bool ui_custom_allocator = true;
+
+ConDescReg use_ui_allocator_convar{"ui_allocator", "", &ui_custom_allocator};
 
 int64_t total_cycles = 0;
 size_t total_alloc = 0;
@@ -61,24 +65,50 @@ void __cdecl Def_FreeFunction(void *ptr, size_t oldsize, void *data)
 {
     free(ptr);
 }
+// SimLua reprsl(GC_stats())
+int GCStats(lua_State *L)
+{
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(L));
+    if (memData == nullptr)
+        return 0;
+
+    const LuaAllocator::Statistics &stats = memData->GetStats();
+
+    LuaObject obj{L->LuaState};
+    obj.AssignNewTable(L->LuaState, 0, 0);
+
+    obj.SetInteger("allocations", stats.allocations);
+    obj.SetInteger("malloc_allocations", stats.malloc_allocations);
+    obj.SetInteger("reallocations", stats.reallocations);
+    obj.SetInteger("realloc_fails", stats.realloc_fails);
+    obj.SetInteger("realloc_misses", stats.realloc_misses);
+    obj.SetInteger("free_misses", stats.free_misses);
+    obj.SetInteger("allocator_to_malloc", stats.allocator_to_malloc);
+
+    obj.PushStack(L);
+
+    return 1;
+}
+
+SimRegFunc gc_stats_reg{"GC_stats", "", GCStats};
 
 SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries libs)
 {
     LogF("UI_StateCreate: %p", _this);
-    int64_t start = ClockCycles();
 
     LuaAllocator *pool = nullptr;
-    // pool = new (std::nothrow) LuaAllocator();
+    if (ui_custom_allocator)
+        pool = new (std::nothrow) LuaAllocator();
 
-    // if (pool)
-    //     lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
+    if (pool)
+        lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
+    else
+        lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
     // lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, pool);
 
     new (_this) LuaState(libs);
 
     lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
-    int64_t end = ClockCycles();
-    LogF("UI_StateCreate: %llu", CyclesToMicroSeconds(end - start));
 
     return _this;
 }
@@ -91,10 +121,6 @@ SHARED void __thiscall UI_StateDestroy(LuaState *_this)
     _this->~LuaState();
 
     delete memData;
-
-    // LogF("Total Allocations: %u, Total Cycles: %llu", total_alloc, CyclesToMicroSeconds(total_cycles));
-    // total_alloc = 0;
-    // total_cycles = 0;
 }
 // UI
 //  Fixed pool Total Allocations: 2192951, Total Cycles: 274446
@@ -114,21 +140,25 @@ SHARED void __thiscall UI_StateDestroy(LuaState *_this)
 // malloc/free   Total Allocations: 11474954, Total Cycles: 842949
 // Lua allocator Total Allocations: 11474925, Total Cycles: 962590
 
+// malloc/free   Total Allocations: 9373585, Total Cycles: 687230
+// Lua allocator Total Allocations: 9373612, Total Cycles: 719555
+//               Total Allocations: 9373605, Total Cycles: 707989
+
 SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries libs)
 {
     LogF("SIM_StateCreate: %p", _this);
 
     LuaAllocator *pool = nullptr;
 
-    if (use_custom_allocator)
+    if (sim_custom_allocator)
     {
         pool = new (std::nothrow) LuaAllocator();
     }
 
     if (pool)
-        lua_setdefaultmemoryfunctions(MPPerf_ReallocFunction, MP_FreeFunction, pool);
+        lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
     else
-        lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, nullptr);
+        lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
 
     new (_this) LuaState(libs);
 

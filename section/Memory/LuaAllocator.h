@@ -61,6 +61,7 @@ public:
         size_t realloc_fails;
         size_t realloc_misses;
         size_t free_misses;
+        size_t allocator_to_malloc;
     };
 
     TypeFlags GetTypeFlags(size_t size)
@@ -136,6 +137,10 @@ public:
                 return result;
             }
             stats.realloc_misses++;
+        }
+        else
+        {
+            stats.allocator_to_malloc++;
         }
 
         void *new_ptr = InternalAlloc(new_size, new_flags);
