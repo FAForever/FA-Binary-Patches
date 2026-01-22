@@ -24,7 +24,8 @@ public:
           table_array_pool{},
           upvalue_pool{},
           parser_pool{},
-          small_pool{}
+          small_pool{},
+          large_pool{}
     {
     }
 
@@ -38,6 +39,7 @@ public:
         bool is_table_hash : 1;
         bool is_table_array : 1;
         bool is_small : 1;
+        bool is_large : 1;
 
         operator bool() const
         {
@@ -46,7 +48,8 @@ public:
                    is_upvalue ||
                    is_table_hash ||
                    is_table_array ||
-                   is_small;
+                   is_small ||
+                   is_large;
         }
     };
 
@@ -78,6 +81,7 @@ public:
             .is_table_hash = size % TABLE_HASH_SIZE == 0 && IsPowerOf2(n_hash) && size <= 80 * 32,
             .is_table_array = size % TABLE_ARRAY_SIZE == 0 && size <= 32 * 32 && !is_parser,
             .is_small = size <= SMALL_SIZE,
+            .is_large = size > SMALL_SIZE && size <= 16384, // size that defines as small block in malloc
         };
     }
 
@@ -123,6 +127,8 @@ public:
                 result = parser_pool.Realloc(ptr, old_size, new_size);
             else if (new_flags.is_small)
                 result = small_pool.Realloc(ptr, old_size, new_size);
+            else if (new_flags.is_large)
+                result = large_pool.Realloc(ptr, old_size, new_size);
 
             if (result != nullptr)
             {
@@ -179,6 +185,8 @@ private:
             return;
         if (flags.is_small && small_pool.Free(ptr, size))
             return;
+        if (flags.is_large && large_pool.Free(ptr, size))
+            return;
 
         if (flags && FreeFromAll(ptr, size))
             return;
@@ -200,6 +208,8 @@ private:
             return parser_pool.Alloc(size);
         else if (flags.is_small)
             return small_pool.Alloc(size);
+        else if (flags.is_large)
+            return large_pool.Alloc(size);
 
         stats.malloc_allocations++;
         return malloc(size);
@@ -215,7 +225,8 @@ private:
                table_hash_pool.Free(ptr, size) ||
                table_pool.Free(ptr, size) ||
                upvalue_pool.Free(ptr, size) ||
-               parser_pool.Free(ptr, size);
+               parser_pool.Free(ptr, size) ||
+               large_pool.Free(ptr, size);
     }
 
 private:
@@ -226,4 +237,5 @@ private:
     FixedPool<20, 64 * 1024> upvalue_pool;
     FixedPool<12, 64 * 1024> parser_pool;
     FixedPool<32, 64 * 1024> small_pool;
+    FixedPool<512, 256> large_pool;
 };
