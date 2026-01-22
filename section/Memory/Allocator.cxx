@@ -90,7 +90,8 @@ int GCStats(lua_State *L)
     return 1;
 }
 
-SimRegFunc gc_stats_reg{"GC_stats", "", GCStats};
+SimRegFunc sim_gc_stats_reg{"GC_stats", "", GCStats};
+UIRegFunc ui_gc_stats_reg{"GC_stats", "", GCStats};
 
 SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries libs)
 {
