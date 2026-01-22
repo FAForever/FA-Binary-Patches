@@ -18,7 +18,8 @@ class LuaAllocator
 {
 public:
     LuaAllocator()
-        : table_pool{},
+        : stats{},
+          table_pool{},
           table_hash_pool{},
           table_array_pool{},
           upvalue_pool{},
@@ -27,18 +28,16 @@ public:
     {
     }
 
-    ~LuaAllocator()
-    {
-    }
+    ~LuaAllocator() {}
 
     struct TypeFlags
     {
-        bool is_parser;
-        bool is_table;
-        bool is_upvalue;
-        bool is_table_hash;
-        bool is_table_array;
-        bool is_small;
+        bool is_parser : 1;
+        bool is_table : 1;
+        bool is_upvalue : 1;
+        bool is_table_hash : 1;
+        bool is_table_array : 1;
+        bool is_small : 1;
 
         operator bool() const
         {
@@ -49,6 +48,16 @@ public:
                    is_table_array ||
                    is_small;
         }
+    };
+
+    struct Statistics
+    {
+        size_t allocations;
+        size_t malloc_allocations;
+        size_t reallocations;
+        size_t realloc_fails;
+        size_t realloc_misses;
+        size_t free_misses;
     };
 
     TypeFlags GetTypeFlags(size_t size)
@@ -63,19 +72,20 @@ public:
                 .is_table = true,
             };
 
-        //*
+        size_t n_hash = size / TABLE_HASH_SIZE;
+
         return {
-            .is_table_hash = size % TABLE_HASH_SIZE == 0 && size <= 80 * 32,
+            .is_table_hash = size % TABLE_HASH_SIZE == 0 && IsPowerOf2(n_hash) && size <= 80 * 32,
             .is_table_array = size % TABLE_ARRAY_SIZE == 0 && size <= 32 * 32 && !is_parser,
             .is_small = size <= SMALL_SIZE,
         };
-        //*/
     }
 
     void *Realloc(void *ptr, size_t old_size, size_t new_size)
     {
         if (ptr == nullptr || old_size == 0)
         {
+            stats.allocations++;
             return Alloc(new_size);
         }
 
@@ -87,32 +97,46 @@ public:
 
         DBG_LOG("Realloc: %p %d %d", ptr, old_size, new_size);
 
-        TypeFlags flags = GetTypeFlags(new_size);
-        if (!flags)
+        TypeFlags new_flags = GetTypeFlags(new_size);
+        TypeFlags old_flags = GetTypeFlags(old_size);
+
+        // case when both sizes are beyond limits of any pool
+        if (!new_flags && !old_flags)
         {
-            TypeFlags prev_flags = GetTypeFlags(old_size);
-            if (!prev_flags)
-                return realloc(ptr, new_size);
+            void *result = realloc(ptr, new_size);
+            if (result != ptr)
+            {
+                stats.realloc_fails++;
+            }
+            return result;
         }
 
-        void *result = nullptr;
-        if (flags.is_table_hash)
-            result = table_hash_pool.Realloc(ptr, old_size, new_size);
-        else if (flags.is_table_array)
-            result = table_array_pool.Realloc(ptr, old_size, new_size);
-        else if (flags.is_parser)
-            result = parser_pool.Realloc(ptr, old_size, new_size);
-        else if (flags.is_small)
-            result = small_pool.Realloc(ptr, old_size, new_size);
+        // case when both sizes are within limits of any pool and we can realloc
+        if (new_flags && old_flags)
+        {
+            void *result = nullptr;
+            if (new_flags.is_table_hash)
+                result = table_hash_pool.Realloc(ptr, old_size, new_size);
+            else if (new_flags.is_table_array)
+                result = table_array_pool.Realloc(ptr, old_size, new_size);
+            else if (new_flags.is_parser)
+                result = parser_pool.Realloc(ptr, old_size, new_size);
+            else if (new_flags.is_small)
+                result = small_pool.Realloc(ptr, old_size, new_size);
 
-        if (result != nullptr)
-            return result;
+            if (result != nullptr)
+            {
+                stats.reallocations++;
+                return result;
+            }
+            stats.realloc_misses++;
+        }
 
-        void *new_ptr = InternalAlloc(new_size, flags);
+        void *new_ptr = InternalAlloc(new_size, new_flags);
         if (new_ptr)
         {
             memcpy(new_ptr, ptr, std::min(old_size, new_size));
-            Free(ptr, old_size);
+            InternalFree(ptr, old_size, old_flags);
             return new_ptr;
         }
         return nullptr;
@@ -130,6 +154,18 @@ public:
     {
         DBG_LOG("Free: %p %d", ptr, size);
         TypeFlags flags = GetTypeFlags(size);
+        InternalFree(ptr, size, flags);
+    }
+
+    const Statistics &GetStats() const
+    {
+        return stats;
+    }
+
+private:
+    void InternalFree(void *ptr, size_t size, TypeFlags flags)
+    {
+        DBG_LOG("Free: %p %d", ptr, size);
 
         if (flags.is_table && table_pool.Free(ptr, size))
             return;
@@ -150,8 +186,7 @@ public:
         free(ptr);
     }
 
-private:
-    void *InternalAlloc(size_t size, const TypeFlags &flags)
+    void *InternalAlloc(size_t size, TypeFlags flags)
     {
         if (flags.is_table_hash)
             return table_hash_pool.Alloc(size);
@@ -166,12 +201,15 @@ private:
         else if (flags.is_small)
             return small_pool.Alloc(size);
 
+        stats.malloc_allocations++;
         return malloc(size);
     }
 
     bool FreeFromAll(void *ptr, size_t size)
     {
-        WarningF("Free miss: %p %d", ptr, size);
+        DBG_LOG("Free miss: %p %d", ptr, size);
+        stats.free_misses++;
+
         return small_pool.Free(ptr, size) ||
                table_array_pool.Free(ptr, size) ||
                table_hash_pool.Free(ptr, size) ||
@@ -181,6 +219,7 @@ private:
     }
 
 private:
+    Statistics stats;
     FixedPool<36, 64 * 1024> table_pool;
     FixedPool<80, 64 * 1024> table_hash_pool;
     FixedPool<32, 64 * 1024> table_array_pool;
