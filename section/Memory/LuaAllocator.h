@@ -42,7 +42,12 @@ public:
 
         operator bool() const
         {
-            return is_parser || is_table || is_upvalue || is_table_hash || is_table_array || is_small;
+            return is_parser ||
+                   is_table ||
+                   is_upvalue ||
+                   is_table_hash ||
+                   is_table_array ||
+                   is_small;
         }
     };
 
