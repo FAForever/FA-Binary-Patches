@@ -144,8 +144,10 @@ public:
         if (flags.is_small && small_pool.Free(ptr, size))
             return;
 
-        if (!flags || !FreeFromAll(ptr, size))
-            free(ptr);
+        if (flags && FreeFromAll(ptr, size))
+            return;
+
+        free(ptr);
     }
 
 private:
