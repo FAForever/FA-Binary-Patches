@@ -417,11 +417,11 @@ private:
             return;
         }
 
-        size_t pow = CeilLog2(cells);
+        size_t step = IsPowerOf2(cells) ? cells : std::bit_ceil(cells);
         size_t bit = bit_index.Bit();
 
         // at aligned bit position
-        if (bit % pow == 0)
+        if (bit % step == 0 && cells <= NUM_BITS)
         {
             size_t index = bit_index.Index();
             size_t mask = Mask(cells);
@@ -435,7 +435,7 @@ private:
             }
         }
 
-        AddToFreeList(bit_index.Index(), pow);
+        AddToFreeList(bit_index.Index(), CeilLog2(cells));
     }
 
 public:
