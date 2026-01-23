@@ -9,7 +9,7 @@
 
 constexpr bool IsPowerOf2(size_t value)
 {
-    return (value > 0) && ((value & (value - 1)) == 0);
+    return std::has_single_bit(value);
 }
 
 template <auto V>
@@ -717,14 +717,13 @@ class FixedPool
             return nullptr;
 
         void *new_ptr = InternalAlloc(new_cells);
-        if (new_ptr)
-        {
-            // it is faster to copy aligned memory
-            memcpy(new_ptr, ptr, CELL_SIZE * std::min(old_cells, new_cells));
-            InternalFree(ptr, old_cells);
-            return new_ptr;
-        }
-        return nullptr;
+        if (new_ptr == nullptr)
+            return nullptr;
+
+        // it is faster to copy aligned memory
+        memcpy(new_ptr, ptr, CELL_SIZE * std::min(old_cells, new_cells));
+        InternalFree(ptr, old_cells);
+        return new_ptr;
     }
 
 public:

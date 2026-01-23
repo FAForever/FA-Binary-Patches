@@ -144,13 +144,12 @@ public:
         }
 
         void *new_ptr = InternalAlloc(new_size, new_flags);
-        if (new_ptr)
-        {
-            memcpy(new_ptr, ptr, std::min(old_size, new_size));
-            InternalFree(ptr, old_size, old_flags);
-            return new_ptr;
-        }
-        return nullptr;
+        if (new_ptr == nullptr)
+            return nullptr;
+
+        memcpy(new_ptr, ptr, std::min(old_size, new_size));
+        InternalFree(ptr, old_size, old_flags);
+        return new_ptr;
     }
 
     void *Alloc(size_t size)
