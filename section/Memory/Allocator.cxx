@@ -97,8 +97,19 @@ int GCStats(lua_State *L)
     return 1;
 }
 
+int GCLog(lua_State *L)
+{
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(L));
+    if (memData == nullptr)
+        return 0;
+
+    memData->SetLogging(lua_toboolean(L, 1));
+    return 0;
+}
+
 SimRegFunc sim_gc_stats_reg{"GC_stats", "", GCStats};
 UIRegFunc ui_gc_stats_reg{"GC_stats", "", GCStats};
+UIRegFunc ui_gc_enablelog_reg{"GC_enablelog", "", GCLog};
 
 SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries libs)
 {

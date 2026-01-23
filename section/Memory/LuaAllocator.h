@@ -6,7 +6,7 @@ constexpr size_t TABLE_ARRAY_SIZE = 8;
 constexpr size_t TABLE_SIZE = 36;
 constexpr size_t UPVALUE_SIZE = 20;
 constexpr size_t PARSER_LOCAL_SIZE = 12;
-constexpr size_t SMALL_SIZE = 256;
+constexpr size_t SMALL_SIZE = 512;
 
 #ifdef DEBUG
 #define DBG_LOG(...) LogF(__VA_ARGS__);
@@ -19,6 +19,7 @@ class LuaAllocator
 public:
     LuaAllocator()
         : stats{},
+          logging_enabled{false},
           table_pool{},
           table_hash_pool{},
           table_array_pool{},
@@ -89,10 +90,11 @@ public:
             };
 
         size_t n_hash = size / TABLE_HASH_SIZE;
+        size_t n_array = size / TABLE_ARRAY_SIZE;
 
         return {
             .is_table_hash = size % TABLE_HASH_SIZE == 0 && IsPowerOf2(n_hash) && size <= 80 * 32,
-            .is_table_array = size % TABLE_ARRAY_SIZE == 0 && size <= 32 * 32 && !is_parser,
+            .is_table_array = size % TABLE_ARRAY_SIZE == 0 && IsPowerOf2(n_array) && size <= 32 * 32,
             .is_small = size <= SMALL_SIZE,
             .is_large = size > SMALL_SIZE && size <= 16384, // size that defines as small block in malloc
         };
@@ -110,6 +112,10 @@ public:
         {
             Free(ptr, old_size);
             return nullptr;
+        }
+        if (logging_enabled)
+        {
+            LogF("Realloc: %d -> %d", old_size, new_size);
         }
 
         DBG_LOG("Realloc: %p %d %d", ptr, old_size, new_size);
@@ -166,6 +172,10 @@ public:
 
     void *Alloc(size_t size)
     {
+        if (logging_enabled)
+        {
+            LogF("Alloc: %d", size);
+        }
         TypeFlags flags = GetTypeFlags(size);
         void *ptr = InternalAlloc(size, flags);
         DBG_LOG("Alloc: %p %d", ptr, size);
@@ -174,6 +184,10 @@ public:
 
     void Free(void *ptr, size_t size)
     {
+        if (logging_enabled)
+        {
+            LogF("Free: %d", size);
+        }
         DBG_LOG("Free: %p %d", ptr, size);
         TypeFlags flags = GetTypeFlags(size);
         InternalFree(ptr, size, flags);
@@ -207,6 +221,11 @@ public:
     static void __cdecl FreeF(void *ptr, size_t old_size, void *data)
     {
         static_cast<LuaAllocator *>(data)->Free(ptr, old_size);
+    }
+
+    void SetLogging(bool enabled)
+    {
+        logging_enabled = enabled;
     }
 
 private:
@@ -272,6 +291,7 @@ private:
 
 private:
     Statistics stats;
+    bool logging_enabled;
     FixedPool<36, 64 * 1024> table_pool;
     FixedPool<80, 64 * 1024> table_hash_pool;
     FixedPool<32, 64 * 1024> table_array_pool;
