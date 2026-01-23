@@ -161,6 +161,13 @@ private:
     size_t bits[SIZE]{};
 };
 
+struct AllocationInfo
+{
+    size_t total_storage;
+    size_t occupied_storage;
+    size_t chunk_count;
+};
+
 template <size_t CELL_SIZE, size_t CELLS_IN_CHUNK>
 class Chunk
 {
@@ -220,19 +227,6 @@ private:
         }
         return At(bit_index);
     }
-
-    // size_t MinNotZeroFreeIndex()
-    // {
-    //     size_t value = 0;
-    //     for (size_t index : free_sections)
-    //     {
-    //         if ((value == 0 || value > index) && index != 0)
-    //         {
-    //             value = index;
-    //         }
-    //     }
-    //     return value;
-    // }
 
     bool AddToFreeList(size_t index, size_t pow)
     {
@@ -322,8 +316,8 @@ private:
             size_t bit = GetFirstSetBit(section);
             return Use1Cell(BitIndex{i, bit});
         }
-        // start with first free section index
-        start_index = 0; // MinNotZeroFreeIndex();
+
+        start_index = 0;
         return nullptr;
     }
 
@@ -544,6 +538,14 @@ public:
     {
         Byte *ptrb = static_cast<Byte *>(ptr);
         return Begin() <= ptrb && ptrb < End();
+    }
+
+    AllocationInfo GetInfo() const
+    {
+        return {
+            .total_storage = CHUNK_SIZE,
+            .occupied_storage = used_cells * CELL_SIZE,
+        };
     }
 
     SelfT *NextChunk() { return next; }
@@ -789,6 +791,21 @@ public:
     size_t NumChunks() const
     {
         return num_chunks;
+    }
+
+    AllocationInfo GetInfo() const
+    {
+        AllocationInfo info{};
+        const ChunkT *cur = head;
+        while (cur != nullptr)
+        {
+            auto chunk_info = cur->GetInfo();
+            info.total_storage += chunk_info.total_storage;
+            info.occupied_storage += chunk_info.occupied_storage;
+            info.chunk_count++;
+            cur = cur->NextChunk();
+        }
+        return info;
     }
 
 private:

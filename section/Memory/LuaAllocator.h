@@ -64,6 +64,18 @@ public:
         size_t allocator_to_malloc;
     };
 
+    struct AllocationStatistics
+    {
+        Statistics stats;
+        AllocationInfo table_info;
+        AllocationInfo table_hash_info;
+        AllocationInfo table_array_info;
+        AllocationInfo upvalue_info;
+        AllocationInfo parser_info;
+        AllocationInfo small_info;
+        AllocationInfo large_info;
+    };
+
     TypeFlags GetTypeFlags(size_t size)
     {
         if (size == UPVALUE_SIZE)
@@ -167,9 +179,18 @@ public:
         InternalFree(ptr, size, flags);
     }
 
-    const Statistics &GetStats() const
+    AllocationStatistics GetStats() const
     {
-        return stats;
+        return {
+            .stats = stats,
+            .table_info = table_pool.GetInfo(),
+            .table_hash_info = table_hash_pool.GetInfo(),
+            .table_array_info = table_array_pool.GetInfo(),
+            .upvalue_info = upvalue_pool.GetInfo(),
+            .parser_info = parser_pool.GetInfo(),
+            .small_info = small_pool.GetInfo(),
+            .large_info = large_pool.GetInfo(),
+        };
     }
 
 private:

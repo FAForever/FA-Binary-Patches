@@ -72,18 +72,40 @@ int GCStats(lua_State *L)
     if (memData == nullptr)
         return 0;
 
-    const LuaAllocator::Statistics &stats = memData->GetStats();
+    const LuaAllocator::AllocationStatistics alloc_stats = memData->GetStats();
 
     LuaObject obj{L->LuaState};
     obj.AssignNewTable(L->LuaState, 0, 0);
+    LuaObject obj_stats{L->LuaState};
+    obj_stats.AssignNewTable(L->LuaState, 0, 0);
 
-    obj.SetInteger("allocations", stats.allocations);
-    obj.SetInteger("malloc_allocations", stats.malloc_allocations);
-    obj.SetInteger("reallocations", stats.reallocations);
-    obj.SetInteger("realloc_fails", stats.realloc_fails);
-    obj.SetInteger("realloc_misses", stats.realloc_misses);
-    obj.SetInteger("free_misses", stats.free_misses);
-    obj.SetInteger("allocator_to_malloc", stats.allocator_to_malloc);
+    obj_stats.SetInteger("allocations", alloc_stats.stats.allocations);
+    obj_stats.SetInteger("malloc_allocations", alloc_stats.stats.malloc_allocations);
+    obj_stats.SetInteger("reallocations", alloc_stats.stats.reallocations);
+    obj_stats.SetInteger("realloc_fails", alloc_stats.stats.realloc_fails);
+    obj_stats.SetInteger("realloc_misses", alloc_stats.stats.realloc_misses);
+    obj_stats.SetInteger("free_misses", alloc_stats.stats.free_misses);
+    obj_stats.SetInteger("allocator_to_malloc", alloc_stats.stats.allocator_to_malloc);
+
+    obj.SetObject("stats", obj_stats);
+
+    auto f = [&](AllocationInfo info) -> LuaObject
+    {
+        LuaObject alloc_info{L->LuaState};
+        alloc_info.AssignNewTable(L->LuaState, 0, 0);
+        alloc_info.SetInteger("total_storage", info.total_storage);
+        alloc_info.SetInteger("occupied_storage", info.occupied_storage);
+        alloc_info.SetInteger("chunk_count", info.chunk_count);
+        return alloc_info;
+    };
+
+    obj.SetObject("table_info", f(alloc_stats.table_info));
+    obj.SetObject("table_hash_info", f(alloc_stats.table_hash_info));
+    obj.SetObject("table_array_info", f(alloc_stats.table_array_info));
+    obj.SetObject("upvalue_info", f(alloc_stats.upvalue_info));
+    obj.SetObject("parser_info", f(alloc_stats.parser_info));
+    obj.SetObject("small_info", f(alloc_stats.small_info));
+    obj.SetObject("large_info", f(alloc_stats.large_info));
 
     obj.PushStack(L);
 
