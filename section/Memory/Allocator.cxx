@@ -92,10 +92,11 @@ int GCStats(lua_State *L)
     auto f = [&](AllocationInfo info) -> LuaObject
     {
         LuaObject alloc_info{L->LuaState};
-        alloc_info.AssignNewTable(L->LuaState, 0, 0);
+        alloc_info.AssignNewTable(L->LuaState, 0, 4);
         alloc_info.SetInteger("total_storage", info.total_storage);
         alloc_info.SetInteger("occupied_storage", info.occupied_storage);
         alloc_info.SetInteger("chunk_count", info.chunk_count);
+        alloc_info.SetNumber("ratio", info.occupied_storage * 1.0f / info.total_storage);
         return alloc_info;
     };
 
