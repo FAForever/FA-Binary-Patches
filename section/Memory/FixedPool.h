@@ -408,20 +408,34 @@ private:
 
     void FreeCells(void *ptr, size_t cells)
     {
-        BitIndex bit_index{GetIndexByPtr(ptr)};
-
         used_cells -= cells;
-        for (size_t i = 0; i < cells; i++)
-        {
-            bits.Set(bit_index + i);
-        }
+        BitIndex bit_index{GetIndexByPtr(ptr)};
 
         if (cells == 1)
         {
-            // start_index = std::min(start_index, bit_index.Index());
+            bits.Set(bit_index);
             return;
         }
-        AddToFreeList(bit_index.Index(), CeilLog2(cells));
+
+        size_t pow = CeilLog2(cells);
+        size_t bit = bit_index.Bit();
+
+        // at aligned bit position
+        if (bit % pow == 0)
+        {
+            size_t index = bit_index.Index();
+            size_t mask = Mask(cells);
+            bits.GetSection(index) |= (mask << bit);
+        }
+        else
+        {
+            for (size_t i = 0; i < cells; i++)
+            {
+                bits.Set(bit_index + i);
+            }
+        }
+
+        AddToFreeList(bit_index.Index(), pow);
     }
 
 public:
