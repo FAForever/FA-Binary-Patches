@@ -208,7 +208,7 @@ public:
 
   void SetNil(const LuaObject& key) const;
   void SetObject(const LuaObject &key, const LuaObject &value) const;
-  // void SetObject(const char *key, const const LuaObject &value) const;
+  void SetObject(const char *key, const LuaObject &value) const;
   void SetObject(int key, const LuaObject &value) const;
   void SetTableHelper(const TObject *key, const TObject *value) const;
 
@@ -260,8 +260,8 @@ public:
   void SetNil(int key) asm("0x907ff0");
   void SetNumber(const char *key, float value) asm("0x908320");
   void SetNumber(int key, float value) asm("0x908370");
-  void SetObject(const LuaObject *key, const LuaObject *value) asm("0x908810");
-  void SetObject(const char *key, const LuaObject *value) asm("0x908760");
+  void SetObject(const LuaObject *key, const LuaObject *value) const asm("0x908810");
+  void SetObject(const char *key, const LuaObject *value) const asm("0x908760");
   void SetObject(int key, const LuaObject *value) asm("0x9087a0");
   void SetString(const char *key, const char *value) asm("0x908450");
   void SetString(int key, const char *value) asm("0x9084e0");
