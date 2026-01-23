@@ -29,22 +29,6 @@ void *__cdecl MPPerf_ReallocFunction(
     return result;
 }
 
-void *__cdecl MP_ReallocFunction(
-    void *ptr,
-    size_t oldsize,
-    size_t size,
-    void *data,
-    const char *allocName,
-    size_t flags)
-{
-    return static_cast<LuaAllocator *>(data)->Realloc(ptr, oldsize, size);
-}
-
-void __cdecl MP_FreeFunction(void *ptr, size_t oldsize, void *data)
-{
-    static_cast<LuaAllocator *>(data)->Free(ptr, oldsize);
-}
-
 void *__cdecl Def_ReallocFunction(
     void *ptr,
     size_t oldsize,
@@ -125,7 +109,7 @@ SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries li
         pool = new (std::nothrow) LuaAllocator();
 
     if (pool)
-        lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
+        lua_setdefaultmemoryfunctions(LuaAllocator::ReallocF, LuaAllocator::FreeF, pool);
     else
         lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
     // lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, pool);
@@ -180,7 +164,7 @@ SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries l
     }
 
     if (pool)
-        lua_setdefaultmemoryfunctions(MP_ReallocFunction, MP_FreeFunction, pool);
+        lua_setdefaultmemoryfunctions(LuaAllocator::ReallocF, LuaAllocator::FreeF, pool);
     else
         lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
 

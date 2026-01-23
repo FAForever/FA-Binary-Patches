@@ -193,6 +193,22 @@ public:
         };
     }
 
+    static void *__cdecl ReallocF(
+        void *ptr,
+        size_t old_size,
+        size_t new_size,
+        void *data,
+        const char *,
+        size_t)
+    {
+        return static_cast<LuaAllocator *>(data)->Realloc(ptr, old_size, new_size);
+    }
+
+    static void __cdecl FreeF(void *ptr, size_t old_size, void *data)
+    {
+        static_cast<LuaAllocator *>(data)->Free(ptr, old_size);
+    }
+
 private:
     void InternalFree(void *ptr, size_t size, TypeFlags flags)
     {
