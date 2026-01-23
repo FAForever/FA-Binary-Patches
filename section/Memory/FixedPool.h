@@ -30,15 +30,10 @@ constexpr size_t Mask(size_t bits)
     return ((size_t)1 << bits) - 1;
 }
 
-size_t GetFirstSetBit(size_t value)
+constexpr size_t GetFirstSetBit(size_t value)
 {
     assert(value != 0);
-    size_t index = 0;
-    while ((value & ((size_t)1 << index)) == 0)
-    {
-        index++;
-    }
-    return index;
+    return std::countr_zero(value);
 }
 
 constexpr size_t NUM_BITS = std::numeric_limits<size_t>::digits;
