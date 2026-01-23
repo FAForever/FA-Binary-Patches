@@ -418,12 +418,12 @@ private:
         }
 
         size_t step = IsPowerOf2(cells) ? cells : std::bit_ceil(cells);
+        size_t index = bit_index.Index();
         size_t bit = bit_index.Bit();
 
         // at aligned bit position
         if (bit % step == 0 && cells <= NUM_BITS)
         {
-            size_t index = bit_index.Index();
             size_t mask = Mask(cells);
             bits.GetSection(index) |= (mask << bit);
         }
@@ -435,7 +435,7 @@ private:
             }
         }
 
-        AddToFreeList(bit_index.Index(), CeilLog2(cells));
+        AddToFreeList(index, CeilLog2(cells));
     }
 
 public:
