@@ -4,12 +4,13 @@
 #include "LuaAPI.h"
 
 bool sim_custom_allocator = true;
-
 ConDescReg use_sim_allocator_convar{"sim_allocator", "", &sim_custom_allocator};
 
 bool ui_custom_allocator = true;
-
 ConDescReg use_ui_allocator_convar{"ui_allocator", "", &ui_custom_allocator};
+
+bool use_perf_counter = true;
+ConDescReg use_perf_counter_convar{"use_perf_counter", "", &use_perf_counter};
 
 int64_t total_cycles = 0;
 size_t total_alloc = 0;
@@ -22,14 +23,14 @@ void *__cdecl MPPerf_ReallocFunction(
     size_t flags)
 {
     int64_t start = ClockCycles();
-    void *result = static_cast<LuaAllocator *>(data)->Realloc(ptr, oldsize, size);
+    void *result = LuaAllocator::ReallocF(ptr, oldsize, size, data, allocName, flags);
     int64_t end = ClockCycles();
     total_alloc++;
     total_cycles += end - start;
     return result;
 }
 
-void *__cdecl Def_ReallocFunction(
+void *__cdecl DefPerf_ReallocFunction(
     void *ptr,
     size_t oldsize,
     size_t size,
@@ -49,7 +50,7 @@ void __cdecl Def_FreeFunction(void *ptr, size_t oldsize, void *data)
 {
     free(ptr);
 }
-// SimLua reprsl(GC_stats())
+
 int GCStats(lua_State *L)
 {
     LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(L));
@@ -107,7 +108,9 @@ int GCLog(lua_State *L)
     return 0;
 }
 
+// SimLua reprsl(GC_stats())
 SimRegFunc sim_gc_stats_reg{"GC_stats", "", GCStats};
+// UI_Lua reprsl(GC_stats())
 UIRegFunc ui_gc_stats_reg{"GC_stats", "", GCStats};
 UIRegFunc ui_gc_enablelog_reg{"GC_enablelog", "", GCLog};
 
@@ -120,9 +123,13 @@ SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries li
         pool = new (std::nothrow) LuaAllocator();
 
     if (pool)
+    {
         lua_setdefaultmemoryfunctions(LuaAllocator::ReallocF, LuaAllocator::FreeF, pool);
+    }
     else
+    {
         lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
+    }
     // lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, pool);
 
     new (_this) LuaState(libs);
@@ -163,6 +170,10 @@ SHARED void __thiscall UI_StateDestroy(LuaState *_this)
 // Lua allocator Total Allocations: 9373612, Total Cycles: 719555
 //               Total Allocations: 9373605, Total Cycles: 707989
 
+//  Lua allocator Total Allocations: 10540200, Total Cycles: 1024803
+// malloc/free    Total Allocations: 10540210, Total Cycles:  831222
+// 
+
 SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries libs)
 {
     LogF("SIM_StateCreate: %p", _this);
@@ -175,9 +186,17 @@ SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries l
     }
 
     if (pool)
-        lua_setdefaultmemoryfunctions(LuaAllocator::ReallocF, LuaAllocator::FreeF, pool);
+    {
+        lua_setdefaultmemoryfunctions(
+            use_perf_counter ? MPPerf_ReallocFunction : LuaAllocator::ReallocF,
+            LuaAllocator::FreeF, pool);
+    }
     else
-        lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
+    {
+        lua_setdefaultmemoryfunctions(
+            use_perf_counter ? DefPerf_ReallocFunction : nullptr,
+            nullptr, nullptr);
+    }
 
     new (_this) LuaState(libs);
 

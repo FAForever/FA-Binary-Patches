@@ -6,6 +6,8 @@
 #include <bit>
 #include <array>
 #include <compare>
+#include "Memory.h"
+#include "LinkedList.h"
 
 constexpr bool IsPowerOf2(size_t value)
 {
@@ -156,11 +158,40 @@ private:
     size_t bits[SIZE]{};
 };
 
-struct AllocationInfo
+template <size_t SIZE>
+class CellSize
 {
-    size_t total_storage;
-    size_t occupied_storage;
-    size_t chunk_count;
+    static size_t CountCells(size_t bytes)
+    {
+        return bytes / SIZE + (bytes % SIZE == 0 ? 0 : 1);
+    }
+
+public:
+    CellSize() : CellSize(0)
+    {
+    }
+
+    explicit CellSize(size_t bytes) : size{CountCells(bytes)}
+    {
+    }
+
+    CellSize(const CellSize &rhs) = default;
+    CellSize &operator=(const CellSize &rhs) = default;
+
+    CellSize(CellSize &&rhs) = default;
+    CellSize &operator=(CellSize &&rhs) = default;
+
+    ~CellSize() = default;
+
+    std::strong_ordering operator<=>(const CellSize &rhs) const { return size <=> rhs.size; }
+
+    operator size_t() const { return Cells(); }
+
+    size_t Bytes() const { return size * SIZE; }
+    size_t Cells() const { return size; }
+
+private:
+    size_t size;
 };
 
 template <size_t CELL_SIZE, size_t CELLS_IN_CHUNK>
@@ -439,8 +470,7 @@ private:
 
 public:
     Chunk()
-        : next{nullptr},
-          top_index{0},
+        : top_index{0},
           start_index{0},
           used_cells{0},
           failed_powers{},
@@ -463,7 +493,6 @@ public:
         top_index = 0;
         start_index = 0;
         used_cells = 0;
-        delete next;
     }
 
     struct ExtendResult
@@ -556,17 +585,7 @@ public:
         };
     }
 
-    SelfT *NextChunk() { return next; }
-    const SelfT *NextChunk() const { return next; }
-
-    SelfT *CreateNextChunk()
-    {
-        next = new (std::nothrow) SelfT();
-        return next;
-    }
-
 private:
-    SelfT *next;
     size_t top_index;
     size_t start_index;
     size_t used_cells;
@@ -584,73 +603,6 @@ class FixedPool
     static_assert(CELL_SIZE % sizeof(size_t) == 0, "CELL_SIZE must be divisible by size pointer");
     static_assert(CELLS_IN_CHUNK % NUM_BITS == 0, "CELLS_IN_CHUNK");
 
-    class ChunksList
-    {
-        struct Entry
-        {
-            ChunkT *next;
-            ChunkT *prev;
-            ChunkT chunk;
-
-            Entry(Entry *prev = nullptr)
-                : next{nullptr},
-                  prev{prev},
-                  chunk{}
-            {
-            }
-
-            ~Entry()
-            {
-            }
-        };
-
-    public:
-        ChunksList()
-            : head{nullptr},
-              tail{nullptr},
-              count{0}
-        {
-        }
-
-        ~ChunksList()
-        {
-            Entry *cur = head;
-            while (cur != nullptr)
-            {
-                Entry *next = cur->next;
-                delete cur;
-                cur = next;
-            }
-            head = nullptr;
-            tail = nullptr;
-            count = 0;
-        }
-
-        ChunkT *Add()
-        {
-            Entry *new_entry = new (std::nothrow) Entry(tail);
-            if (new_entry == nullptr)
-                return nullptr;
-
-            if (tail == nullptr)
-            {
-                head = new_entry;
-            }
-            else
-            {
-                tail->next = new_entry;
-            }
-            tail = new_entry;
-            count++;
-            return &new_entry->chunk;
-        }
-
-    private:
-        Entry *head;
-        Entry *tail;
-        size_t count;
-    };
-
     void *InternalAlloc(size_t cells)
     {
         ChunkT *last = last_successful;
@@ -664,42 +616,33 @@ class FixedPool
         }
         last_successful = nullptr;
 
-        ChunkT *cur = head;
-        ChunkT *prev = nullptr;
-        while (cur != nullptr)
+        for (ChunkT &chunk : chunks)
         {
-            if (cur != last)
+            if (&chunk != last)
             {
-                void *ptr = cur->Alloc(cells);
+                void *ptr = chunk.Alloc(cells);
                 if (ptr != nullptr)
                 {
-                    last_successful = cur;
+                    last_successful = &chunk;
                     return ptr;
                 }
             }
-            prev = cur;
-            cur = cur->NextChunk();
         }
 
-        cur = prev->CreateNextChunk();
-        if (cur == nullptr) // can't create more!
+        ChunkT *chunk = chunks.AddBack();
+        if (chunk == nullptr) // can't create more!
             return nullptr;
 
-        num_chunks++;
-        last_successful = cur;
-        return cur->Alloc(cells);
+        last_successful = chunk;
+        return chunk->Alloc(cells);
     }
 
     bool InternalFree(void *ptr, size_t cells)
     {
-        ChunkT *cur = head;
-        while (cur != nullptr)
+        for (ChunkT &chunk : chunks)
         {
-            if (cur->Free(ptr, cells))
-            {
+            if (chunk.Free(ptr, cells))
                 return true;
-            }
-            cur = cur->NextChunk();
         }
         return false;
     }
@@ -708,18 +651,14 @@ class FixedPool
     {
         bool belongs = false;
 
-        ChunkT *cur = head;
-        ChunkT *prev = nullptr;
-        while (cur != nullptr)
+        for (ChunkT &chunk : chunks)
         {
-            auto r = cur->Extend(ptr, old_cells, new_cells);
+            auto r = chunk.Extend(ptr, old_cells, new_cells);
             if (r.ptr)
             {
                 return r.ptr;
             }
             belongs = belongs || r.belongs;
-            prev = cur;
-            cur = cur->NextChunk();
         }
         // couldn't extend
 
@@ -743,9 +682,8 @@ public:
     }
 
     FixedPool()
-        : num_chunks{1},
-          head{new ChunkT()},
-          last_successful{nullptr}
+        : last_successful{nullptr},
+          chunks{}
     {
     }
 
@@ -756,9 +694,7 @@ public:
 
     ~FixedPool()
     {
-        num_chunks = 0;
         last_successful = nullptr;
-        delete head;
     }
 
     void *Realloc(void *ptr, size_t old_size, size_t new_size)
@@ -784,40 +720,33 @@ public:
 
     bool BelongsToPool(void *ptr) const
     {
-        const ChunkT *cur = head;
-        while (cur != nullptr)
+        for (const ChunkT &chunk : chunks)
         {
-            if (cur->BelongsToChunk(ptr))
-            {
+            if (chunk.BelongsToChunk(ptr))
                 return true;
-            }
-            cur = cur->NextChunk();
         }
         return false;
     }
 
     size_t NumChunks() const
     {
-        return num_chunks;
+        return chunks.Size();
     }
 
     AllocationInfo GetInfo() const
     {
         AllocationInfo info{};
-        const ChunkT *cur = head;
-        while (cur != nullptr)
+        for (const ChunkT &chunk : chunks)
         {
-            auto chunk_info = cur->GetInfo();
+            auto chunk_info = chunk.GetInfo();
             info.total_storage += chunk_info.total_storage;
             info.occupied_storage += chunk_info.occupied_storage;
             info.chunk_count++;
-            cur = cur->NextChunk();
         }
         return info;
     }
 
 private:
-    size_t num_chunks;
-    ChunkT *head;
     ChunkT *last_successful;
+    LinkedList<ChunkT> chunks;
 };
