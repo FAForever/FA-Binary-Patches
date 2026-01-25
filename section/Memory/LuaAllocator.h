@@ -25,7 +25,6 @@ public:
           table_hash_pool{},
           table_array_pool{},
           upvalue_pool{},
-          parser_pool{},
           small_pool{},
           large_pool{}
     {
@@ -35,7 +34,6 @@ public:
 
     struct TypeFlags
     {
-        bool is_parser : 1;
         bool is_table : 1;
         bool is_upvalue : 1;
         bool is_table_hash : 1;
@@ -45,8 +43,7 @@ public:
 
         operator bool() const
         {
-            return is_parser ||
-                   is_table ||
+            return is_table ||
                    is_upvalue ||
                    is_table_hash ||
                    is_table_array ||
@@ -73,7 +70,6 @@ public:
         AllocationInfo table_hash_info;
         AllocationInfo table_array_info;
         AllocationInfo upvalue_info;
-        AllocationInfo parser_info;
         AllocationInfo small_info;
         AllocationInfo large_info;
     };
@@ -83,10 +79,8 @@ public:
         if (size == UPVALUE_SIZE)
             return {.is_upvalue = true};
 
-        bool is_parser = size % PARSER_LOCAL_SIZE == 0 && size <= 12 * 32;
         if (size == TABLE_SIZE)
             return {
-                .is_parser = is_parser,
                 .is_table = true,
             };
 
@@ -143,8 +137,6 @@ public:
                 result = table_hash_pool.Realloc(ptr, old_size, new_size);
             else if (new_flags.is_table_array)
                 result = table_array_pool.Realloc(ptr, old_size, new_size);
-            else if (new_flags.is_parser)
-                result = parser_pool.Realloc(ptr, old_size, new_size);
             else if (new_flags.is_small)
                 result = small_pool.Realloc(ptr, old_size, new_size);
             else if (new_flags.is_large)
@@ -202,7 +194,6 @@ public:
             .table_hash_info = table_hash_pool.GetInfo(),
             .table_array_info = table_array_pool.GetInfo(),
             .upvalue_info = upvalue_pool.GetInfo(),
-            .parser_info = parser_pool.GetInfo(),
             .small_info = small_pool.GetInfo(),
             .large_info = large_pool.GetInfo(),
         };
@@ -242,8 +233,6 @@ private:
             return;
         if (flags.is_upvalue && upvalue_pool.Free(ptr))
             return;
-        if (flags.is_parser && parser_pool.Free(ptr, size))
-            return;
         if (flags.is_small && small_pool.Free(ptr, size))
             return;
         if (flags.is_large && large_pool.Free(ptr, size))
@@ -265,8 +254,6 @@ private:
             return table_pool.Alloc();
         else if (flags.is_upvalue)
             return upvalue_pool.Alloc();
-        else if (flags.is_parser)
-            return parser_pool.Alloc(size);
         else if (flags.is_small)
             return small_pool.Alloc(size);
         else if (flags.is_large)
@@ -286,7 +273,6 @@ private:
                table_hash_pool.Free(ptr, size) ||
                table_pool.Free(ptr) ||
                upvalue_pool.Free(ptr) ||
-               parser_pool.Free(ptr, size) ||
                large_pool.Free(ptr, size);
     }
 
@@ -297,7 +283,6 @@ private:
     FixedPool<80, 64 * 1024> table_hash_pool;
     FixedPool<32, 64 * 1024> table_array_pool;
     FixedSizePool<20, 64 * 1024> upvalue_pool;
-    FixedPool<12, 64 * 1024> parser_pool;
     FixedPool<32, 64 * 1024> small_pool;
     FixedPool<512, 256> large_pool;
 };

@@ -89,7 +89,6 @@ int GCStats(lua_State *L)
     obj.SetObject("table_hash_info", f(alloc_stats.table_hash_info));
     obj.SetObject("table_array_info", f(alloc_stats.table_array_info));
     obj.SetObject("upvalue_info", f(alloc_stats.upvalue_info));
-    obj.SetObject("parser_info", f(alloc_stats.parser_info));
     obj.SetObject("small_info", f(alloc_stats.small_info));
     obj.SetObject("large_info", f(alloc_stats.large_info));
 

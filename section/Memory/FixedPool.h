@@ -417,7 +417,7 @@ private:
                 }
             }
         }
-
+        start_index = 0;
         failed_powers[pow] = true;
         return nullptr;
     }
@@ -577,6 +577,8 @@ public:
         return Begin() <= ptrb && ptrb < End();
     }
 
+    size_t GetUsedCells() const { return used_cells; }
+
     AllocationInfo GetInfo() const
     {
         return {
@@ -642,7 +644,15 @@ class FixedPool
         for (ChunkT &chunk : chunks)
         {
             if (chunk.Free(ptr, cells))
+            {
+                if (chunk.GetUsedCells() == 0)
+                {
+                    chunks.Remove(&chunk);
+                    if (last_successful == &chunk)
+                        last_successful = nullptr;
+                }
                 return true;
+            }
         }
         return false;
     }
