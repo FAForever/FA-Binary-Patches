@@ -422,6 +422,12 @@ private:
         return nullptr;
     }
 
+    void *AllocNCellsLarge(size_t cells)
+    {
+        //! TODO
+        return nullptr;
+    }
+
     void *AllocNCells(size_t cells)
     {
         if (cells == 0 || cells > CELLS_IN_CHUNK)
@@ -431,10 +437,7 @@ private:
         {
             return AllocNCellsSmall(cells);
         }
-
-        // ! logic for large chunks rn not supported
-
-        return nullptr;
+        return AllocNCellsLarge(cells);
     }
 
     void FreeCells(void *ptr, size_t cells)
