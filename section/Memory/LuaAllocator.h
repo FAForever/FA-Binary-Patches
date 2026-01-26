@@ -284,5 +284,5 @@ private:
     FixedPool<32, 64 * 1024> table_array_pool;
     FixedSizePool<20, 64 * 1024> upvalue_pool;
     FixedPool<32, 64 * 1024> small_pool;
-    FixedPool<512, 256> large_pool;
+    FixedPool<512, 1024> large_pool;
 };
