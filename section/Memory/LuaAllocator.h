@@ -133,13 +133,13 @@ public:
         if (new_flags && old_flags)
         {
             void *result = nullptr;
-            if (new_flags.is_table_hash)
+            if (new_flags.is_table_hash && old_flags.is_table_hash)
                 result = table_hash_pool.Realloc(ptr, old_size, new_size);
-            else if (new_flags.is_table_array)
+            else if (new_flags.is_table_array && old_flags.is_table_array)
                 result = table_array_pool.Realloc(ptr, old_size, new_size);
-            else if (new_flags.is_small)
+            else if (new_flags.is_small && old_flags.is_small)
                 result = small_pool.Realloc(ptr, old_size, new_size);
-            else if (new_flags.is_large)
+            else if (new_flags.is_large && old_flags.is_large)
                 result = large_pool.Realloc(ptr, old_size, new_size);
 
             if (result != nullptr)
