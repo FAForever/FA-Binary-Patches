@@ -80,9 +80,7 @@ public:
             return {.is_upvalue = true};
 
         if (size == TABLE_SIZE)
-            return {
-                .is_table = true,
-            };
+            return {.is_table = true};
 
         size_t n_hash = size / TABLE_HASH_SIZE;
         size_t n_array = size / TABLE_ARRAY_SIZE;
