@@ -3,7 +3,7 @@
 #include "moho.h"
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
-char isFACTORYrequested[1];
+char isFACTORYrequested[4];
 char factoryCatName[11] = "RALLYPOINT";
 bool shareFactoryAssist = false;
 
