@@ -1,0 +1,3 @@
+0x005AF8D5:
+    jmp @asm__PersonalPositioningDistanceCheck
+    nop
