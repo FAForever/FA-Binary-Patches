@@ -1,0 +1,2 @@
+0x005AF8D5:
+    fld dword ptr [@navPersonalPosMaxDistance]
