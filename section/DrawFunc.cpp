@@ -2,7 +2,6 @@
 #include "magic_classes.h"
 #include "moho.h"
 #include "utility.h"
-#include <cmath>
 
 #define NON_GENERAL_REG(var_) [var_] "g"(var_)
 
@@ -214,7 +213,7 @@ int LuaDrawRect(lua_State *l)
     }
     Vector3f orientation{0, 1, 0};
     float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos);
-    float thick = std::max(thickness / lod, 2.f);
+    float thick = max(thickness / lod, 2.f);
     Vector3f a{0, 0, size};
     Vector3f b{size, 0, 0};
     DrawRect(a, b, color, thick * lod, batcher, pos, nullptr, -10000);
@@ -246,7 +245,7 @@ int LuaDrawCircle(lua_State *l)
     }
     Vector3f orientation{0, 1, 0};
     float lod = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos);
-    float a = std::max(thickness / lod, 2.f);
+    float a = max(thickness / lod, 2.f);
     _DrawCircle(batcher, &pos, r, lod * a, color, &orientation);
     return 0;
 }
@@ -286,8 +285,8 @@ int LuaDrawLine(lua_State *l)
 
     float lod1 = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos1);
     float lod2 = Moho::GetLODMetric((float *)Moho::GetWorldCamera(_worldview), pos2);
-    float lod = std::max(lod1, lod2);
-    float a = std::max(thickness / lod, 2.f);
+    float lod = max(lod1, lod2);
+    float a = max(thickness / lod, 2.f);
 
     thickness = a * lod * 0.5;
 

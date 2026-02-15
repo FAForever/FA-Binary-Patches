@@ -21,7 +21,7 @@ void SimArmyCreate()
         "MUL BX;"
         "MOV SS:[EBP+0x1CC],EAX;"
         "POPAD;"
-        "LEA ECX,SS:[ESP+0x70];"
+        "LEA ECX,[ESP+0x70];"
         "JMP 0x6FF3D6;"
     );
 }

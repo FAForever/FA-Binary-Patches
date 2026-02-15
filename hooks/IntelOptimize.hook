@@ -1,0 +1,208 @@
+
+
+
+# entry points for our system
+
+# apparently, it's much easier to manage the calling code in assembly
+# than to make assembly adapters in c++
+0x0076E4C0: #Moho::CIntel::Update
+    mov     eax, [esp+0x8]
+    push    ecx
+    push    ebp
+    push    esi
+    push    edi
+    mov     ecx, [esp+0x10+0x4]  # this
+    push    eax                  # curTick
+    push    ebx                  # newPos
+    call    @CIntel__Update
+    pop     edi
+    pop     esi
+    pop     ebp
+    pop     ecx
+    ret     8
+
+0x0076F1E0: #Moho::CIntelPosHandle::UpdatePos
+    push    ecx
+    push    ebx
+    push    esi
+    push    eax       # curTick
+    push    ecx       # newPos
+    mov     ecx, edx  # this
+    call    @CIntelPosHandle__UpdatePos
+    pop     esi
+    pop     ebx
+    pop     ecx
+    ret
+
+
+
+# update vtables
+0x00E361C4: #Moho::CIntelPosHandle::`vftable'
+    .dc.l   @CIntelPosHandle__AddViz
+    .dc.l   @CIntelPosHandle__SubViz
+
+0x00E361D4: #Moho::CIntelCounterHandle::`vftable'
+    .dc.l   @CIntelCounterHandle__AddViz
+    .dc.l   @CIntelCounterHandle__SubViz
+
+0x00E4D984: #Moho::UserUnit::`vftable'+0x60
+    .dc.l   @UserUnit__GetWaterIntel
+    .dc.l   @UserUnit__GetMaxCounterIntel
+
+
+
+# Interestingly, the only blueprints fields to ever use uints are in the exact
+# intel fields we wish to change - we will simply change
+# `gpg::RType::AddFieldUInt` method to use the float type. If the function
+# calls were identical, we would have simply called `gpg::RType::AddFieldFloat`,
+# though this approach has the added benefit of also affecting the
+# `Moho::SMinMaxUint32` that the jamming and spoofing relies on.
+gpg__RType__float = 0x010A6320
+type_info__float = 0x00F5C858
+#gpg::RType::AddFieldUInt@0x0040E020
+0x0040E041:
+    mov     eax, [gpg__RType__float]
+0x0040E04A:
+    push    type_info__float
+0x0040E057:
+    mov     [gpg__RType__float], eax
+
+
+
+# disable update code for the intel grids, which only processes the unused
+# delayed circle subtraction system - if it did work, it would not rasterize
+# properly because it uses the default rasterer
+0x005C1434: #Moho::CAiReconDBImpl::ReconTick+0x7F3
+    jmp     0x005C14B5
+
+# nuke the default rasterer in case anyone manages to find it
+0x00507540: #Moho::CIntelGrid::Raster
+    ret     4
+
+# we just nuked the default rasterer that our destructors rely on; substitute
+# our own
+0x0076D86F: #Moho::CIntelPosHandle::~CIntelPosHandle+0xF
+    call    @CIntelPosHandle__SubViz
+    jmp     0x0076D88E # the method was inlined, so the rest needs to be skipped
+
+0x0076DA8B: #Moho::CIntelCounterHandle::~CIntelCounterHandle+0x2B
+    call    @CIntelCounterHandle__SubViz
+
+
+
+# update cfuncs
+0x0068EBB5: #cfunc_EntityInitIntel+0x195
+    add     esp, 8
+    fstp    dword ptr [esp+0xC]
+    movss   xmm0, dword ptr [esp+0xC]
+    xorps   xmm1, xmm1
+    comiss  xmm0, xmm1
+    jbe     0x0068EC00
+    jmp     0x0068EBDE
+0x0068EBEB: #cfunc_EntityInitIntel+0x1CB
+    nop; nop; nop; nop; nop;
+    nop; nop;
+
+0x0068E728: #cfunc_EntitySetIntelRadius+0x118
+    jmp     @cfunc_EntitySetIntelRadius_patch
+
+0x0068E960: #cfunc_EntityGetIntelRadius+0x110
+    movd    xmm0, eax
+
+
+
+# floating-point conversions to use `Moho::VisionDB::Handle::Update` correctly
+0x008C0CC7: #Moho::UserUnit::Tick+0x297
+    # slide instructions up to hide floating->int conversion
+    movss   [esp+0x24], xmm0
+    push    ecx
+    lea     ecx, [esp+0x24]
+    # now move value directly to function argument
+    mov     [esp+0], edi
+    jmp     0x008C0CE5
+
+0x008B950D: #Moho::UserEntity::UpdateEntityData+0x64D
+    mov     ecx, [esp+0x14]
+    # slide instructions up to hide floating->int conversion
+    movss   [esp+0x20], xmm0
+    movss   xmm0, dword ptr [edi+0x8C]
+    movss   [esp+0x24], xmm0
+    movss   xmm0, dword ptr [edi+0xA0]
+    movss   [esp+0x28], xmm0
+    movss   xmm0, dword ptr [edi+0xA8]
+    movss   [esp+0x2C], xmm0
+    push    ecx
+    lea     eax, [esp+0x2C]
+    # now move value directly to function argument
+    mov     edi, [esp+0x18]
+    mov     [esp+0], edi
+    jmp     0x008B955A
+
+
+
+# Update `Moho::ReconBlip`
+0x005BE9E8: #Moho::ReconBlip::ReconBlip+0x308
+    push    ebp
+    call    @ReconBlip_ctr_patch
+    jmp     0x005BEBAE
+
+
+
+
+
+# The following sections are likely not needed as floats and ints have the same
+# size, and floats fit fine in general-purpose registers for moving purposes
+# even if the compiler won't put them there.
+# However, they are included for completeness.
+
+# update the serialization process for Moho::CIntelPosHandleSerializer (this is
+# what Moho::CIntelCounterHandleSerializer will also end up using) and for
+# Moho::EntityAttributesSerializer
+
+# Moho::EntityAttributes stores if the intel field is enabled in the first bit
+# and the range in the rest - this is fine to reinterpret as floats as the first
+# bit is now the sign bit (see 0x005BD530, 0x005BD470, and 0x008B8330)
+
+# from `gpg::ReadArchive->ReadUInt` to `gpg::ReadArchive->ReadFloat`
+#Moho::CIntelPosHandle::MemberDeserialize+0x45
+0x00770045: # mRadius
+    mov     edx, [eax+0xC]
+#Moho::EntityAttributes::MemberDeserialize@0x00559350
+0x0055935C: # mVision
+    mov     edx, [eax+0xC]
+0x00559366: # mWaterVision
+    mov     edx, [eax+0xC]
+0x00559373: # mRadar
+    mov     edx, [eax+0xC]
+0x00559380: # mSonar
+    mov     edx, [eax+0xC]
+0x0055938D: # mOmni
+    mov     edx, [eax+0xC]
+0x0055939A: # mRadarStealth
+    mov     edx, [eax+0xC]
+0x005593A7: # mSonarStealth
+    mov     edx, [eax+0xC]
+0x005593B4: # mCloak
+    mov     edx, [eax+0xC]
+
+# from `gpg::WriteArchive->WriteUInt` to `gpg::WriteArchive->WriteFloat`
+#Moho::CIntelPosHandle::MemberSerialize+0x3F
+0x007700CF: # mRadius
+    mov     edx, [eax+0xC]
+#Moho::EntityAttributes::MemberSerialize@0x005593D0
+0x005593DA: # mVision
+    mov     edx, [eax+0xC]
+0x005593E7: # mWaterVision
+    mov     edx, [eax+0xC]
+0x005593F4: # mRadar
+    mov     edx, [eax+0xC]
+0x00559401: # mSonar
+    mov     edx, [eax+0xC]
+0x0055940E: # mOmni
+    mov     edx, [eax+0xC]
+0x0055941B: # mRadarStealth
+    mov     edx, [eax+0xC]
+0x00559428: # mSonarStealth
+    mov     edx, [eax+0xC]
+0x00559435: # mCloak
+    mov     edx, [eax+0xC]
