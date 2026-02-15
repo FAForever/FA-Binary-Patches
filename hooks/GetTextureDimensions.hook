@@ -1,4 +1,4 @@
 
 # cfunc_GetTextureDimensions+0x39
 0x00780B29:
-    cmp     eax, 3 # from 2 args
+    cmp     eax, 3 # from only accepting 1 arg to 2 (it's used in a less-than operation)
