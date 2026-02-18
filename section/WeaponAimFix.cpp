@@ -19,13 +19,13 @@ void asm__fixWeaponAim()
         "je EXIT;"                             // no targetEnity when groundfiring
         
         "push ebx;"
-        "cmp dword ptr ds:[esi+0x10], 0xF;"    // 0xF = auto fire, no attack order.
+        // "cmp dword ptr ds:[esi+0x10], 0xF;"    // 0xF = auto fire, no attack order.
                                                // the route to entity->lastUpdateTick is different
-        "je noAttackOrder;"                    // when there is an attack order
+        // "je noAttackOrder;"                    // when there is an attack order
         
         "lea eax, dword ptr ds:[eax-4];"       // *weakObj - 4 = entity
         
-        "noAttackOrder:;"
+        // "noAttackOrder:;"
         "mov ebx, dword ptr ds:[eax+0x148];"
         "mov ebx, dword ptr ds:[ebx+0x900];"   // sim->currentTick
         "cmp ebx, dword ptr ds:[eax+0x174];"   // entity->lastUpdateTick
