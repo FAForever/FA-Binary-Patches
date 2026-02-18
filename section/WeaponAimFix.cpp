@@ -13,7 +13,7 @@ void asm__fixWeaponAim()
         "movss xmm1, dword ptr ss:[eax];"      // targetPos.z 
         "movss xmm2, dword ptr ss:[eax+0x8];"  // targetPos.y 
         
-        "mov eax, dword ptr ds:[esi+0x4];"     // CAiTarget->entity
+        "mov eax, dword ptr ds:[esi+0x4];"     // CAiTarget->wp_entity->weakObj
         "test eax, eax;"
         
         "je EXIT;"                             // no targetEnity when groundfiring
@@ -23,13 +23,12 @@ void asm__fixWeaponAim()
                                                // the route to entity->lastUpdateTick is different
         "je noAttackOrder;"                    // when there is an attack order
         
-        "mov eax, dword ptr ds:[eax+0x5C];"
-        "sub eax, 0x5C;"
+        "lea eax, dword ptr ds:[eax-4];"       // *weakObj - 4 = entity
         
         "noAttackOrder:;"
-        "mov ebx, dword ptr ds:[eax+0x144];"
+        "mov ebx, dword ptr ds:[eax+0x148];"
         "mov ebx, dword ptr ds:[ebx+0x900];"   // sim->currentTick
-        "cmp ebx, dword ptr ds:[eax+0x170];"   // entity->lastUpdateTick
+        "cmp ebx, dword ptr ds:[eax+0x174];"   // entity->lastUpdateTick
         "pop ebx;"
         
         "je EXIT;"                             // entityLastUpdateTick == currentSimTick means the target's pos is up-to-date
