@@ -1,2 +1,5 @@
 0x004CEE33:
     call @lua_dochecksum
+
+0x00914850:
+    ret
