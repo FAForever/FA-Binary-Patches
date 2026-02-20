@@ -1,5 +1,5 @@
 0x004CEE33:
     call @lua_dochecksum
 
-0x00914850:
-    ret
+0x00914BD9:
+    call 0x00914BB7  # just retn
