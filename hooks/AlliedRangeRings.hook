@@ -1,0 +1,7 @@
+0x007A7858:
+  jmp asm__ShouldAddUnit
+  nop
+
+0x00E4D984:
+  .int Moho__UserUnit__GetIntelRanges
+
