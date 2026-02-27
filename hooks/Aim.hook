@@ -1,0 +1,17 @@
+target_velocity = 0x38
+shooter_pos = 0x64
+aim_pos = 0x20
+dist = 0x1C
+0x00631A72:
+    mov ecx, esi
+    push eax                              # target_pos
+    lea eax, [esp + 4 + target_velocity]
+    push eax
+    lea eax, [esp + 8 + shooter_pos]
+    push eax
+    lea eax, [esp + 12 + aim_pos]
+    push eax
+    call @AimAddVelocity
+    sub esp, 4                            # dead
+    fst dword ptr [esp + dist]
+    jmp 0x00631AD9
