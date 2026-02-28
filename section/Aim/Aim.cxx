@@ -16,7 +16,7 @@ namespace Moho
 }
 
 
-// When targeted manually it uses blip and when not - unit
+// When targeted manually cai_target uses blip and when not - unit's entity
 SHARED __thiscall bool CheckNeedAddEntityVelocity(Moho::CAiTarget *cai_target)
 {
     void *entity = cai_target->entity;
