@@ -10,10 +10,8 @@ namespace Moho
         void *entity;
         void *next_weak_ptr;
         Vector3f position;
-        int targetPoint;
+        int targetBoneIdx;
         bool targetIsMobile;
-
-        bool HasTargetPoint() const { return targetPoint != -1; }
     };
 }
 
