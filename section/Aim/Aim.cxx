@@ -32,7 +32,7 @@ SHARED __thiscall bool CheckNeedAddEntityVelocity(Moho::CAiTarget *cai_target)
     if (blip)
     {
         void *unit_creator_ptr = GetField<void *>(blip, 0x270);
-        if (unit_creator_ptr == nullptr)
+        if (unit_creator_ptr == nullptr || unit_creator_ptr == (void *)4)
             return false;
         void *unit_creator = Offset(unit_creator_ptr, -4);
         entity = Offset(unit_creator, 8);
