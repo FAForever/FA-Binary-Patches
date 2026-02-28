@@ -2,6 +2,7 @@ target_velocity = 0x38
 shooter_pos = 0x64
 aim_pos = 0x20
 dist = 0x1C
+# cai_target = esi
 0x00631A72:
     mov ecx, esi
     push eax                              # target_pos
