@@ -16,3 +16,6 @@ dist = 0x1C
     sub esp, 4                            # dead
     fst dword ptr [esp + dist]
     jmp 0x00631AD9
+    nop
+    nop
+    nop
