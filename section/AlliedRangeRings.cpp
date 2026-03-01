@@ -1,6 +1,6 @@
 #include <cstdint>
 #include "magic_classes.h"
-
+#include "global.h"
 int __fastcall Army_IsAlly(int armyIndex, void* army) asm("0x5BD630");
 
 static bool map_has_unit(uintptr_t map_base, uintptr_t key) {
@@ -33,6 +33,33 @@ ConDescReg conIntelRangeBehavior{
     &intelRangeBehavior};
 
 extern "C" {
+
+uintptr_t __thiscall RenderRange__Moho__UserUnit__UserUnit(uintptr_t this_, uintptr_t esp) {
+  // Compiler, I believe in you. We're in a hot path, optimize and inline the lambda pls
+  // p.s. I saw the listing, mine handled it, and there’s no call there
+  auto equals = []<size_t N>(string& str1, const char(&str2)[N]) {
+    if (str1.strLen != N - 1) return false;
+    const char* l = str1.data();
+    const char* r = str2;
+    while(*l==*r && *l) {
+      ++l;
+      ++r;
+    };
+    return (*l - *r) == 0;
+  };
+  auto& rangeName = **reinterpret_cast<string**>(esp + 0x30);
+  bool isIntelRange = equals(rangeName, "Radar") || equals(rangeName, "Omni") || equals(rangeName, "Sonar");
+  if (isIntelRange)
+    return this_;
+
+  auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
+  auto focusArmyIndex = *reinterpret_cast<int*>(session + 0x488);
+  auto unitArmy = *reinterpret_cast<uintptr_t*>(this_ + 0x120);
+  auto unitArmyIndex = *reinterpret_cast<int*>(unitArmy);
+  if (unitArmyIndex == focusArmyIndex)
+    return this_;
+  return 0;
+}
 
 bool __thiscall Moho__UserUnit__GetIntelRanges(uintptr_t this_,
                                                float* omniRange,
@@ -70,7 +97,7 @@ bool __cdecl ShouldAddUnit(void* focusArmy, uintptr_t userUnit) {
   auto blueprint = *reinterpret_cast<uintptr_t*>(userUnit + 0x48);
   if (intelRangeBehavior == kOwnUnitsAndAlliedBuildings &&
       *reinterpret_cast<uint32_t*>(blueprint + 0x290) != 0)
-    // MoutionType != None -> let's assume this is not a building
+    // MotionType != None -> let's assume this is not a building
     return false;
 
   auto intel = reinterpret_cast<uint32_t*>(blueprint + 0x338);
@@ -92,4 +119,5 @@ void __attribute__((naked)) asm__ShouldAddUnit() {
     je 0x007A789F;
     jmp 0x007A7860;)");
 }
-}
+
+} // extern "C"
