@@ -2,11 +2,22 @@
   jmp asm__ShouldAddUnit
   nop
 
-0x00E4D984:
-  .int Hooked__Moho__UserUnit__GetIntelRanges
-
 0x007EF12B:
   push esp
   mov ecx, esi
   call RenderRange__Moho__UserUnit__UserUnit
+  nop
+
+0x005BF011:
+  mov ecx, eax
+  add ecx, 0x130
+  lea edx, [edi+0x128]
+  call Hooked_SyncVisionRange
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
   nop

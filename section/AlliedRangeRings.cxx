@@ -64,25 +64,12 @@ uintptr_t __thiscall RenderRange__Moho__UserUnit__UserUnit(uintptr_t this_,
   return 0;
 }
 
-// Initially, the game receives the ranges from the current state of the unit,
-// not directly from its blueprint. However, the full state of the unit is only
-// available to its owner. Since this function is called in RangeExtractors, we
-// also need to get the ranges of allies; the original would return 0 0 0 for
-// units not belonging to its army. Rewrite 00E3F980 (RadarExtractor), 00E3F998
-// (Sonar), 00E3F978 (Omni), and you won't need this
-bool __thiscall Hooked__Moho__UserUnit__GetIntelRanges(uintptr_t this_,
-                                                       float* omniRange,
-                                                       float* radarRange,
-                                                       float* sonarRange) {
-  if (isOwnUserUnit(this_))
-    return Moho__UserUnit__GetIntelRanges(this_, omniRange, radarRange,
-                                          sonarRange);
-  auto blueprint = *reinterpret_cast<uintptr_t*>(this_ + 0x48);
-  auto intelRanges = reinterpret_cast<uint32_t*>(blueprint + 0x338);
-  *radarRange = intelRanges[0];
-  *sonarRange = intelRanges[1];
-  *omniRange = intelRanges[2];
-  return (*radarRange > 0.0f || *sonarRange > 0.0f || *omniRange > 0.0f);
+extern void __fastcall Hooked_SyncVisionRange(uintptr_t*, uintptr_t*) asm("Hooked_SyncVisionRange");
+void Hooked_SyncVisionRange(uintptr_t* this_, uintptr_t* edx) {
+  edx[0] = this_[0]; // Vision
+  edx[2] = this_[2]; // Radar
+  edx[3] = this_[3]; // Sonar
+  edx[4] = this_[4]; // Omni
 }
 
 bool __cdecl ShouldAddUnit(void* focusArmy, uintptr_t userUnit) {
