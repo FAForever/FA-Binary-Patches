@@ -18,6 +18,14 @@ static bool map_has_unit(uintptr_t map_base, uintptr_t key) {
   return false;
 }
 
+static bool isOwnUserUnit(uintptr_t userUnit) {
+  auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
+  auto focusArmyIndex = *reinterpret_cast<int*>(session + 0x488);
+  auto unitArmy = *reinterpret_cast<uintptr_t*>(userUnit + 0x120);
+  auto unitArmyIndex = *reinterpret_cast<int*>(unitArmy);
+  return (unitArmyIndex == focusArmyIndex);
+}
+
 enum IntelRangeBehavior {
   kOwnUnits = 0,
   kOwnUnitsAndAlliedBuildings = 1,
@@ -34,6 +42,8 @@ extern "C" {
 
 uintptr_t __thiscall RenderRange__Moho__UserUnit__UserUnit(uintptr_t this_,
                                                            uintptr_t esp) {
+  if (isOwnUserUnit(this_)) return this_;
+
   // Compiler, I believe in you. We're in a hot path, optimize and inline the
   // lambda pls p.s. I saw the listing, mine handled it, and there’s no call
   // there
@@ -51,12 +61,6 @@ uintptr_t __thiscall RenderRange__Moho__UserUnit__UserUnit(uintptr_t this_,
   bool isIntelRange = equals(rangeName, "Radar") || equals(rangeName, "Omni") ||
                       equals(rangeName, "Sonar");
   if (isIntelRange) return this_;
-
-  auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
-  auto focusArmyIndex = *reinterpret_cast<int*>(session + 0x488);
-  auto unitArmy = *reinterpret_cast<uintptr_t*>(this_ + 0x120);
-  auto unitArmyIndex = *reinterpret_cast<int*>(unitArmy);
-  if (unitArmyIndex == focusArmyIndex) return this_;
   return 0;
 }
 
@@ -66,13 +70,13 @@ uintptr_t __thiscall RenderRange__Moho__UserUnit__UserUnit(uintptr_t this_,
 // also need to get the ranges of allies; the original would return 0 0 0 for
 // units not belonging to its army. Rewrite 00E3F980 (RadarExtractor), 00E3F998
 // (Sonar), 00E3F978 (Omni), and you won't need this
-bool __thiscall Moho__UserUnit__GetIntelRanges(uintptr_t this_,
-                                               float* omniRange,
-                                               float* radarRange,
-                                               float* sonarRange) {
-  if ((*reinterpret_cast<uint8_t*>(this_ + 0x39C) & 8) != 0 &&
-      (*reinterpret_cast<uint8_t*>(this_ + 0x3A8) & 8) != 0)
-    return false;
+bool __thiscall Hooked__Moho__UserUnit__GetIntelRanges(uintptr_t this_,
+                                                       float* omniRange,
+                                                       float* radarRange,
+                                                       float* sonarRange) {
+  if (isOwnUserUnit(this_))
+    return Moho__UserUnit__GetIntelRanges(this_, omniRange, radarRange,
+                                          sonarRange);
   auto blueprint = *reinterpret_cast<uintptr_t*>(this_ + 0x48);
   auto intelRanges = reinterpret_cast<uint32_t*>(blueprint + 0x338);
   *radarRange = intelRanges[0];

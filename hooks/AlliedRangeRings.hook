@@ -3,7 +3,7 @@
   nop
 
 0x00E4D984:
-  .int Moho__UserUnit__GetIntelRanges
+  .int Hooked__Moho__UserUnit__GetIntelRanges
 
 0x007EF12B:
   push esp

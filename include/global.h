@@ -53,6 +53,7 @@ int FileWrite(int fileIndex, const char *str, int strlen) asm("0xA9B4E6"); //ind
 bool CopyToClipboard(const wchar_t *str) asm("0x4F2730");
 void* shi_new(size_t size) asm("0xA825B9");
 int __fastcall Army_IsAlly(int armyIndex, void* army) asm("0x5BD630");
+bool __thiscall Moho__UserUnit__GetIntelRanges(uintptr_t this_, float* omniRange, float* radarRange, float* sonarRange) asm("0x8BFD70");
 
 extern "C" {
 void* realloc(void *ptr, size_t new_size) asm("0x957B00");
