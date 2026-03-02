@@ -1,7 +1,7 @@
 #include "global.h"
 #include "magic_classes.h"
 
-static bool map_has_unit(uintptr_t map_base, uintptr_t key) {
+static bool mapHasUnit(uintptr_t map_base, uintptr_t key) {
   auto head = *reinterpret_cast<uintptr_t*>(map_base + 0x04);
   auto node = *reinterpret_cast<uintptr_t*>(head + 0x04);
   while (node) {
@@ -16,6 +16,16 @@ static bool map_has_unit(uintptr_t map_base, uintptr_t key) {
       return true;
   }
   return false;
+}
+
+static bool isArmyAlly(int armyIndex, uintptr_t army) {
+  if (armyIndex == -1)
+    return 0;
+  auto v3 = (armyIndex >> 5) - *reinterpret_cast<int*>(army + 0xE0);
+  auto begin = *reinterpret_cast<uintptr_t*>(army + 0xE8);
+  auto end = *reinterpret_cast<uintptr_t*>(army + 0xEC);
+  return v3 < ((end - begin) >> 2) && 
+            ((*reinterpret_cast<uint32_t*>(begin + 4 * v3) >> (armyIndex & 31)) & 1) != 0;
 }
 
 static bool isOwnUserUnit(uintptr_t userUnit) {
@@ -72,9 +82,9 @@ void Hooked_SyncVisionRange(uintptr_t* this_, uintptr_t* edx) {
   edx[4] = this_[4]; // Omni
 }
 
-bool __cdecl ShouldAddUnit(void* focusArmy, uintptr_t userUnit) {
+bool __cdecl ShouldAddUnit(uintptr_t focusArmy, uintptr_t userUnit) {
   auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
-  auto unitArmy = *reinterpret_cast<void**>(userUnit + 0x120);
+  auto unitArmy = *reinterpret_cast<uintptr_t*>(userUnit + 0x120);
   if (unitArmy == focusArmy) {
     // Optimization: To avoid double rendering,
     // do not render the global rings;
@@ -82,13 +92,13 @@ bool __cdecl ShouldAddUnit(void* focusArmy, uintptr_t userUnit) {
     auto selectionSize = *(size_t*)(session + 0x4A8);
     [[likely]] if (selectionSize < 67)
       return true;
-    return !map_has_unit(session + 0x4A0, userUnit);
+    return !mapHasUnit(session + 0x4A0, userUnit);
   }
 
   if (intelRangeBehavior == kOwnUnits) return false;
 
   auto focusArmyIndex = *reinterpret_cast<int*>(session + 0x488);
-  if (!Army_IsAlly(focusArmyIndex, unitArmy)) return false;
+  if (!isArmyAlly(focusArmyIndex, unitArmy)) return false;
 
   auto blueprint = *reinterpret_cast<uintptr_t*>(userUnit + 0x48);
   if (intelRangeBehavior == kOwnUnitsAndAlliedBuildings &&
