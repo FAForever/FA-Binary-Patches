@@ -12,3 +12,4 @@
     mov     esp, ebp                 #
     pop     ebp                      #
     ret     8                        #
+    nop;nop;nop;nop;nop              # 5 nops
