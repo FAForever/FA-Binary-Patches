@@ -13,3 +13,4 @@
     pop     ebp                      #
     ret     8                        #
     nop;nop;nop;nop;nop              # 5 nops
+    # There are 200 bytes of dead code. Perhaps we should make a file with such empty blocks to be used for hooking into bigger blocks.
