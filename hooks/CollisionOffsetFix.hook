@@ -1,0 +1,14 @@
+
+# Moho::Unit::GetBoneWorldTransform(int)+77
+0x006AA637:
+    mov     ecx, esi                 # esi - Entity
+    push    0xFFFFFFFF               # -1
+    mov     eax, dword ptr [ebp + 8] # result transform
+    push    eax
+    call 0x00679CE0                  # Moho::VTransform * thiscall Moho::Entity::GetBoneWorldTransform(Moho::Entity *this, Moho::VTransform *result, int boneIndex)
+
+    pop     edi                      # function return
+    pop     esi                      #
+    mov     esp, ebp                 #
+    pop     ebp                      #
+    ret     8                        #
