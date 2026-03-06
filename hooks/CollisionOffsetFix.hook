@@ -1,6 +1,8 @@
 
 # Moho::Unit::GetBoneWorldTransform(int)+77
 0x006AA637:
+    # Here we are doing call to base class when there is no target bone.
+    # In base class it takes center of collision box and returns it.
     mov     ecx, esi                 # esi - Entity
     push    0xFFFFFFFF               # -1
     mov     eax, dword ptr [ebp + 8] # result transform
