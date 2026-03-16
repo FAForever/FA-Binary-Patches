@@ -1,0 +1,28 @@
+
+# mass deposit
+0x008630A0:
+    cvtsi2ss xmm0, eax; # eax contains half width
+    movss    xmm1, ds:resources_icon_scale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x4C], xmm0 # half width
+    mov      eax, [ecx + 0x10] # height
+    shr      eax, 2 
+    cvtsi2ss xmm0, eax;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x48], xmm0 # half height
+    mov      esi, [ebp + 0xC] # batcher
+    nop;nop;nop;nop;nop;nop;nop;nop
+
+# hydrocarbon deposit
+0x0086329D:
+    cvtsi2ss xmm0, eax; # eax contains half width
+    movss    xmm1, ds:resources_icon_scale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x4C], xmm0 # half width
+    mov      eax, [ecx + 0x10] # height
+    shr      eax, 2 
+    cvtsi2ss xmm0, eax;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x48], xmm0 # half height
+    lea      ebx, [esp + 0xb8] # texture
+    nop;nop;nop;nop;nop;nop
