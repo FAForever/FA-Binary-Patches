@@ -149,13 +149,13 @@ struct Result {
   inline bool IsFail() { return reason != nullptr; }
 };
 
-template <typename T>
+template <typename T=void*>
 T Offset(void *ptr, size_t offset)
 {
     return (T)(((char *)ptr) + offset);
 }
 
-template <typename T>
+template <typename T=void*>
 T &GetField(void *ptr, size_t offset)
 {
     return *Offset<T *>(ptr, offset);
