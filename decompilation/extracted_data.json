@@ -1,0 +1,313 @@
+{
+    "hooks": {
+        "aiinitattack.cpp": [
+            "0xC0B4C2",
+            "0x5F39F7"
+        ],
+        "AirNoneCollisionFix.cpp": [
+            "0x6C018B"
+        ],
+        "BuildUnit.cpp": [
+            "0x6EFAC9",
+            "0x8C05FE",
+            "0x6FF3D1"
+        ],
+        "CameraPerf.cpp": [
+            "0x493A9B",
+            "0x4946F7"
+        ],
+        "CanLandOnWater.cpp": [
+            "0x0062B84A"
+        ],
+        "CategoryRenames.cpp": [
+            "0xE20724"
+        ],
+        "DecalSetPositionFix.cpp": [
+            "0x87F8F7"
+        ],
+        "DelClampMaxSimRate.cpp": [
+            "0x55AE56",
+            "0x88D1FE",
+            "0x88E1A8",
+            "0x53BE0D"
+        ],
+        "DesyncFix.cpp": [
+            "0x6E4150",
+            "0x74B8B0",
+            "0x489F90",
+            "0x8CF0D2",
+            "0x48A280",
+            "0x488D80",
+            "0x8984B0",
+            "0x8BC100",
+            "0x8BA770",
+            "0x73D8C0",
+            "0x53F010",
+            "0x8704B0"
+        ],
+        "EnableConsoleCommands.cpp": [
+            "0xE1DF0C",
+            "0xE210E8",
+            "0xF59C88",
+            "0xE23900",
+            "0xE23EC4",
+            "0xE26858",
+            "0xE2698C",
+            "0xE294E8"
+        ],
+        "FixCollisions.cpp": [
+            "0x69D258",
+            "0x69DB46",
+            "0x69D627",
+            "0x69DB3E",
+            "0x69DBAB",
+            "0x69DA6A"
+        ],
+        "FixGetInterpolatedAlignedBox.cpp": [
+            "0x086D2C0",
+            "0x086D2D6"
+        ],
+        "FixOpenBPEditor.cpp": [
+            "0x8D4010"
+        ],
+        "FixTestCommandCaps.cpp": [
+            "0x06C8B48"
+        ],
+        "ForkThreadFix.cpp": [
+            "0x4C9DE1"
+        ],
+        "GetEconDataAsFloats.cpp": [
+            "0x8C52A5",
+            "0x8C52B7",
+            "0x8C52DA",
+            "0x8C52EC",
+            "0x8C530F",
+            "0x8C5321",
+            "0x8C5344",
+            "0x8C5356",
+            "0x8C5379",
+            "0x8C538B",
+            "0x8C53B2",
+            "0x8C53C0"
+        ],
+        "GetFPS.cpp": [
+            "0x8D1A85"
+        ],
+        "GetRolloverInfoFix.cpp": [
+            "0x8422FD",
+            "0x84230D",
+            "0x842330",
+            "0x842340",
+            "0x842363",
+            "0x842373",
+            "0x842396",
+            "0x8423A6",
+            "0x8423C9",
+            "0x8423D9",
+            "0x842400",
+            "0x84240C"
+        ],
+        "GiveNukeSiloAmmo.cpp": [
+            "0x6CED74",
+            "0x6CEDF1"
+        ],
+        "HDraw.cpp": [
+            "0x86EF2B",
+            "0x456264",
+            "0x4562CD",
+            "0x4561A8",
+            "0x455E53",
+            "0x4561E4",
+            "0x455E30"
+        ],
+        "HFAExtLoad.cpp": [
+            "0x45A926"
+        ],
+        "HFix4GB.cpp": [
+            "0x957E35",
+            "0x915A92",
+            "0x915B05"
+        ],
+        "HGuardFix.cpp": [
+            "0x6ACC95"
+        ],
+        "HIgnoreEmptyReclaim.cpp": [
+            "0x8218AB"
+        ],
+        "HOrderIDOutput.cpp": [
+            "0x8C55AA"
+        ],
+        "HOutputMaxSP.cpp": [
+            "0x88D623"
+        ],
+        "HRangeRings2.cpp": [
+            "0x73D4A0",
+            "0x7EE2BC",
+            "0x7EE33A",
+            "0x81C38E",
+            "0x81C3C5"
+        ],
+        "HRemovingCTRLFormations.cpp": [
+            "0x82074D"
+        ],
+        "HTransferACUs.cpp": [
+            "0x75B816"
+        ],
+        "HUIReduceCallSimBeat.cpp": [
+            "0x73B3B0",
+            "0x73B43D",
+            "0x73CBC9",
+            "0x73C6AD",
+            "0x73CDA5",
+            "0x73CC69"
+        ],
+        "HUpgradeProgressFix.cpp": [
+            "0x5F5C21"
+        ],
+        "IconScale.cpp": [
+            "0x85DE05",
+            "0x85DF02",
+            "0x85E003",
+            "0x85DCF7"
+        ],
+        "IntelUpdate.cpp": [
+            "0x76F21A",
+            "0x76F258"
+        ],
+        "IssueBuildMobile.cpp": [
+            "0x6F5B98",
+            "0x6F5B9E",
+            "0x6F5F96"
+        ],
+        "Kill_maploader_except.cpp": [
+            "0x9071FE"
+        ],
+        "LuaMessages.cpp": [
+            "0xD459B0",
+            "0xD44F60",
+            "0xE00AD0",
+            "0xE00AE0",
+            "0xE01168",
+            "0xE09310",
+            "0xE09A50",
+            "0xE09AEC"
+        ],
+        "MinimapMesh.cpp": [
+            "0x7D1AE9"
+        ],
+        "NegativeIncomeFix.cpp": [
+            "0x7722B0"
+        ],
+        "ObserverFix.cpp": [
+            "0x89671A"
+        ],
+        "OnCreateInitLuaState.cpp": [
+            "0x459EE3"
+        ],
+        "OnMotionTurnEvent.cpp": [
+            "0x6B8FB9",
+            "0x6B953F",
+            "0x6BFF2C"
+        ],
+        "OnWindowMessage.cpp": [
+            "0x00430C0E"
+        ],
+        "RangeRings.cpp": [
+            "0x7F944D"
+        ],
+        "Reclaimable.cpp": [
+            "0x005F6ED2"
+        ],
+        "RemoveTransportLoadFactor.cpp": [
+            "0x6A8B30"
+        ],
+        "selectionPriority.cpp": [
+            "0x863C13"
+        ],
+        "SetAlpha.cpp": [
+            "0x789988",
+            "0x789972",
+            "0x789999"
+        ],
+        "SetStatFix.cpp": [
+            "0x6CCA2A"
+        ],
+        "SimGetCommandQueue.cpp": [
+            "0x6CE3BA"
+        ],
+        "StopReclaimWhenPaused.cpp": [
+            "0x61FF7B",
+            "0x620071"
+        ],
+        "TableInsertFix.cpp": [
+            "0x008BA4A9",
+            "0x008BA177",
+            "0x008BDB60",
+            "0x00759E53"
+        ],
+        "TeamColorMode.cpp": [
+            "0x847E51",
+            "0x85DB68"
+        ],
+        "UnlockUltraPreset.cpp": [
+            "0x8D0E93"
+        ],
+        "VDist3.cpp": [
+            "0x4D0F02"
+        ],
+        "WallSelection.cpp": [
+            "0x865EC2"
+        ],
+        "WayPointArrive.cpp": [
+            "0x598E80"
+        ],
+        "weakgcmarkerFix.cpp": [
+            "0x00915A00"
+        ],
+        "WorldViewCustomRender.cpp": [
+            "0x86E5B2"
+        ],
+        "xact_3dapply.cpp": [
+            "0x4D9A60"
+        ]
+    },
+    "structs": {
+        "string": "0x1C (28 bytes)",
+        "wstring": "0x1C (28 bytes)",
+        "TObject": "0x8 (8 bytes)",
+        "LuaStackObject": "0x8 (8 bytes)",
+        "LuaObject": "0x14 (20 bytes)",
+        "LuaState": "0x34 (52 bytes)",
+        "luaFuncDescReg": "0x1C (28 bytes)",
+        "moho_set": "0x20 (32 bytes)",
+        "CScriptObject": "0x34 (52 bytes)",
+        "Deposit": "0x14 (20 bytes)",
+        "CSimResources": "0x1C (28 bytes)",
+        "BaseArmy": "0x1DC (476 bytes)",
+        "UserArmy": "0x210 (528 bytes)",
+        "SimArmy": "0x288 (648 bytes)",
+        "Sim": "0xAF8 (2808 bytes)",
+        "CWldSession": "0x508 (1288 bytes)",
+        "CSimDriver": "0x230 (560 bytes)",
+        "STIMap": "0x1548 (5448 bytes)",
+        "struct_UnitData": "0x224 (548 bytes)"
+    },
+    "globals": {
+        "g_CSimDriver": "0x10C4F50",
+        "g_SWldSessionInfo": "0x10C4F58",
+        "g_CWldSession": "0x10A6470",
+        "g_Sim": "0x10A63F0",
+        "g_EntityCategoryTypeInfo": "0x10C6E70",
+        "g_CAiBrainTypeInfo": "0x10C6FA0",
+        "g_CUIManager": "0x10A6450",
+        "g_EngineStats": "0x10A67B8",
+        "g_WRenViewport": "0x10C7C28",
+        "g_ConsoleLuaState": "0x10A6478",
+        "g_Device": "0x0F8E284",
+        "g_ExeVersion1": "0x876666",
+        "g_ExeVersion2": "0x87612d",
+        "g_ExeVersion3": "0x4d3d40",
+        "g_copy_ctor": "0x938720",
+        "g_dtor": "0x00402370"
+    }
+}

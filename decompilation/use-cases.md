@@ -1,5 +1,10 @@
 # Potential Use Cases – FA-Binary-Patches
 
+> [!IMPORTANT]
+> **References vs Runtime Addresses**
+> The game executable (`ForgedAlliance.exe`) statically links/inlines the engine DLLs. 
+> The `MohoEngine.dll` addresses listed in these use cases are **for reference only** (useful when looking at the DLL in Ghidra to understand the logic). To actually implement these hooks in FAF, you must locate the inlined equivalents inside `ForgedAlliance.exe` by searching for matching assembly patterns or string references.
+
 > Based on reverse-engineered engine internals. Each use case references the 
 > specific functions/addresses needed and estimates implementation complexity.
 

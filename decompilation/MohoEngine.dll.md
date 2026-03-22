@@ -1,5 +1,14 @@
 # MohoEngine.dll – Reverse-Engineered Internals
 
+> [!IMPORTANT]
+> **DLLs Are Inlined In Production**
+> The production game (`ForgedAlliance.exe`) does **not** load `MohoEngine.dll` dynamically. All of these DLLs (except crash handlers like BugSplat) were statically linked or **inlined directly into the executable**.
+> 
+> **Why this matters for patchers:**
+> 1. The addresses listed in this document are **strictly for reference** when analyzing the isolated `MohoEngine.dll` file in Ghidra.
+> 2. You **cannot** `VirtualProtect` or hook the DLL addresses here at runtime, because the game isn't running from them.
+> 3. To patch these functions in the live game, you must find their inlined equivalents within `ForgedAlliance.exe` by matching the assembly signatures or string references found here.
+
 > **Binary**: `MohoEngine.dll` (loaded by ForgedAlliance.exe v3599)
 > All addresses are DLL base-relative. Verified via Ghidra decompilation.
 > Supplements `Info.txt`, `moho.h`, and `global.h` – only new findings.
