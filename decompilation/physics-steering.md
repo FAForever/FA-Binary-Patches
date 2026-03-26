@@ -52,37 +52,58 @@ Inside our Detour, we will:
 
 ## 3. CAiSteeringImpl – Confirmed Structure (v22)
 
-### Hook Site (Verified via Ghidra)
-| Address      | Bytes       | Instruction                  |
-|--------------|-------------|------------------------------|
-| `0x005D32B0` | `55`        | PUSH EBP (prologue start)    |
-| `0x005D32B1` | `8B EC`     | MOV EBP, ESP                 |
-| `0x005D32B3` | `83 E4 F8`  | AND ESP, 0xFFFFFFF8          |
-| `0x005D32B6` | `83 EC 58`  | SUB ESP, 0x58                |
-| `0x005D32B9` | `53`        | PUSH EBX                     |
-| `0x005D32BA` | `55`        | PUSH EBP                     |
-| `0x005D32BB` | `8B D9`     | MOV EBX, ECX ← **HOOK SITE**|
-| `0x005D32BD` | `8B 43 1C`  | MOV EAX, [EBX+0x1C]         |
-| `0x005D32C0` | `56`        | PUSH ESI                     |
-| `0x005D32C1` |             | ← **RETURN ADDRESS**         |
+### Hook Site (Verified via IDA + Ghidra)
+| Address      | Bytes              | Instruction                        |
+|--------------|--------------------|------------------------------------|
+| `0x005D32B0` | `55`               | PUSH EBP (prologue start)          |
+| `0x005D32B1` | `8B EC`            | MOV EBP, ESP                       |
+| `0x005D32B3` | `83 E4 F8`         | AND ESP, 0xFFFFFFF8                |
+| `0x005D32B6` | `83 EC 58`         | SUB ESP, 0x58                      |
+| `0x005D32B9` | `53`               | PUSH EBX                           |
+| `0x005D32BA` | `55`               | PUSH EBP                           |
+| `0x005D32BB` | `8B D9`            | MOV EBX, ECX (this ptr)            |
+| `0x005D32BD` | `8B 43 1C`         | MOV EAX, [EBX+0x1C] ← **HOOK**    |
+| `0x005D32C0` | `56`               | PUSH ESI                           |
+| `0x005D32C1` | `8B B0 50 01 00 00`| MOV ESI, [EAX+0x150] (load Sim*)   |
+| `0x005D32C7` | `8B 40 70`         | MOV EAX, [EAX+0x70] ← **RETURN**  |
+
+**Hook at 0x5D32BD overwrites 10 bytes** (3 instructions) to reach the
+clean boundary at 0x5D32C7. A 5-byte JMP + 5 NOPs. The trampoline must
+restore all 3 instructions: MOV EAX,[EBX+0x1C] / PUSH ESI / MOV ESI,[EAX+0x150].
+
+**WARNING:** The old docs said hook at 0x5D32BB with return at 0x5D32C1.
+This is WRONG — 0x5D32C1 is a 6-byte MOV ESI instruction, not a safe
+return point. A 5-byte JMP from 0x5D32BD would corrupt byte 0x5D32C2
+(middle of MOV ESI,[EAX+0x150]). Must overwrite the full 10 bytes.
 
 ### Confirmed Offsets
-| Offset  | Type     | Name    | Notes                          |
-|---------|----------|---------|--------------------------------|
-| `+0x1C` | CUnit*   | owner   | Direct unit pointer (VERIFIED) |
-| `+0x58` | int      | state   | 0x10 or 0x20 = active states  |
+| Offset  | Type     | Name    | Notes                                   |
+|---------|----------|---------|-----------------------------------------|
+| `+0x1C` | CUnit*   | mUnit   | Direct unit pointer (VERIFIED via IDA)  |
+| `+0x58` | int      | mLayer  | ELayer enum (LAYER_Air=0x10, etc.)      |
+
+### IDA Decompile Confirms
+```
+line 32: unit = this->mUnit;              // [EBX+0x1C]
+line 33: sim = unit->mSim;               // [EAX+0x150]
+line 34: Logf(sim, "0x%08x's steering tick.\n", unit->mConstDat.mId);
+line 35: layer = this->mLayer;            // [EBX+0x58] — NOT "state", it's ELayer
+line 36: if (layer == LAYER_Air || layer == LAYER_Orbit)
+line 37:     FlyToNextWaypoint(this - 4)
+line 39:     DriveToNextWaypoint(this - 4)
+```
+
+Note: IDA shows `this` as `CAiSteeringImpl_CTask*`. The actual
+`CAiSteeringImpl*` is `this - 4` (vtable offset). `+0x1C` from
+`CAiSteeringImpl_CTask` = `+0x1C` from the CTask base = CUnit*.
 
 ### IMPORTANT: Correction to Earlier Documentation
 The path "CAiSteeringImpl+0x1C → CAiNavigatorImpl → +0x5C → CUnit*"
 is WRONG. The correct path is:
-  CAiSteeringImpl+0x1C = CUnit* directly (no intermediate hop)
-
-The navigator back-pointer at CAiNavigatorImpl+0x5C exists but is
-NOT the path from steering to unit.
+  CAiSteeringImpl_CTask+0x1C = CUnit* directly (no intermediate hop)
 
 ### Calling Convention
-- __thiscall: ECX = CAiSteeringImpl*
-- EBX = ECX (set at hook site)
-- EAX = [EBX+0x1C] = CUnit* (set at hook site)
-- Trampoline must restore: MOV EBX,ECX / MOV EAX,[EBX+0x1C] / PUSH ESI
-- Return to: 0x005D32C1
+- __thiscall: ECX = CAiSteeringImpl_CTask*
+- EBX = ECX (set by MOV EBX,ECX at 0x5D32BB)
+- Trampoline must restore: MOV EAX,[EBX+0x1C] / PUSH ESI / MOV ESI,[EAX+0x150]
+- Return to: 0x005D32C7

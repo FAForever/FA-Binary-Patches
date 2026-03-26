@@ -34,15 +34,24 @@ CUnitMoveTask (param_1 = this pointer):
 ### CUnit fields accessed by CUnitMoveTask (mUnit = task[7])
 
 ```
-CUnit:
-  +0x070  position ptr / display info
+CUnit (verified via moho.h + IDA + SupComDecomp/Unit.h):
+  +0x070  UnitID              (uint32_t)
+  +0x074  Blueprint*          (RUnitBlueprint*)
+  +0x0AC  SizeX               (float, in Blueprint, used for collision radius)
+  +0x0B4  SizeZ               (float, in Blueprint)
+  +0x150  mSim                (Sim*)
+  +0x154  mArmy               (SimArmy*)
+  +0x160  Pos3                (Vector3f — current world position, x/y/z)
   +0x4a0  unit flags          (bitmask; bit 2 = 0x04 cleared on move end)
   +0x4a4  unit flags2
-  +0x4b4  active navigator    -> CAiNavigator* (pathfinder result)
-  +0x4c8  command list head   -> linked list of commands
-  +0x4cc  command list tail
-  +0x54c  formation ptr       -> formation object (nullable)
+  +0x4B0  mUnitMotion         (CUnitMotion*)
+  +0x4B4  mNavigator          (CAiNavigatorImpl*)
+  +0x4c8  mCommandQueue       (CUnitCommandQueue*)
+  +0x54c  mSteering           (IAiSteering*) — NOTE: accessed via Unit, not via navigator
 ```
+
+Note: +0x0AC/+0x0B4 are offsets within Blueprint, not Unit. Access as:
+`*(float*)(*(uint32_t*)(unit + 0x74) + 0xAC)` for SizeX.
 
 ### Key functions
 | Address      | Function                              |
