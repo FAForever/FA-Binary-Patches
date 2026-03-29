@@ -9,18 +9,18 @@
 
 #include "moho.h"
 #include "global.h"
+#include "MovementConfig.h"
 
 // Called from the asm hook to do the circular distance check
 extern "C" int __cdecl CheckCircularArrival(uint8_t* pathNav)
 {
-    int rangeCells = *(int*)(pathNav + 0x48);  // mGoal.mPos2.x1 (our tag)
+    int rangeCells = *(int*)(pathNav + OFF_PATHNAV_TAG_RANGE);
     if (rangeCells <= 0) return 0;  // not a build move
 
-    int buildX = *(int*)(pathNav + 0x40);      // mGoal.mPos2.x0
-    int buildZ = *(int*)(pathNav + 0x44);      // mGoal.mPos2.z0
+    int buildX = *(int*)(pathNav + OFF_PATHNAV_TAG_X);
+    int buildZ = *(int*)(pathNav + OFF_PATHNAV_TAG_Z);
 
-    // Current position: HPathCell at +0x24, packed as x:int16 low, z:int16 high
-    uint32_t curPos = *(uint32_t*)(pathNav + 0x24);
+    uint32_t curPos = *(uint32_t*)(pathNav + OFF_PATHNAV_CURPOS);
     int curX = (int)(short)(curPos & 0xFFFF);
     int curZ = (int)(short)(curPos >> 16);
 
@@ -30,7 +30,7 @@ extern "C" int __cdecl CheckCircularArrival(uint8_t* pathNav)
     int rangeSq = rangeCells * rangeCells;
 
     if (distSq <= rangeSq) {
-        *(int*)(pathNav + 0x48) = 0;  // clear tag (one-shot)
+        *(int*)(pathNav + OFF_PATHNAV_TAG_RANGE) = 0;  // clear tag (one-shot)
         return 1;  // signal arrival
     }
     return 0;

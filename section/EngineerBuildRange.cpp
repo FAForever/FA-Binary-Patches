@@ -17,15 +17,7 @@
 #include "global.h"
 #include "MovementConfig.h"
 
-// CAiNavigatorLand offsets (IDA-verified)
-#define OFF_NAVLAND_PATHNAV     0x68  // CAiPathNavigator*
-
-// CAiPathNavigator offsets (IDA-verified)
-#define OFF_PATHNAV_GOAL_X      0x30  // mGoal.mPos1.x0 (set by SetGoal)
-#define OFF_PATHNAV_GOAL_Z      0x34  // mGoal.mPos1.z0
-#define OFF_PATHNAV_TAG_X       0x40  // mGoal.mPos2.x0 — our tag: build center X
-#define OFF_PATHNAV_TAG_Z       0x44  // mGoal.mPos2.z0 — our tag: build center Z
-#define OFF_PATHNAV_TAG_RANGE   0x48  // mGoal.mPos2.x1 — our tag: rangeCells (0=inactive)
+// All navigator offsets are in MovementConfig.h
 
 extern "C" void __cdecl TagNavigatorForBuild(uint8_t* task)
 {
@@ -37,8 +29,7 @@ extern "C" void __cdecl TagNavigatorForBuild(uint8_t* task)
     float maxBD = *(float*)(bpAddr + OFF_BP_MAXBUILDDIST);
     if (maxBD <= 2.0f) return;
 
-    // Navigator offset 0x54C verified from NewMoveTask disassembly (NOT 0x4B4!)
-    uint32_t navLand = *(uint32_t*)(unitAddr + 0x54C);
+    uint32_t navLand = *(uint32_t*)(unitAddr + OFF_UNIT_NAVIGATOR);
     if (!IsValidPtr(navLand)) return;
     uint32_t pathNav = *(uint32_t*)(navLand + OFF_NAVLAND_PATHNAV);
     if (!IsValidPtr(pathNav)) return;
@@ -59,7 +50,7 @@ extern "C" void __cdecl TagNavigatorForBuild(uint8_t* task)
     // which can be stale for shift-click build queues.
     int goalX = *(int*)(pathNav + OFF_PATHNAV_GOAL_X);
     int goalZ = *(int*)(pathNav + OFF_PATHNAV_GOAL_Z);
-    uint32_t curPos = *(uint32_t*)(pathNav + 0x24);  // mCurrentPos (packed int16)
+    uint32_t curPos = *(uint32_t*)(pathNav + OFF_PATHNAV_CURPOS);
     int curX = (int)(short)(curPos & 0xFFFF);
     int curZ = (int)(short)(curPos >> 16);
     int cdx = goalX - curX;
