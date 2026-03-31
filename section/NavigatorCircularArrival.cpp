@@ -20,6 +20,15 @@ extern "C" int __cdecl CheckCircularArrival(uint8_t* pathNav)
     int buildX = *(int*)(pathNav + OFF_PATHNAV_TAG_X);
     int buildZ = *(int*)(pathNav + OFF_PATHNAV_TAG_Z);
 
+    // Validate tag matches the active goal. If the goal changed (e.g. new order
+    // interrupted the build move without SetGoal zeroing mPos2), clear stale tag.
+    int goalX = *(int*)(pathNav + OFF_PATHNAV_GOAL_X);
+    int goalZ = *(int*)(pathNav + OFF_PATHNAV_GOAL_Z);
+    if (buildX != goalX || buildZ != goalZ) {
+        *(int*)(pathNav + OFF_PATHNAV_TAG_RANGE) = 0;
+        return 0;
+    }
+
     uint32_t curPos = *(uint32_t*)(pathNav + OFF_PATHNAV_CURPOS);
     int curX = (int)(short)(curPos & 0xFFFF);
     int curZ = (int)(short)(curPos >> 16);
