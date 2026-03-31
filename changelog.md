@@ -174,6 +174,18 @@ These don't matter except for other assembly patches
 
 ## Gameplay
 
+- Engineers start building at max build range instead of walking to the build center
+
+  Engineers now begin construction as soon as they enter MaxBuildDistance of the
+  build site. Uses a circular arrival check in the navigator (dx²+dz² ≤ range²)
+  that works uniformly in all directions. Scales with unit type (ACU, T1-T3 engineers).
+
+  - hooks/HEngineerBuildRange.cpp
+  - hooks/HNavigatorCircularArrival.cpp
+  - section/EngineerBuildRange.cpp
+  - section/NavigatorCircularArrival.cpp
+  - include/MovementConfig.h
+
 - Change tick intel update interval from every 30 ticks to every 1 tick
 
   - hooks/IntelUpdate.cpp
