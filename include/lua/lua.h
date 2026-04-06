@@ -124,10 +124,9 @@ namespace lua
     } lua_State;
 
 } // namespace lua
-// const int a = sizeof(lua::global_State);
 VALIDATE_SIZE(lua::lua_State, 0x70);
 VALIDATE_SIZE(lua::global_State, 0x1B8);
-static_assert(offsetof(lua::global_State, tmname) == 0x5c, "Invalid tmname offset");
+VALIDATE_OFFSET(lua::global_State, tmname, 0x5c);
 
 #define setobj(obj1, obj2)               \
     {                                    \

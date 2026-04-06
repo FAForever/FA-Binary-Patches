@@ -1,40 +1,6 @@
 #include "global.h"
 #include "magic_classes.h"
-
-static bool mapHasUnit(uintptr_t map_base, uintptr_t key) {
-  auto head = *reinterpret_cast<uintptr_t*>(map_base + 0x04);
-  auto node = *reinterpret_cast<uintptr_t*>(head + 0x04);
-  while (node) {
-    if (*reinterpret_cast<uint8_t*>(node + 0x19))  // _Isnil (0x19)
-      return false;
-    auto node_key = *reinterpret_cast<uintptr_t*>(node + 0x0C);
-    if (key < node_key)
-      node = *reinterpret_cast<uintptr_t*>(node + 0x00);  // _Left (0x00)
-    else if (key > node_key)
-      node = *reinterpret_cast<uintptr_t*>(node + 0x08);  // _Right (0x08)
-    else
-      return true;
-  }
-  return false;
-}
-
-static bool isArmyAlly(int armyIndex, uintptr_t army) {
-  if (armyIndex == -1)
-    return 0;
-  auto v3 = (armyIndex >> 5) - *reinterpret_cast<int*>(army + 0xE0);
-  auto begin = *reinterpret_cast<uintptr_t*>(army + 0xE8);
-  auto end = *reinterpret_cast<uintptr_t*>(army + 0xEC);
-  return v3 < ((end - begin) >> 2) && 
-            ((*reinterpret_cast<uint32_t*>(begin + 4 * v3) >> (armyIndex & 31)) & 1) != 0;
-}
-
-static bool isOwnUserUnit(uintptr_t userUnit) {
-  auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
-  auto focusArmyIndex = *reinterpret_cast<int*>(session + 0x488);
-  auto unitArmy = *reinterpret_cast<uintptr_t*>(userUnit + 0x120);
-  auto unitArmyIndex = *reinterpret_cast<int*>(unitArmy);
-  return (unitArmyIndex == focusArmyIndex);
-}
+#include "moho.h"
 
 enum IntelRangeBehavior {
   kOwnUnits = 0,
@@ -50,65 +16,74 @@ ConDescReg conIntelRangeBehavior{"ren_IntelRangeBehavior",
 
 extern "C" {
 
-uintptr_t __thiscall RenderRange__Moho__UserUnit__UserUnit(uintptr_t this_,
-                                                           uintptr_t esp) {
-  if (isOwnUserUnit(this_)) return this_;
+void *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *this_,
+                                                       uintptr_t esp) {
+  if (this_->mArmy->mConstDat.mIndex == g_CWldSession->focusArmyIndex)
+    return this_;
 
   // Compiler, I believe in you. We're in a hot path, optimize and inline the
   // lambda pls p.s. I saw the listing, mine handled it, and there’s no call
   // there
-  auto equals = []<size_t N>(string& str1, const char (&str2)[N]) {
-    if (str1.strLen != N - 1) return false;
-    const char* l = str1.data();
-    const char* r = str2;
+  auto equals = []<size_t N>(string &str1, const char (&str2)[N]) {
+    if (str1.strLen != N - 1)
+      return false;
+    const char *l = str1.data();
+    const char *r = str2;
     while (*l == *r && *l) {
       ++l;
       ++r;
     };
     return (*l - *r) == 0;
   };
-  auto& rangeName = **reinterpret_cast<string**>(esp + 0x30);
+  auto &rangeName = **reinterpret_cast<string **>(esp + 0x30);
   bool isIntelRange = equals(rangeName, "Radar") || equals(rangeName, "Omni") ||
                       equals(rangeName, "Sonar");
-  if (isIntelRange) return this_;
-  return 0;
+  if (isIntelRange)
+    return this_;
+  return nullptr;
 }
 
-extern void __fastcall Hooked_SyncVisionRange(uintptr_t*, uintptr_t*) asm("Hooked_SyncVisionRange");
-void Hooked_SyncVisionRange(uintptr_t* this_, uintptr_t* edx) {
-  edx[0] = this_[0]; // Vision
-  edx[2] = this_[2]; // Radar
-  edx[3] = this_[3]; // Sonar
-  edx[4] = this_[4]; // Omni
+extern void __fastcall
+Hooked_SyncVisionRange(ReconBlip *, Unit *) asm("Hooked_SyncVisionRange");
+void Hooked_SyncVisionRange(ReconBlip *recon, Unit *unit) {
+  recon->Entity::mVarDat.mAttributes.mVisionRange =
+      unit->mVarDat.mAttributes.mVisionRange;
+  recon->Entity::mVarDat.mAttributes.mRadarRange =
+      unit->mVarDat.mAttributes.mRadarRange;
+  recon->Entity::mVarDat.mAttributes.mSonarRange =
+      unit->mVarDat.mAttributes.mSonarRange;
+  recon->Entity::mVarDat.mAttributes.mOmniRange =
+      unit->mVarDat.mAttributes.mOmniRange;
 }
 
-bool __cdecl ShouldAddUnit(uintptr_t focusArmy, uintptr_t userUnit) {
-  auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
-  auto unitArmy = *reinterpret_cast<uintptr_t*>(userUnit + 0x120);
-  if (unitArmy == focusArmy) {
+bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
+  auto session = g_CWldSession;
+  // auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
+  if (userUnit->mArmy == focusArmy) {
     // Optimization: To avoid double rendering,
     // do not render the global rings;
     // they will be rendered in the selection rings render
-    auto selectionSize = *(size_t*)(session + 0x4A8);
-    [[likely]] if (selectionSize < 67)
+    [[likely]] if (session->selectedUnits.size() < 67)
       return true;
-    return !mapHasUnit(session + 0x4A0, userUnit);
+    return !session->selectedUnits.contains(userUnit);
   }
 
-  if (intelRangeBehavior == kOwnUnits) return false;
-
-  auto focusArmyIndex = *reinterpret_cast<int*>(session + 0x488);
-  if (!isArmyAlly(focusArmyIndex, unitArmy)) return false;
-
-  auto blueprint = *reinterpret_cast<uintptr_t*>(userUnit + 0x48);
-  if (intelRangeBehavior == kOwnUnitsAndAlliedBuildings &&
-      *reinterpret_cast<uint32_t*>(blueprint + 0x290) != 0)
-    // MotionType != None -> let's assume this is not a building
+  if (intelRangeBehavior == kOwnUnits)
     return false;
 
-  auto intel = reinterpret_cast<uint32_t*>(blueprint + 0x338);
-  bool hasIntel = (intel[0] | intel[1] | intel[2]) != 0;
+  if (!userUnit->mArmy->isAlly(session->focusArmyIndex))
+    return false;
+
+  auto blueprint = static_cast<RUnitBlueprint *>(userUnit->mParams.mBlueprint);
+  if (intelRangeBehavior == kOwnUnitsAndAlliedBuildings &&
+      blueprint->mPhysics.mMotionType != RULEUMT_None)
+    // let's assume this is not a building
+    return false;
+
+  auto &intel = blueprint->mIntel;
+  bool hasIntel =
+      (intel.mRadarRadius | intel.mSonarRadius | intel.mOmniRadius) != 0;
   return hasIntel;
 }
 
-}  // extern "C"
+} // extern "C"

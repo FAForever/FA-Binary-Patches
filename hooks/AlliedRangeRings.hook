@@ -9,15 +9,7 @@
   nop
 
 0x005BF011:
-  mov ecx, eax
-  add ecx, 0x130
-  lea edx, [edi+0x128]
+  mov ecx, edi
+  mov edx, eax
   call Hooked_SyncVisionRange
-  nop
-  nop
-  nop
-  nop
-  nop
-  nop
-  nop
-  nop
+  jmp 0x005BF02C
