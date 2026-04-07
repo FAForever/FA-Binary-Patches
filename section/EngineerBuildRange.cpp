@@ -41,7 +41,7 @@ extern "C" void __cdecl TagNavigatorForBuild(uint8_t* task)
     //   70% of maxBD: scales with unit type, safe for diagonals
     //     ACU (maxBD=10): rangeCells=7, diagonal=9.9 ✓
     //     T1 eng (maxBD=5): rangeCells=3, diagonal=4.2 ✓
-    int rangeCells = (int)(maxBD * 0.9f); //"Martin" 0.9 works fine at max range 
+    int rangeCells = (int)(maxBD * 0.89f); //"Martin" 0.9 works fine at max range ,0.9 has a problem in diagonal mex building whitch lead to skipping first mex to bild in a row
     // ────────────────────────────────────────────────────────────
     if (rangeCells < 2) return;
 
