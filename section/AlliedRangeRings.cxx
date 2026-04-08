@@ -58,7 +58,6 @@ void Hooked_SyncVisionRange(ReconBlip *recon, Unit *unit) {
 
 bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
   auto session = g_CWldSession;
-  // auto session = *reinterpret_cast<uintptr_t*>(0x10A6470);
   if (userUnit->mArmy == focusArmy) {
     // Optimization: To avoid double rendering,
     // do not render the global rings;
