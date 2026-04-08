@@ -1,0 +1,33 @@
+// Fix range ring stencil overflow with 128+ overlapping units.
+//
+// Background: func_RenderRings (0x007EF5A0) renders range rings via two
+// loops sharing the same "Cast" effect technique that increments the GPU
+// stencil per overdraw layer. The stencil is 7-bit (max 127), so 128+
+// overlapping rings cause counter wrap-around and the early-out optimization
+// fails -- individual circle outlines appear instead of a unified shape.
+//
+// Loop 1 (0x007EF774-0x007EF7FC) draws the FILL of the ring band (1 quad
+// per ring, high per-pixel overdraw on overlap) -- this is the loop that
+// overflows. Loop 2 draws only the thin EDGE strips (2 quads per ring) and
+// has near-zero per-pixel overdraw, so it does not need patching.
+//
+// Fix: reduce Loop 1 batch size from 1000 to 30, and inject an intermediate
+// RangeMask flush between batches that resets the stencil counter.
+
+// Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 30
+// (patches the imm32 of the 5-byte 'cmp eax, imm32' instruction at 0x007EF77D)
+0x007EF77E:
+    .byte 0x1E, 0x00, 0x00, 0x00
+
+// Loop 1 batch ceiling: mov eax, 0x3E8  ->  mov eax, 30
+// (patches the imm32 of the 5-byte 'mov eax, imm32' instruction at 0x007EF784)
+0x007EF785:
+    .byte 0x1E, 0x00, 0x00, 0x00
+
+// Inject intermediate RangeMask flush at the bottom of the Loop 1 body.
+// Replaces the 7-byte 'mov eax, [esp+0x84]' with a 5-byte call + 2 NOPs.
+// IntermediateRangeMask reproduces the replaced instruction after the flush.
+0x007EF7EA:
+    call @IntermediateRangeMask
+    nop
+    nop

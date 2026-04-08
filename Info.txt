@@ -223,6 +223,7 @@ LuaObjectFinalize
 007EF5A0 RenderRings (func_RenderRings)
 007F5DA0 CRenFrame::InitTransformedVerts(this@ebx, float width, float height) retn 8
 007F6030 CRenFrame::Render(this@edi, int width, int height) retn 8
+004059E0 std::string::string(this@ecx, char const* s, size_t n) retn 8
 005779C0 CreateMapData
 004783D0 CreateTerrainHeights
 00577890 InitSTIMap
