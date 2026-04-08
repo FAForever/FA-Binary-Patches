@@ -95,19 +95,19 @@ enum ECollisionShape : __int32
 // just Moho::EIntel - 1 it appears
 enum EEntityAttribute
 {
-	ENTATTR_VisionRange = 0,
-	ENTATTR_WaterVisionRange = 1,
-	ENTATTR_RadarRange = 2,
-	ENTATTR_SonarRange = 3,
-	ENTATTR_OmniRange = 4,
-	ENTATTR_RadarStealthFieldRange = 5,
-	ENTATTR_SonarStealthFieldRange = 6,
-	ENTATTR_CloakFieldRange = 7,
-	ENTATTR_JammerRange = 8,
-	ENTATTR_SpoofRange = 9,
-	ENTATTR_CloakRange = 10,
-	ENTATTR_RadarStealthRange = 11,
-	ENTATTR_SonarStealthRange = 12,
+	ENTATTR_Vision = 0,
+	ENTATTR_WaterVision = 1,
+	ENTATTR_Radar = 2,
+	ENTATTR_Sonar = 3,
+	ENTATTR_Omni = 4,
+	ENTATTR_RadarStealthField = 5,
+	ENTATTR_SonarStealthField = 6,
+	ENTATTR_CloakField = 7,
+	ENTATTR_Jammer = 8,
+	ENTATTR_Spoof = 9,
+	ENTATTR_Cloak = 10,
+	ENTATTR_RadarStealth = 11,
+	ENTATTR_SonarStealth = 12,
 };
 
 enum EEntityType : __int32
@@ -1646,7 +1646,7 @@ struct CIntel
 	void Update(Vector3f *newPos, int curTick);
 };
 
-struct EntityAttributes
+class EntityAttributes
 {
 	unsigned int mVisionRange;
 	unsigned int mWaterVisionRange;
@@ -1656,6 +1656,66 @@ struct EntityAttributes
 	unsigned int mRadarStealthRange;
 	unsigned int mSonarStealthRange;
 	unsigned int mCloakRange;
+
+public:
+	unsigned int GetIntelRadius(EEntityAttribute attribute) const {
+		switch (attribute) {
+		case ENTATTR_Vision:
+			return mVisionRange & 0x7FFFFFFF;
+		case ENTATTR_WaterVision:
+			return mWaterVisionRange & 0x7FFFFFFF;
+		case ENTATTR_Radar:
+			return mRadarRange & 0x7FFFFFFF;
+		case ENTATTR_Sonar:
+			return mSonarRange & 0x7FFFFFFF;
+		case ENTATTR_Omni:
+			return mOmniRange & 0x7FFFFFFF;
+
+		case ENTATTR_Cloak:
+			return mCloakRange & 0x7FFFFFFF;
+		case ENTATTR_RadarStealth:
+			return mRadarStealthRange & 0x7FFFFFFF;
+		case ENTATTR_SonarStealth:
+			return mSonarStealthRange & 0x7FFFFFFF;
+		case ENTATTR_RadarStealthField:
+		case ENTATTR_SonarStealthField:
+		case ENTATTR_CloakField:
+		case ENTATTR_Jammer:
+		case ENTATTR_Spoof:
+		default:
+			return 0;
+		}
+	}
+	void SetIntelRadius(EEntityAttribute attribute, unsigned int radius) {
+		switch (attribute) {
+		case ENTATTR_Vision:
+			mVisionRange = radius | (mVisionRange & 0x80000000);
+			break;
+		case ENTATTR_WaterVision:
+			mWaterVisionRange = radius | (mWaterVisionRange & 0x80000000);
+			break;
+		case ENTATTR_Radar:
+			mRadarRange = radius | (mRadarRange & 0x80000000);
+			break;
+		case ENTATTR_Sonar:
+			mSonarRange = radius | (mSonarRange & 0x80000000);
+			break;
+		case ENTATTR_Omni:
+			mOmniRange = radius | (mOmniRange & 0x80000000);
+			break;
+		case ENTATTR_Cloak:
+			mCloakRange = radius | (mCloakRange & 0x80000000);
+			break;
+		case ENTATTR_RadarStealth:
+			mRadarStealthRange = radius | (mRadarStealthRange & 0x80000000);
+			break;
+		case ENTATTR_SonarStealth:
+			mSonarStealthRange = radius | (mSonarStealthRange & 0x80000000);
+			break;
+		default:
+			break;
+		}
+	}
 };
 
 struct IClientManager
@@ -1778,7 +1838,7 @@ struct IArmy
 	SSTIArmyConstantData mConstDat;
 	SSTIArmyVariableData mVarDat;
 	
-	bool isAlly(int armyIndex) const {
+	bool IsAlly(int armyIndex) const {
 		if ( armyIndex == -1 )
 			return 0;
 		auto v3 = (armyIndex >> 5) - mVarDat.mAllies.mStart;
@@ -2439,6 +2499,7 @@ struct UserEntity
 	bool unk4;
 };
 VALIDATE_OFFSET(UserEntity, mVarDat, 0x50);
+VALIDATE_OFFSET(UserEntity, mArmy, 0x120);
 VALIDATE_SIZE(UserEntity, 0x148);
 
 struct UserUnit : UserEntity, IUnit, CScriptObject

@@ -16,6 +16,8 @@ ConDescReg conIntelRangeBehavior{"ren_IntelRangeBehavior",
 
 extern "C" {
 
+// Currently, the patch only affects Intel Ranges. This hook disables rendering
+// of ally range rings, except for RADAR, SONAR, and OMNI.
 void *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *this_,
                                                        uintptr_t esp) {
   if (this_->mArmy->mConstDat.mIndex == g_CWldSession->focusArmyIndex)
@@ -45,15 +47,17 @@ void *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *this_,
 
 extern void __fastcall
 Hooked_SyncVisionRange(ReconBlip *, Unit *) asm("Hooked_SyncVisionRange");
-void Hooked_SyncVisionRange(ReconBlip *recon, Unit *unit) {
-  recon->Entity::mVarDat.mAttributes.mVisionRange =
-      unit->mVarDat.mAttributes.mVisionRange;
-  recon->Entity::mVarDat.mAttributes.mRadarRange =
-      unit->mVarDat.mAttributes.mRadarRange;
-  recon->Entity::mVarDat.mAttributes.mSonarRange =
-      unit->mVarDat.mAttributes.mSonarRange;
-  recon->Entity::mVarDat.mAttributes.mOmniRange =
-      unit->mVarDat.mAttributes.mOmniRange;
+void Hooked_SyncVisionRange(ReconBlip *reconBlip, Unit *unit) {
+  auto &reconAttrib = reconBlip->Entity::mVarDat.mAttributes;
+  auto &unitAttrib = unit->mVarDat.mAttributes;
+  reconAttrib.SetIntelRadius(ENTATTR_Vision,
+                             unitAttrib.GetIntelRadius(ENTATTR_Vision));
+  reconAttrib.SetIntelRadius(ENTATTR_Radar,
+                             unitAttrib.GetIntelRadius(ENTATTR_Radar));
+  reconAttrib.SetIntelRadius(ENTATTR_Sonar,
+                             unitAttrib.GetIntelRadius(ENTATTR_Sonar));
+  reconAttrib.SetIntelRadius(ENTATTR_Omni,
+                             unitAttrib.GetIntelRadius(ENTATTR_Omni));
 }
 
 bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
@@ -70,7 +74,7 @@ bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
   if (intelRangeBehavior == kOwnUnits)
     return false;
 
-  if (!userUnit->mArmy->isAlly(session->focusArmyIndex))
+  if (!userUnit->mArmy->IsAlly(session->focusArmyIndex))
     return false;
 
   auto blueprint = static_cast<RUnitBlueprint *>(userUnit->mParams.mBlueprint);
@@ -79,9 +83,10 @@ bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
     // let's assume this is not a building
     return false;
 
-  auto &intel = blueprint->mIntel;
-  bool hasIntel =
-      (intel.mRadarRadius | intel.mSonarRadius | intel.mOmniRadius) != 0;
+  auto &unitAttrib = userUnit->mVarDat.mAttributes;
+  bool hasIntel = (unitAttrib.GetIntelRadius(ENTATTR_Radar) |
+                   unitAttrib.GetIntelRadius(ENTATTR_Sonar) |
+                   unitAttrib.GetIntelRadius(ENTATTR_Omni)) != 0;
   return hasIntel;
 }
 
