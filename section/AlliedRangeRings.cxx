@@ -30,6 +30,7 @@ UserUnit *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *self,
     else
       return self;
   }
+
   // Disables rendering of ally range rings, except for RADAR, SONAR, and OMNI.
   // Btw, compiler, I believe in you. We're in a hot path, so please optimize
   // and inline the lambda. P.S. I saw the listing — mine handled it, and
@@ -60,12 +61,15 @@ void Hooked_SyncVisionRange(ReconBlip *reconBlip, Unit *unit) {
   auto &unitAttrib = unit->mVarDat.mAttributes;
   reconAttrib.SetIntelRadius(ENTATTR_Vision,
                              unitAttrib.GetIntelRadius(ENTATTR_Vision));
-  reconAttrib.SetIntelRadius(ENTATTR_Radar,
-                             unitAttrib.GetIntelRadius(ENTATTR_Radar));
-  reconAttrib.SetIntelRadius(ENTATTR_Sonar,
-                             unitAttrib.GetIntelRadius(ENTATTR_Sonar));
-  reconAttrib.SetIntelRadius(ENTATTR_Omni,
-                             unitAttrib.GetIntelRadius(ENTATTR_Omni));
+
+  if (unit->mArmy->IsAlly(g_CWldSession->focusArmyIndex)) {
+    reconAttrib.SetIntelRadius(ENTATTR_Radar,
+                               unitAttrib.GetIntelRadius(ENTATTR_Radar));
+    reconAttrib.SetIntelRadius(ENTATTR_Sonar,
+                               unitAttrib.GetIntelRadius(ENTATTR_Sonar));
+    reconAttrib.SetIntelRadius(ENTATTR_Omni,
+                               unitAttrib.GetIntelRadius(ENTATTR_Omni));
+  }
 }
 
 bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
