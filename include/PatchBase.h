@@ -6,14 +6,19 @@
   (*(type*)addr)
 
 #define CSTR(name, addr) \
-extern const char name[] asm(#addr);
+  extern const char name[] asm(#addr)
 
 
 #define GDecl(name, addr, type) \
-  extern type name asm(#addr);
+  extern type name asm(#addr)
 
 #define WDecl(addr, type) \
   ((type)*(uintptr_t*)addr)
 
 #define VALIDATE_SIZE(struc, size) \
-  static_assert(sizeof(struc) == size, "Invalid structure size of " #struc);
+  static_assert(sizeof(struc) == size, "Invalid structure size of " #struc)
+
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#define VALIDATE_OFFSET(struc, member, offset) \
+  static_assert(offsetof(struc, member) == offset, "Invalid offset of " #member " in " #struc)

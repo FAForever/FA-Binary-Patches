@@ -19,8 +19,8 @@ int SimGetDepositsAroundPoint(lua_State *L) {
     lua_newtable(L);
     int i = 1;
 
-    auto deposit = g_Sim->res->deposits.begin;
-    auto endDeposit = g_Sim->res->deposits.end;
+    auto deposit = g_Sim->mSimResources->deposits.begin();
+    auto endDeposit = g_Sim->mSimResources->deposits.end();
     for (; deposit < endDeposit; deposit++) {
         if (Type && Type != deposit->Type) continue;
         float x = (deposit->X2 + deposit->X1) * 0.5f - X;

@@ -6,8 +6,8 @@ int SimSetCommandSource(lua_State *L) {
   int sourceI = lua_tonumber(L, 2);
   bool set_or_unset = lua_toboolean(L, 3);
 
-  auto srcSet = &g_Sim->armies[armyI]->mValidCommandSources;
-  srcSet->set(sourceI, set_or_unset);
+  auto srcSet = &g_Sim->mArmiesList[armyI]->mVarDat.mValidCommandSources;
+  srcSet->Set(sourceI, set_or_unset);
   return 0;
 }
 
