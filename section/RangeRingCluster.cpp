@@ -2,50 +2,25 @@
 
 // Hull culling for range rings.
 //
-// func_RenderRings (0x007EF5A0) gets a vector of N ring positions and renders
-// every single one. With 600 units crowded into a small area the per-ring
-// setup cost (sub_7F32E0 sort + per-ring batch dispatch + GPU stencil work)
-// dominates frame time even after the PR #149 batch-flush fix.
+// func_RenderRings (0x007EF5A0) gets a vector of N ring positions and
+// renders every single one. With dense crowds (600+ units) the per-ring
+// setup cost dominates frame time.
 //
-// Observation: when many units of the same type sit close together, the
-// rings of interior units are completely covered by the rings of their
-// neighbours, so they contribute nothing visible -- only units on the outer
-// hull of the cluster need to render. This patch installs a JMP trampoline
-// right after the count is computed in func_RenderRings (at 0x007EF5E2,
-// which originally executes `mov eax, sWldMap`) that calls a small C
-// routine which walks the position vector and keeps only "boundary" entries.
+// This patch hooks at 0x007EF5E2 and runs a greedy compaction pass that
+// keeps only units whose outer-circle samples are NOT fully covered by
+// already-kept neighbours. Interior units get dropped; boundary and
+// isolated units survive. The engine's stencil-based outline rendering
+// then produces the same merged hull from fewer rings.
 //
-// Boundary test: a position is dropped iff there exists at least one
-// neighbour in *each* of the four XY quadrants around it. This is a
-// scale-free, distance-free topological hull test:
-//
-//   * dense interior point  -> all 4 quadrants hit almost immediately -> cull
-//   * convex hull point     -> at least one quadrant always empty     -> keep
-//   * isolated point        -> all quadrants empty                    -> keep
-//   * thin line of units    -> two quadrants empty per point          -> keep all
-//
-// Because there is no distance threshold, the same culling works for any
-// cluster density. The kept entries get compacted to the front of the
-// buffer in-place, and the trampoline patches the loop counter (`ebp`) on
-// the way out so the two downstream batch loops only iterate the smaller,
-// hull-only count.
-//
-// Cost: O(N * average_neighbours_until_surrounded). Interior points
-// early-exit after ~4-8 inner-loop iterations. Boundary points scan all N
-// neighbours to confirm an empty quadrant. With N=600 and ~50 hull points,
-// that's roughly 50*600 + 550*8 = ~35k iterations per frame, ~1ms.
-//
-// ui_RangeRingClusterHull is the on/off switch (any non-zero float = on).
-// Disabled by default.
+// Disabled by default. Enable: `ui_RangeRingClusterHull 1`.
 
 float g_RingClusterHull = 0.0f;
 
 ConDescReg ring_cluster_hull_reg{
     "ui_RangeRingClusterHull",
-    "If non-zero, drop range rings of units whose 4 XY quadrants each contain "
-    "at least one other unit (= topological interior of the cluster). Only "
-    "boundary units render. Massive FPS gain in dense crowds with no visible "
-    "change in the merged ring outline.",
+    "If non-zero, cull range rings whose outer circle is fully covered by "
+    "already-kept neighbours (greedy 16-sample geometric test). Only boundary "
+    "and isolated units render. Large FPS gain in dense crowds.",
     &g_RingClusterHull};
 
 // Each ring position entry in the vector is 16 bytes laid out as 4 floats.
