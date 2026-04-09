@@ -136,6 +136,13 @@ extern "C" int ClusterRingPositions(float *data, int count)
         }
     }
 
+    // Hard cap at 127: the engine's range ring pipeline uses a 7-bit GPU
+    // stencil counter that increments per overlapping ring fill. At 128+
+    // rings the counter wraps around, breaking the stencil-based outline
+    // merge and producing individual broken circle outlines instead of a
+    // unified shape. Capping here guarantees correct visuals even for
+    // pathological formations where the hull-cull keeps many boundary units.
+    if (writeIdx > 127) writeIdx = 127;
     return writeIdx;
 }
 
