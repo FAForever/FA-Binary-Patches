@@ -1,0 +1,204 @@
+#include "magic_classes.h"
+
+// Hull culling for range rings.
+//
+// func_RenderRings (0x007EF5A0) gets a vector of N ring positions and renders
+// every single one. With 600 units crowded into a small area the per-ring
+// setup cost (sub_7F32E0 sort + per-ring batch dispatch + GPU stencil work)
+// dominates frame time even after the PR #149 batch-flush fix.
+//
+// Observation: when many units of the same type sit close together, the
+// rings of interior units are completely covered by the rings of their
+// neighbours, so they contribute nothing visible -- only units on the outer
+// hull of the cluster need to render. This patch installs a JMP trampoline
+// right after the count is computed in func_RenderRings (at 0x007EF5E2,
+// which originally executes `mov eax, sWldMap`) that calls a small C
+// routine which walks the position vector and keeps only "boundary" entries.
+//
+// Boundary test: a position is dropped iff there exists at least one
+// neighbour in *each* of the four XY quadrants around it. This is a
+// scale-free, distance-free topological hull test:
+//
+//   * dense interior point  -> all 4 quadrants hit almost immediately -> cull
+//   * convex hull point     -> at least one quadrant always empty     -> keep
+//   * isolated point        -> all quadrants empty                    -> keep
+//   * thin line of units    -> two quadrants empty per point          -> keep all
+//
+// Because there is no distance threshold, the same culling works for any
+// cluster density. The kept entries get compacted to the front of the
+// buffer in-place, and the trampoline patches the loop counter (`ebp`) on
+// the way out so the two downstream batch loops only iterate the smaller,
+// hull-only count.
+//
+// Cost: O(N * average_neighbours_until_surrounded). Interior points
+// early-exit after ~4-8 inner-loop iterations. Boundary points scan all N
+// neighbours to confirm an empty quadrant. With N=600 and ~50 hull points,
+// that's roughly 50*600 + 550*8 = ~35k iterations per frame, ~1ms.
+//
+// ui_RangeRingClusterHull is the on/off switch (any non-zero float = on).
+// Disabled by default.
+
+float g_RingClusterHull = 0.0f;
+
+ConDescReg ring_cluster_hull_reg{
+    "ui_RangeRingClusterHull",
+    "If non-zero, drop range rings of units whose 4 XY quadrants each contain "
+    "at least one other unit (= topological interior of the cluster). Only "
+    "boundary units render. Massive FPS gain in dense crowds with no visible "
+    "change in the merged ring outline.",
+    &g_RingClusterHull};
+
+// Each ring position entry in the vector is 16 bytes laid out as 4 floats.
+// Layout was verified by reading Moho::WeaponExtractor::Range (0x7EC650),
+// which writes the buffer that gets pushed onto the position vector via
+// sub_7F0310 in func_ExtractRanges:
+//
+//   [0] = world X
+//   [1] = world Z   (NOT Y -- SCFA uses Y as elevation, the ground plane
+//                    is XZ)
+//   [2] = inner radius  (= min weapon range across all weapons of the
+//                         unit's category, can be 0 for solid disks)
+//   [3] = outer radius  (= max weapon range across all weapons of the
+//                         unit's category, always > 0)
+//
+// Multiple units of DIFFERENT sizes can co-exist in a single
+// func_RenderRings call: func_ExtractRanges iterates every army unit
+// through one shared RangeExtractor, so e.g. an ACU's main gun and a T1
+// bot's main gun both end up in the "Direct Fire" call with their own
+// per-entry [innerR, outerR].
+//
+// === Greedy hull culling ===
+//
+// The naive "for each unit, check if covered by ALL OTHER units" test has
+// a fatal flaw: it can cull units whose covering neighbours will THEMSELVES
+// be culled, leaving the surviving kept-set with holes that don't actually
+// cover the original union. The visual symptom is fragmented partial-ring
+// outlines inside the cluster (kept boundary units' inward edges showing
+// through gaps in the stencil mask where culled units used to fill).
+//
+// The fix is to make the test order-aware: a candidate P is checked only
+// against the ALREADY-KEPT set (not against units that may yet be culled).
+// We compact the input vector in place during the same pass:
+//
+//   * data[0 .. writeIdx)  is the keep set so far
+//   * data[i]              is the candidate being inspected
+//   * If P is fully covered by data[0..writeIdx), drop it
+//   * Otherwise copy P to data[writeIdx] and bump writeIdx
+//
+// This guarantees: every kept unit is NOT covered by other kept units, AND
+// every culled unit IS fully covered by some subset of kept units (and
+// therefore by the entire kept set). The keep-set's stencil mask is then
+// equivalent to the full original mask.
+//
+// Coverage test: 16 samples (every 22.5 degrees) on P's outer circle. Each
+// sample must lie in some kept neighbour's [innerR, outerR] band. Outer
+// loop early-exits on first uncovered sample.
+extern "C" int ClusterRingPositions(float *data, int count)
+{
+    if (g_RingClusterHull == 0.0f || count <= 4) return count;
+
+    // 16 unit vectors at 22.5-degree intervals around the outer circle.
+    // cos/sin of 22.5, 45, 67.5 deg.
+    static const float COSDIR[16] = {
+         1.00000000f,  0.92387953f,  0.70710677f,  0.38268343f,
+         0.00000000f, -0.38268343f, -0.70710677f, -0.92387953f,
+        -1.00000000f, -0.92387953f, -0.70710677f, -0.38268343f,
+         0.00000000f,  0.38268343f,  0.70710677f,  0.92387953f
+    };
+    static const float SINDIR[16] = {
+         0.00000000f,  0.38268343f,  0.70710677f,  0.92387953f,
+         1.00000000f,  0.92387953f,  0.70710677f,  0.38268343f,
+         0.00000000f, -0.38268343f, -0.70710677f, -0.92387953f,
+        -1.00000000f, -0.92387953f, -0.70710677f, -0.38268343f
+    };
+
+    int writeIdx = 0;
+
+    for (int i = 0; i < count; ++i) {
+        // Snapshot the candidate locally so it survives any in-place
+        // overwrite at data[writeIdx] further down.
+        float px     = data[i * 4 + 0];
+        float pz     = data[i * 4 + 1];
+        float pInner = data[i * 4 + 2];
+        float pOuter = data[i * 4 + 3];
+
+        // First unit always kept (nothing to be covered by).
+        bool fully_covered = (writeIdx > 0);
+
+        for (int k = 0; k < 16 && fully_covered; ++k) {
+            float tx = px + pOuter * COSDIR[k];
+            float tz = pz + pOuter * SINDIR[k];
+
+            bool sample_covered = false;
+            for (int j = 0; j < writeIdx; ++j) {  // ONLY already-kept set
+                float *Q = data + j * 4;
+                float dx = Q[0] - tx;
+                float dz = Q[1] - tz;
+                float distSq = dx * dx + dz * dz;
+
+                float qOuter = Q[3];
+                if (distSq > qOuter * qOuter) continue;
+
+                float qInner = Q[2];
+                if (qInner > 0.0f && distSq < qInner * qInner) continue;
+
+                sample_covered = true;
+                break;
+            }
+
+            if (!sample_covered) {
+                fully_covered = false;
+            }
+        }
+
+        if (!fully_covered) {
+            float *dest = data + writeIdx * 4;
+            dest[0] = px;
+            dest[1] = pz;
+            dest[2] = pInner;
+            dest[3] = pOuter;
+            writeIdx++;
+        }
+    }
+
+    return writeIdx;
+}
+
+// Trampoline installed at 0x007EF5E2 (replaces the 5-byte
+// `mov eax, ds:0x10a6438` -- sWldMap -- which we re-execute on the way out).
+//
+// Live registers at the patch site, deduced from the surrounding asm:
+//   ecx  = vector pointer (last arg `i` to func_RenderRings)
+//          [ecx+4] = data start, [ecx+8] = data end
+//   ebp  = ring count (= (end - start) >> 4), already shifted, non-zero
+//   esi  = edx0 arg (Camera-related), must preserve
+//   ebx  = saved original ecx, must preserve
+//
+// We modify `ebp` to the new (clustered) count by patching the saved-ebp
+// slot in the pushad frame, so popad restores the smaller value.
+asm(R"(
+.section .text,"ax"
+.global RangeRingClusterTrampoline
+RangeRingClusterTrampoline:
+    pushad
+
+    # ecx still holds the vector pointer; ebp still holds the original count.
+    push ebp                          # arg2: count
+    mov  eax, [ecx+4]                 # data start = vec->begin
+    push eax                          # arg1: data
+    call _ClusterRingPositions
+    add  esp, 8
+
+    # popad pop order: edi, esi, ebp, esp(skipped), ebx, edx, ecx, eax
+    # so the saved-ebp slot lives at [esp+8] right now.
+    mov  [esp+8], eax                 # write the clustered count into ebp's slot
+
+    popad
+
+    # Re-execute the displaced instruction `mov eax, ds:0x10a6438` (sWldMap)
+    # so the original code at 0x7EF5E7 sees the same machine state it would
+    # have without the hook.
+    mov  eax, ds:0x10a6438
+
+    jmp  0x007EF5E7
+)");
