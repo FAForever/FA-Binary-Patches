@@ -65,26 +65,31 @@ ConDescReg ring_cluster_hull_reg{
 // therefore by the entire kept set). The keep-set's stencil mask is then
 // equivalent to the full original mask.
 //
-// Coverage test: 16 samples (every 22.5 degrees) on P's outer circle. Each
+// Coverage test: 24 samples (every 15 degrees) on P's outer circle. Each
 // sample must lie in some kept neighbour's [innerR, outerR] band. Outer
 // loop early-exits on first uncovered sample.
 extern "C" int ClusterRingPositions(float *data, int count)
 {
     if (g_RingClusterHull == 0.0f || count <= 4) return count;
 
-    // 16 unit vectors at 22.5-degree intervals around the outer circle.
-    // cos/sin of 22.5, 45, 67.5 deg.
-    static const float COSDIR[16] = {
-         1.00000000f,  0.92387953f,  0.70710677f,  0.38268343f,
-         0.00000000f, -0.38268343f, -0.70710677f, -0.92387953f,
-        -1.00000000f, -0.92387953f, -0.70710677f, -0.38268343f,
-         0.00000000f,  0.38268343f,  0.70710677f,  0.92387953f
+    // 24 unit vectors at 15-degree intervals around the outer circle.
+    // The engine draws rings as 45 segments (8 deg each); 24 samples at
+    // 15 deg catches gaps down to ~2 segments, reducing outline choppiness.
+    static const float COSDIR[24] = {
+         1.00000000f,  0.96592583f,  0.86602540f,  0.70710677f,
+         0.50000000f,  0.25881905f,  0.00000000f, -0.25881905f,
+        -0.50000000f, -0.70710677f, -0.86602540f, -0.96592583f,
+        -1.00000000f, -0.96592583f, -0.86602540f, -0.70710677f,
+        -0.50000000f, -0.25881905f,  0.00000000f,  0.25881905f,
+         0.50000000f,  0.70710677f,  0.86602540f,  0.96592583f
     };
-    static const float SINDIR[16] = {
-         0.00000000f,  0.38268343f,  0.70710677f,  0.92387953f,
-         1.00000000f,  0.92387953f,  0.70710677f,  0.38268343f,
-         0.00000000f, -0.38268343f, -0.70710677f, -0.92387953f,
-        -1.00000000f, -0.92387953f, -0.70710677f, -0.38268343f
+    static const float SINDIR[24] = {
+         0.00000000f,  0.25881905f,  0.50000000f,  0.70710677f,
+         0.86602540f,  0.96592583f,  1.00000000f,  0.96592583f,
+         0.86602540f,  0.70710677f,  0.50000000f,  0.25881905f,
+         0.00000000f, -0.25881905f, -0.50000000f, -0.70710677f,
+        -0.86602540f, -0.96592583f, -1.00000000f, -0.96592583f,
+        -0.86602540f, -0.70710677f, -0.50000000f, -0.25881905f
     };
 
     int writeIdx = 0;
@@ -100,7 +105,7 @@ extern "C" int ClusterRingPositions(float *data, int count)
         // First unit always kept (nothing to be covered by).
         bool fully_covered = (writeIdx > 0);
 
-        for (int k = 0; k < 16 && fully_covered; ++k) {
+        for (int k = 0; k < 24 && fully_covered; ++k) {
             float tx = px + pOuter * COSDIR[k];
             float tz = pz + pOuter * SINDIR[k];
 
@@ -136,13 +141,6 @@ extern "C" int ClusterRingPositions(float *data, int count)
         }
     }
 
-    // Hard cap at 127: the engine's range ring pipeline uses a 7-bit GPU
-    // stencil counter that increments per overlapping ring fill. At 128+
-    // rings the counter wraps around, breaking the stencil-based outline
-    // merge and producing individual broken circle outlines instead of a
-    // unified shape. Capping here guarantees correct visuals even for
-    // pathological formations where the hull-cull keeps many boundary units.
-    if (writeIdx > 127) writeIdx = 127;
     return writeIdx;
 }
 
