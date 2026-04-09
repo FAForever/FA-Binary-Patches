@@ -40,6 +40,11 @@ These don't matter except for other assembly patches
   - hooks/HRangeRings2.cpp
   - section/RangeRings2.cpp
 
+- Range ring hull cull for dense crowds (drops interior rings whose outer circle is fully covered by neighbours, ~16 FPS → ~80 FPS with 600+ units)
+
+  - hooks/RangeRingCluster.hook
+  - section/RangeRingCluster.cpp
+
 - Range ring performance improvement (don't render each ring twice)
 
   - hooks/RangeRings.cpp
