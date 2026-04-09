@@ -16,16 +16,24 @@ ConDescReg conIntelRangeBehavior{"ren_IntelRangeBehavior",
 
 extern "C" {
 
-// Currently, the patch only affects Intel Ranges. This hook disables rendering
-// of ally range rings, except for RADAR, SONAR, and OMNI.
-void *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *this_,
-                                                       uintptr_t esp) {
-  if (this_->mArmy->mConstDat.mIndex == g_CWldSession->focusArmyIndex)
-    return this_;
+// This hook disables rendering of ally range rings, except for RADAR, SONAR,
+// and OMNI. It also includes an optimization to prevent double rendering.
+UserUnit *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *self,
+                                                           uintptr_t esp) {
+  auto session = g_CWldSession;
 
-  // Compiler, I believe in you. We're in a hot path, optimize and inline the
-  // lambda pls p.s. I saw the listing, mine handled it, and there’s no call
-  // there
+  // Optimization: To avoid double rendering, skip rendering global rings for
+  // own-army units; these will be handled by the selection rings renderer.
+  if (self->mArmy->mConstDat.mIndex == session->focusArmyIndex) {
+    if (session->selectedUnits.contains(self))
+      return nullptr;
+    else
+      return self;
+  }
+  // Disables rendering of ally range rings, except for RADAR, SONAR, and OMNI.
+  // Btw, compiler, I believe in you. We're in a hot path, so please optimize
+  // and inline the lambda. P.S. I saw the listing — mine handled it, and
+  // there’s no call there.
   auto equals = []<size_t N>(string &str1, const char (&str2)[N]) {
     if (str1.strLen != N - 1)
       return false;
@@ -41,7 +49,7 @@ void *__thiscall RenderRange__Moho__UserUnit__UserUnit(UserUnit *this_,
   bool isIntelRange = equals(rangeName, "Radar") || equals(rangeName, "Omni") ||
                       equals(rangeName, "Sonar");
   if (isIntelRange)
-    return this_;
+    return self;
   return nullptr;
 }
 
@@ -62,14 +70,8 @@ void Hooked_SyncVisionRange(ReconBlip *reconBlip, Unit *unit) {
 
 bool __cdecl ShouldAddUnit(UserArmy *focusArmy, UserUnit *userUnit) {
   auto session = g_CWldSession;
-  if (userUnit->mArmy == focusArmy) {
-    // Optimization: To avoid double rendering,
-    // do not render the global rings;
-    // they will be rendered in the selection rings render
-    [[likely]] if (session->selectedUnits.size() < 67)
-      return true;
-    return !session->selectedUnits.contains(userUnit);
-  }
+  if (userUnit->mArmy == focusArmy)
+    return true;
 
   if (intelRangeBehavior == kOwnUnits)
     return false;
