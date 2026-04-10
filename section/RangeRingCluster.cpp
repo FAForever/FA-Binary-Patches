@@ -19,7 +19,7 @@ float g_RingClusterHull = 0.0f;
 ConDescReg ring_cluster_hull_reg{
     "ui_RangeRingClusterHull",
     "If non-zero, cull range rings whose outer circle is fully covered by "
-    "already-kept neighbours (greedy 16-sample geometric test). Only boundary "
+    "already-kept neighbours (greedy 24-sample geometric test). Only boundary "
     "and isolated units render. Large FPS gain in dense crowds.",
     &g_RingClusterHull};
 
