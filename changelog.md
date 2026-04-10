@@ -226,6 +226,11 @@ These don't matter except for other assembly patches
 
 These new features have been added in a backwards compatible manner
 
+- Adds `ui_LifebarOnlyDamaged` ConVar — when set to 1, lifebars only appear once a unit takes damage (mirrors Warcraft 3's "Show Lifebars Only When Damaged" toggle). Big FPS gain in dense crowds where most units are undamaged.
+
+  - hooks/LifebarFilter.hook
+  - section/LifebarFilter.cpp
+
 - Enable unused console commands: ren_Steering, dbg_Ballistics, dbg_EfxBeams, dbg_Trail, dbg_CollisionBeam, dbg_Projectile
   - hooks/EnableConsoleCommands.cpp
 - Adds `GetHighlightCommand() - return table of command or nil` to UI (section/GetHighlightCommand.cpp)

@@ -1,0 +1,10 @@
+// Replace the `call sub_85EED0` at the bottom of the lifebar block in
+// Moho::CWldSession::RenderStrategicIcons (0x85C09F, 5 bytes E8 + rel32)
+// with `call LifebarFilter`. Same encoding length, no NOP padding required.
+//
+// LifebarFilter preserves eax/ecx (custom calling convention of sub_85EED0)
+// and either ret's (suppressing the lifebar) or tail-calls sub_85EED0
+// (rendering it).
+
+0x0085C09F:
+    call @LifebarFilter
