@@ -1,0 +1,18 @@
+
+# Moho::Unit::GetBoneWorldTransform(int)+77
+0x006AA637:
+    # Here we are doing call to base class when there is no target bone.
+    # In base class it takes center of collision box and returns it.
+    mov     ecx, esi                 # esi - Entity
+    push    0xFFFFFFFF               # -1
+    mov     eax, dword ptr [ebp + 8] # result transform
+    push    eax
+    call 0x00679CE0                  # Moho::VTransform * thiscall Moho::Entity::GetBoneWorldTransform(Moho::Entity *this, Moho::VTransform *result, int boneIndex)
+
+    pop     edi                      # function return
+    pop     esi                      #
+    mov     esp, ebp                 #
+    pop     ebp                      #
+    ret     8                        #
+    nop;nop;nop;nop;nop              # 5 nops
+    # There are 200 bytes of dead code. Perhaps we should make a file with such empty blocks to be used for hooking into bigger blocks.
