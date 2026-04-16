@@ -1,0 +1,220 @@
+#include "Allocator.h"
+#include "LuaAllocator.h"
+#include "magic_classes.h"
+#include "LuaAPI.h"
+
+bool sim_custom_allocator = true;
+ConDescReg use_sim_allocator_convar{"sim_allocator", "", &sim_custom_allocator};
+
+bool ui_custom_allocator = true;
+ConDescReg use_ui_allocator_convar{"ui_allocator", "", &ui_custom_allocator};
+
+bool use_perf_counter = true;
+ConDescReg use_perf_counter_convar{"use_perf_counter", "", &use_perf_counter};
+
+int64_t total_cycles = 0;
+size_t total_alloc = 0;
+void *__cdecl MPPerf_ReallocFunction(
+    void *ptr,
+    size_t oldsize,
+    size_t size,
+    void *data,
+    const char *allocName,
+    size_t flags)
+{
+    int64_t start = ClockCycles();
+    void *result = LuaAllocator::ReallocF(ptr, oldsize, size, data, allocName, flags);
+    int64_t end = ClockCycles();
+    total_alloc++;
+    total_cycles += end - start;
+    return result;
+}
+
+void *__cdecl DefPerf_ReallocFunction(
+    void *ptr,
+    size_t oldsize,
+    size_t size,
+    void *data,
+    const char *allocName,
+    size_t flags)
+{
+    int64_t start = ClockCycles();
+    void *result = realloc(ptr, size);
+    int64_t end = ClockCycles();
+    total_alloc++;
+    total_cycles += end - start;
+    return result;
+}
+
+void __cdecl Def_FreeFunction(void *ptr, size_t oldsize, void *data)
+{
+    free(ptr);
+}
+
+int GCStats(lua_State *L)
+{
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(L));
+    if (memData == nullptr)
+        return 0;
+
+    const LuaAllocator::AllocationStatistics alloc_stats = memData->GetStats();
+
+    LuaObject obj{L->LuaState};
+    obj.AssignNewTable(L->LuaState, 0, 0);
+    LuaObject obj_stats{L->LuaState};
+    obj_stats.AssignNewTable(L->LuaState, 0, 0);
+
+    obj_stats.SetInteger("allocations", alloc_stats.stats.allocations);
+    obj_stats.SetInteger("malloc_allocations", alloc_stats.stats.malloc_allocations);
+    obj_stats.SetInteger("reallocations", alloc_stats.stats.reallocations);
+    obj_stats.SetInteger("realloc_fails", alloc_stats.stats.realloc_fails);
+    obj_stats.SetInteger("realloc_misses", alloc_stats.stats.realloc_misses);
+    obj_stats.SetInteger("free_misses", alloc_stats.stats.free_misses);
+    obj_stats.SetInteger("allocator_to_malloc", alloc_stats.stats.allocator_to_malloc);
+
+    obj.SetObject("stats", obj_stats);
+
+    auto f = [&](AllocationInfo info) -> LuaObject
+    {
+        LuaObject alloc_info{L->LuaState};
+        alloc_info.AssignNewTable(L->LuaState, 0, 4);
+        alloc_info.SetInteger("total_storage", info.total_storage);
+        alloc_info.SetInteger("occupied_storage", info.occupied_storage);
+        alloc_info.SetInteger("chunk_count", info.chunk_count);
+        alloc_info.SetNumber("ratio", info.occupied_storage * 1.0f / info.total_storage);
+        return alloc_info;
+    };
+
+    obj.SetObject("table_info", f(alloc_stats.table_info));
+    obj.SetObject("table_hash_info", f(alloc_stats.table_hash_info));
+    obj.SetObject("table_array_info", f(alloc_stats.table_array_info));
+    obj.SetObject("upvalue_info", f(alloc_stats.upvalue_info));
+    obj.SetObject("small_info", f(alloc_stats.small_info));
+    obj.SetObject("large_info", f(alloc_stats.large_info));
+
+    obj.PushStack(L);
+
+    return 1;
+}
+
+int GCLog(lua_State *L)
+{
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(L));
+    if (memData == nullptr)
+        return 0;
+
+    memData->SetLogging(lua_toboolean(L, 1));
+    return 0;
+}
+
+// SimLua reprsl(GC_stats())
+SimRegFunc sim_gc_stats_reg{"GC_stats", "", GCStats};
+// UI_Lua reprsl(GC_stats())
+UIRegFunc ui_gc_stats_reg{"GC_stats", "", GCStats};
+UIRegFunc ui_gc_enablelog_reg{"GC_enablelog", "", GCLog};
+
+SHARED LuaState *__thiscall UI_StateCreate(LuaState *_this, StandardLibraries libs)
+{
+    LogF("UI_StateCreate: %p", _this);
+
+    LuaAllocator *pool = nullptr;
+    if (ui_custom_allocator)
+        pool = new (std::nothrow) LuaAllocator();
+
+    if (pool)
+    {
+        lua_setdefaultmemoryfunctions(LuaAllocator::ReallocF, LuaAllocator::FreeF, pool);
+    }
+    else
+    {
+        lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
+    }
+    // lua_setdefaultmemoryfunctions(Def_ReallocFunction, Def_FreeFunction, pool);
+
+    new (_this) LuaState(libs);
+
+    lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
+
+    return _this;
+}
+
+SHARED void __thiscall UI_StateDestroy(LuaState *_this)
+{
+    LogF("UI_StateDestroy: %p", _this);
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(_this->m_state));
+
+    _this->~LuaState();
+
+    delete memData;
+}
+// UI
+//  Fixed pool Total Allocations: 2192951, Total Cycles: 274446
+//  default    Total Allocations: 2315488, Total Cycles: 138446
+
+// SIM
+//  Fixed pool Total Allocations: 8953037, Total Cycles: 5922986
+//             Total Allocations: 8864595, Total Cycles: 5018217
+//             Total Allocations: 9041332, Total Cycles: 5513742
+//             Total Allocations: 8754166, Total Cycles: 5834894
+//             Total Allocations: 8967810, Total Cycles:  890016
+//  default    Total Allocations: 9075016, Total Cycles:  641968
+//             Total Allocations: 8685327, Total Cycles:  590648
+// malloc/free    Total Allocations: 11474933, Total Cycles: 846484
+// Lua allocator  Total Allocations: 11474955, Total Cycles: 942172
+
+// malloc/free   Total Allocations: 11474954, Total Cycles: 842949
+// Lua allocator Total Allocations: 11474925, Total Cycles: 962590
+
+// malloc/free   Total Allocations: 9373585, Total Cycles: 687230
+// Lua allocator Total Allocations: 9373612, Total Cycles: 719555
+//               Total Allocations: 9373605, Total Cycles: 707989
+
+//  Lua allocator Total Allocations: 10540200, Total Cycles: 1024803
+// malloc/free    Total Allocations: 10540210, Total Cycles:  831222
+// 
+
+SHARED LuaState *__thiscall SIM_StateCreate(LuaState *_this, StandardLibraries libs)
+{
+    LogF("SIM_StateCreate: %p", _this);
+
+    LuaAllocator *pool = nullptr;
+
+    if (sim_custom_allocator)
+    {
+        pool = new (std::nothrow) LuaAllocator();
+    }
+
+    if (pool)
+    {
+        lua_setdefaultmemoryfunctions(
+            use_perf_counter ? MPPerf_ReallocFunction : LuaAllocator::ReallocF,
+            LuaAllocator::FreeF, pool);
+    }
+    else
+    {
+        lua_setdefaultmemoryfunctions(
+            use_perf_counter ? DefPerf_ReallocFunction : nullptr,
+            nullptr, nullptr);
+    }
+
+    new (_this) LuaState(libs);
+
+    lua_setdefaultmemoryfunctions(nullptr, nullptr, nullptr);
+
+    return _this;
+}
+
+SHARED void __thiscall SIM_StateDestroy(LuaState *_this)
+{
+    LogF("SIM_StateDestroy: %p", _this);
+
+    LuaAllocator *memData = static_cast<LuaAllocator *>(lua_getMemData(_this->m_state));
+
+    _this->~LuaState();
+
+    delete memData;
+
+    LogF("Total Allocations: %u, Total Cycles: %llu", total_alloc, CyclesToMicroSeconds(total_cycles));
+    total_alloc = 0;
+    total_cycles = 0;
+}
