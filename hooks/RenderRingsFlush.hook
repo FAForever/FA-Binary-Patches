@@ -28,19 +28,19 @@
 // Replaces the 7-byte 'mov eax, [esp+0x84]' with a 5-byte call + 2 NOPs.
 // IntermediateRangeMask reproduces the replaced instruction after the flush.
 
-rangeRenderer = 4
-idx = 8
-frame = 0x10
-height = -0x74
-width = -0x78
-i = 0x14
+
 0x007EF76E:
     jle     L_ExitRangeRender
 
+rangeRenderer = 4
+idx = 8
+frame = 0x10
+i = 0x14
 0x007EF7EA:
     mov     eax, [esp+0x70+idx]
     mov     edi, [esp+0x70+rangeRenderer]   #
     add     edi, 0x4C                       # &rangeRenderer->mFrame
+    mov     [esp+0x70+frame], edi
     cvtsi2ss xmm0, dword ptr [eax+0x14]     # height
     movd    ebx, xmm0
     push    ebx
@@ -63,5 +63,4 @@ i = 0x14
     mov     [esp+0x70+i], eax    # i += increment
     jl      0x7EF774
 L_ExitRangeRender:
-    mov     [esp+0x70+frame], edi
     nop;nop
