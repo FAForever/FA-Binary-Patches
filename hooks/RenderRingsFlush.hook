@@ -11,15 +11,15 @@
 // overflows. Loop 2 draws only the thin EDGE strips (2 quads per ring) and
 // has near-zero per-pixel overdraw, so it does not need patching.
 //
-// Fix: reduce Loop 1 batch size from 1000 to 30, and inject an intermediate
+// Fix: reduce Loop 1 batch size from 1000 to 128, and inject an intermediate
 // RangeMask flush between batches that resets the stencil counter.
 
-// Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 30
+// Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 128
 // (patches the imm32 of the 5-byte 'cmp eax, imm32' instruction at 0x007EF77D)
 0x007EF77E:
     .int 128
 
-// Loop 1 batch ceiling: mov eax, 0x3E8  ->  mov eax, 30
+// Loop 1 batch ceiling: mov eax, 0x3E8  ->  mov eax, 128
 // (patches the imm32 of the 5-byte 'mov eax, imm32' instruction at 0x007EF784)
 0x007EF785:
     .int 128

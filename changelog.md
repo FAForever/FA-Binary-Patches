@@ -45,7 +45,7 @@ These don't matter except for other assembly patches
   - hooks/RangeRings.cpp
   - section/RangeRings.cpp
 
-- Fix range ring stencil overflow with 128+ overlapping units. The 7-bit stencil counter wraps around causing individual circle outlines to appear instead of a merged fill. Batch size reduced from 1000 to 30 with intermediate RangeMask flushes, also enabling GPU stencil early-out for dense clusters.
+- Fix range ring stencil overflow with 128+ overlapping units. The 7-bit stencil counter wraps around causing individual circle outlines to appear instead of a merged fill. Batch size reduced from 1000 to 128 with intermediate RangeMask flushes, also enabling GPU stencil early-out for dense clusters.
 
   - hooks/RenderRingsFlush.hook
   - section/RenderRingsFlush.cpp

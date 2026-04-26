@@ -21,7 +21,7 @@
 //   Near-zero per-pixel overdraw because edges of differently-sized rings
 //   almost never coincide -- does not need patching in practice.
 //
-// Fix: drop Loop 1 batch size 1000 -> 30 and inject this flush between
+// Fix: drop Loop 1 batch size 1000 -> 128 and inject this flush between
 // batches. The flush replays the engine's own end-of-loop sequence
 // (InitTransformedVerts -> RangeMask string -> Render) which clears the
 // stencil and reapplies the mask before the next batch starts fresh.
