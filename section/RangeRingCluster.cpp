@@ -68,75 +68,90 @@ ConDescReg ring_cluster_hull_reg{
 // Coverage test: 24 samples (every 15 degrees) on P's outer circle. Each
 // sample must lie in some kept neighbour's [innerR, outerR] band. Outer
 // loop early-exits on first uncovered sample.
-extern "C" int ClusterRingPositions(float *data, int count)
+
+struct RangeRenderingParams
 {
-    if (g_RingClusterHull == 0.0f || count <= 4) return count;
+    float x;
+    float z;
+    float innerRadius;
+    float outerRadius;
+};
+
+extern "C" int ClusterRingPositions(RangeRenderingParams *data, size_t count)
+{
+    if (g_RingClusterHull == 0.0f || count <= 4)
+        return count;
 
     // 24 unit vectors at 15-degree intervals around the outer circle.
     // The engine draws rings as 45 segments (8 deg each); 24 samples at
     // 15 deg catches gaps down to ~2 segments, reducing outline choppiness.
     static const float COSDIR[24] = {
-         1.00000000f,  0.96592583f,  0.86602540f,  0.70710677f,
-         0.50000000f,  0.25881905f,  0.00000000f, -0.25881905f,
+        1.00000000f, 0.96592583f, 0.86602540f, 0.70710677f,
+        0.50000000f, 0.25881905f, 0.00000000f, -0.25881905f,
         -0.50000000f, -0.70710677f, -0.86602540f, -0.96592583f,
         -1.00000000f, -0.96592583f, -0.86602540f, -0.70710677f,
-        -0.50000000f, -0.25881905f,  0.00000000f,  0.25881905f,
-         0.50000000f,  0.70710677f,  0.86602540f,  0.96592583f
-    };
+        -0.50000000f, -0.25881905f, 0.00000000f, 0.25881905f,
+        0.50000000f, 0.70710677f, 0.86602540f, 0.96592583f};
     static const float SINDIR[24] = {
-         0.00000000f,  0.25881905f,  0.50000000f,  0.70710677f,
-         0.86602540f,  0.96592583f,  1.00000000f,  0.96592583f,
-         0.86602540f,  0.70710677f,  0.50000000f,  0.25881905f,
-         0.00000000f, -0.25881905f, -0.50000000f, -0.70710677f,
+        0.00000000f, 0.25881905f, 0.50000000f, 0.70710677f,
+        0.86602540f, 0.96592583f, 1.00000000f, 0.96592583f,
+        0.86602540f, 0.70710677f, 0.50000000f, 0.25881905f,
+        0.00000000f, -0.25881905f, -0.50000000f, -0.70710677f,
         -0.86602540f, -0.96592583f, -1.00000000f, -0.96592583f,
-        -0.86602540f, -0.70710677f, -0.50000000f, -0.25881905f
-    };
+        -0.86602540f, -0.70710677f, -0.50000000f, -0.25881905f};
 
     int writeIdx = 0;
 
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < count; ++i)
+    {
         // Snapshot the candidate locally so it survives any in-place
         // overwrite at data[writeIdx] further down.
-        float px     = data[i * 4 + 0];
-        float pz     = data[i * 4 + 1];
-        float pInner = data[i * 4 + 2];
-        float pOuter = data[i * 4 + 3];
+        float px = data[i].x;
+        float pz = data[i].z;
+        float pInner = data[i].innerRadius;
+        float pOuter = data[i].outerRadius;
 
         // First unit always kept (nothing to be covered by).
         bool fully_covered = (writeIdx > 0);
 
-        for (int k = 0; k < 24 && fully_covered; ++k) {
+        for (int k = 0; k < 24 && fully_covered; ++k)
+        {
             float tx = px + pOuter * COSDIR[k];
             float tz = pz + pOuter * SINDIR[k];
 
             bool sample_covered = false;
-            for (int j = 0; j < writeIdx; ++j) {  // ONLY already-kept set
-                float *Q = data + j * 4;
-                float dx = Q[0] - tx;
-                float dz = Q[1] - tz;
+            for (int j = 0; j < writeIdx; ++j)
+            { // ONLY already-kept set
+                RangeRenderingParams &p = data[j];
+                float dx = p.x - tx;
+                float dz = p.z - tz;
                 float distSq = dx * dx + dz * dz;
 
-                float qOuter = Q[3];
-                if (distSq > qOuter * qOuter) continue;
+                float qOuter = p.outerRadius;
+                if (distSq > qOuter * qOuter)
+                    continue;
 
-                float qInner = Q[2];
-                if (qInner > 0.0f && distSq < qInner * qInner) continue;
+                float qInner = p.innerRadius;
+                if (qInner > 0.0f && distSq < qInner * qInner)
+                    continue;
 
                 sample_covered = true;
                 break;
             }
 
-            if (!sample_covered) {
+            if (!sample_covered)
+            {
                 fully_covered = false;
             }
         }
 
-        if (!fully_covered) {
-            float *dest = data + writeIdx * 4;
-            dest[0] = px;
-            dest[1] = pz;
-            dest[2] = pInner;
-            dest[3] = pOuter;
+        if (!fully_covered)
+        {
+            RangeRenderingParams &dest = data[writeIdx];
+            dest.x = px;
+            dest.z = pz;
+            dest.innerRadius = pInner;
+            dest.outerRadius = pOuter;
             writeIdx++;
         }
     }
