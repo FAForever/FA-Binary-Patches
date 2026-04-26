@@ -27,7 +27,41 @@
 // Inject intermediate RangeMask flush at the bottom of the Loop 1 body.
 // Replaces the 7-byte 'mov eax, [esp+0x84]' with a 5-byte call + 2 NOPs.
 // IntermediateRangeMask reproduces the replaced instruction after the flush.
+
+rangeRenderer = 4
+idx = 8
+frame = 0x10
+height = -0x74
+width = -0x78
+i = 0x14
+0x007EF76E:
+    jle     L_ExitRangeRender
+
 0x007EF7EA:
-    call @IntermediateRangeMask
-    nop
-    nop
+    mov     eax, [esp+0x70+idx]
+    mov     edi, [esp+0x70+rangeRenderer]   #
+    add     edi, 0x4C                       # &rangeRenderer->mFrame
+    cvtsi2ss xmm0, dword ptr [eax+0x14]     # height
+    movd    ebx, xmm0
+    push    ebx
+    cvtsi2ss xmm0, dword ptr [eax+0x10]     # width
+    movd    ebx, xmm0
+    push    ebx
+    mov     ebx, edi
+    call    0x007F5DA0                   # Moho::CRenFrame::InitTransformedVerts(float,float)
+    push    9                            # len
+    push    offset 0x00E3F8E8            # "RangeMask"
+    mov     ecx, edi                     # this
+    call    0x004059E0                   # std::string::string(char const *,uint)
+    mov     eax, [esp+0x70+idx]
+    push    [eax+0x14]                   # height
+    push    [eax+0x10]                   # width
+    call    0x007F6030                   # Moho::CRenFrame::Render(int,int)
+    mov     eax, [esp+0x70+i]    #
+    add     eax, esi             #
+    cmp     eax, ebp             #
+    mov     [esp+0x70+i], eax    # i += increment
+    jl      0x7EF774
+L_ExitRangeRender:
+    mov     [esp+0x70+frame], edi
+    nop;nop
