@@ -17,12 +17,12 @@
 // Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 30
 // (patches the imm32 of the 5-byte 'cmp eax, imm32' instruction at 0x007EF77D)
 0x007EF77E:
-    .byte 0x1E, 0x00, 0x00, 0x00
+    .int 128
 
 // Loop 1 batch ceiling: mov eax, 0x3E8  ->  mov eax, 30
 // (patches the imm32 of the 5-byte 'mov eax, imm32' instruction at 0x007EF784)
 0x007EF785:
-    .byte 0x1E, 0x00, 0x00, 0x00
+    .int 128
 
 // Inject intermediate RangeMask flush at the bottom of the Loop 1 body.
 // Replaces the 7-byte 'mov eax, [esp+0x84]' with a 5-byte call + 2 NOPs.
