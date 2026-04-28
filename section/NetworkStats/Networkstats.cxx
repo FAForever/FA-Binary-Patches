@@ -34,13 +34,13 @@ int clamp(int value, int min, int max)
         return max;
     return value;
 }
-
+// Columns  0: army index | 1: nickname | 2: ping | 3: max speed | 4: data | 5: behind | 6: avail | 7-... : data for each player
 SHARED int __thiscall PickColorForConnections(const string *s, int row, int index)
 {
-    if (row > 0 && (index == 4 || index >= 7))
+    if (row > 0 && (index == 4 || index >= 7)) // row 0 is header
     {
         const char *cs = s->data();
-        int v = atoi(cs);
+        int v = __atoi(cs);
         return colors[clamp(v, 0, colors.size() - 1)];
     }
     return 0xffffffff;
