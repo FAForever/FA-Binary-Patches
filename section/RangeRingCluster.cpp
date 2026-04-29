@@ -68,6 +68,29 @@ ConDescReg ring_cluster_hull_reg{
 // Coverage test: 24 samples (every 15 degrees) on P's outer circle. Each
 // sample must lie in some kept neighbour's [innerR, outerR] band. Outer
 // loop early-exits on first uncovered sample.
+//
+// === O(N) via spatial hash grid ===
+//
+// The naive nested loop over all writeIdx kept rings is O(n²): for sparse
+// crowds (600 rings spread across the map, no overlap) writeIdx grows to N
+// and the inner loop runs 24×N×N times producing zero culls — the cure was
+// worse than the disease (140→70 FPS regression on real testing).
+//
+// Fix: spatial hash grid. Stack-allocated, no heap (build is -nostdlib so
+// memmove/memset/new are unavailable). Cells are sized at 2×maxOuter so any
+// ring whose circle could overlap P's circle has its center within the 3×3
+// cell neighbourhood of P's cell. This makes both the pre-check and the
+// 24-sample test O(K_local) per query where K_local = rings in 9 cells,
+// independent of N.
+//
+//   Sparse case (worst with naive algo): pre-check finds zero rings in 3×3,
+//     keeps P immediately, no 24-sample loop. Total: ~O(N).
+//   Dense case: writeIdx stays small from culling; grid lookup costs the
+//     same O(K_local) but with K_local ≈ writeIdx anyway. Same as before.
+//
+// Hash collisions are harmless: rings from unrelated cells just get skipped
+// via the actual distance check. With primes 73856093/19349663 and 256
+// buckets, expected chain length for 1000 rings is ~4 (well-distributed).
 
 struct RangeRenderingParams
 {
@@ -77,10 +100,28 @@ struct RangeRenderingParams
     float outerRadius;
 };
 
+// Spatial hash parameters.
+// HASH_BUCKETS power-of-two for bitmask, MAX_RINGS bounds the stack arrays.
+constexpr int HASH_BUCKETS = 256;
+constexpr int HASH_MASK    = HASH_BUCKETS - 1;
+constexpr int MAX_RINGS    = 1024;
+
+// Standard spatial hash (Teschner et al. 2003).
+static inline unsigned hashCell(int cx, int cz)
+{
+    return (((unsigned)cx * 73856093u) ^ ((unsigned)cz * 19349663u)) & (unsigned)HASH_MASK;
+}
+
 extern "C" int ClusterRingPositions(RangeRenderingParams *data, size_t count)
 {
     if (g_RingClusterHull == 0.0f || count <= 4)
         return count;
+
+    // Safety fallback: skip cull if input exceeds our stack-allocated chain
+    // capacity. Rare in practice; correctness preserved (renderer just sees
+    // the original list).
+    if (count > (size_t)MAX_RINGS)
+        return (int)count;
 
     // 24 unit vectors at 15-degree intervals around the outer circle.
     // The engine draws rings as 45 segments (8 deg each); 24 samples at
@@ -100,59 +141,125 @@ extern "C" int ClusterRingPositions(RangeRenderingParams *data, size_t count)
         -0.86602540f, -0.96592583f, -1.00000000f, -0.96592583f,
         -0.86602540f, -0.70710677f, -0.50000000f, -0.25881905f};
 
+    // Pre-pass: maximum outer radius determines cell size. With cell size
+    // 2*maxOuter, any covering ring's center lies within ±1 cell of the
+    // candidate's cell, so the lookup region is always 3×3 cells.
+    float maxOuter = 0.0f;
+    for (size_t i = 0; i < count; ++i)
+        if (data[i].outerRadius > maxOuter) maxOuter = data[i].outerRadius;
+    if (maxOuter <= 0.0f)
+        return (int)count;
+
+    const float invCellSize = 0.5f / maxOuter; // 1 / (2*maxOuter)
+
+    // Bias offset so all map coordinates become positive before truncation,
+    // avoiding the C++ (int)cast-toward-zero asymmetry without calling
+    // floorf (libc may not be linked).
+    constexpr float COORD_BIAS    = 1.0e6f;
+    const int       BIAS_CELL_SUB = (int)(COORD_BIAS * invCellSize);
+
+    // BSS-allocated grid. gridHead[h] = -1 means empty bucket. gridNext[i]
+    // chains kept-ring indices that share a hash bucket. Static storage
+    // avoids stack-probe (__chkstk_ms) calls — GCC inserts those for any
+    // function with >4 KB local arrays, and that symbol isn't linked here.
+    // Render is single-threaded so the shared static is safe.
+    static int gridHead[HASH_BUCKETS];
+    static int gridNext[MAX_RINGS];
+    for (int i = 0; i < HASH_BUCKETS; ++i) gridHead[i] = -1;
+
     int writeIdx = 0;
 
-    for (int i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i)
     {
-        // Snapshot the candidate locally so it survives any in-place
-        // overwrite at data[writeIdx] further down.
-        float px = data[i].x;
-        float pz = data[i].z;
-        float pInner = data[i].innerRadius;
-        float pOuter = data[i].outerRadius;
+        // Snapshot the candidate so it survives any in-place overwrite.
+        const float px = data[i].x;
+        const float pz = data[i].z;
+        const float pInner = data[i].innerRadius;
+        const float pOuter = data[i].outerRadius;
 
-        // First unit always kept (nothing to be covered by).
-        bool fully_covered = (writeIdx > 0);
+        const int pcx = (int)((px + COORD_BIAS) * invCellSize) - BIAS_CELL_SUB;
+        const int pcz = (int)((pz + COORD_BIAS) * invCellSize) - BIAS_CELL_SUB;
 
+        // Pre-check: any kept ring near enough to possibly cover P?
+        // A ring Q can cover any point on P's outer circle only if
+        // dist(P.center, Q.center) <= pOuter + qOuter. Since cellSize is
+        // 2*maxOuter >= pOuter + qOuter, the search region is 3×3 cells.
+        bool any_close = false;
+        for (int dx = -1; dx <= 1 && !any_close; ++dx)
+        {
+            for (int dz = -1; dz <= 1 && !any_close; ++dz)
+            {
+                unsigned h = hashCell(pcx + dx, pcz + dz);
+                for (int j = gridHead[h]; j >= 0 && !any_close; j = gridNext[j])
+                {
+                    float ddx = data[j].x - px;
+                    float ddz = data[j].z - pz;
+                    float reach = pOuter + data[j].outerRadius;
+                    if (ddx * ddx + ddz * ddz <= reach * reach)
+                        any_close = true;
+                }
+            }
+        }
+
+        if (!any_close)
+        {
+            // No kept ring can possibly cover P -- keep immediately,
+            // skipping the 24-sample loop entirely. This is the path
+            // hit by sparse/spread-out crowds.
+            data[writeIdx].x           = px;
+            data[writeIdx].z           = pz;
+            data[writeIdx].innerRadius = pInner;
+            data[writeIdx].outerRadius = pOuter;
+            unsigned h = hashCell(pcx, pcz);
+            gridNext[writeIdx] = gridHead[h];
+            gridHead[h] = writeIdx;
+            ++writeIdx;
+            continue;
+        }
+
+        // Full 24-sample coverage test. We only need to query rings whose
+        // centers lie in the candidate's 3×3 neighbourhood (same bound as
+        // above) -- a sample point is at distance pOuter from P, and a
+        // covering ring's reach is at most maxOuter, total <= cellSize.
+        bool fully_covered = true;
         for (int k = 0; k < 24 && fully_covered; ++k)
         {
             float tx = px + pOuter * COSDIR[k];
             float tz = pz + pOuter * SINDIR[k];
 
             bool sample_covered = false;
-            for (int j = 0; j < writeIdx; ++j)
-            { // ONLY already-kept set
-                RangeRenderingParams &p = data[j];
-                float dx = p.x - tx;
-                float dz = p.z - tz;
-                float distSq = dx * dx + dz * dz;
-
-                float qOuter = p.outerRadius;
-                if (distSq > qOuter * qOuter)
-                    continue;
-
-                float qInner = p.innerRadius;
-                if (qInner > 0.0f && distSq < qInner * qInner)
-                    continue;
-
-                sample_covered = true;
-                break;
-            }
-
-            if (!sample_covered)
+            for (int dx = -1; dx <= 1 && !sample_covered; ++dx)
             {
-                fully_covered = false;
+                for (int dz = -1; dz <= 1 && !sample_covered; ++dz)
+                {
+                    unsigned h = hashCell(pcx + dx, pcz + dz);
+                    for (int j = gridHead[h]; j >= 0 && !sample_covered; j = gridNext[j])
+                    {
+                        float ddx = data[j].x - tx;
+                        float ddz = data[j].z - tz;
+                        float distSq = ddx * ddx + ddz * ddz;
+                        float qOuter = data[j].outerRadius;
+                        if (distSq > qOuter * qOuter) continue;
+                        float qInner = data[j].innerRadius;
+                        if (qInner > 0.0f && distSq < qInner * qInner) continue;
+                        sample_covered = true;
+                    }
+                }
             }
+            if (!sample_covered)
+                fully_covered = false;
         }
 
         if (!fully_covered)
         {
-            RangeRenderingParams &dest = data[writeIdx];
-            dest.x = px;
-            dest.z = pz;
-            dest.innerRadius = pInner;
-            dest.outerRadius = pOuter;
-            writeIdx++;
+            data[writeIdx].x           = px;
+            data[writeIdx].z           = pz;
+            data[writeIdx].innerRadius = pInner;
+            data[writeIdx].outerRadius = pOuter;
+            unsigned h = hashCell(pcx, pcz);
+            gridNext[writeIdx] = gridHead[h];
+            gridHead[h] = writeIdx;
+            ++writeIdx;
         }
     }
 
@@ -176,6 +283,9 @@ asm(R"(
 .global RangeRingClusterTrampoline
 RangeRingClusterTrampoline:
     pushad
+    pushfd                            # save EFLAGS so the engine at 0x7EF5E7
+                                      # observes the same flags it would
+                                      # without the hook
 
     # ecx still holds the vector pointer; ebp still holds the original count.
     push ebp                          # arg2: count
@@ -184,10 +294,12 @@ RangeRingClusterTrampoline:
     call _ClusterRingPositions
     add  esp, 8
 
-    # popad pop order: edi, esi, ebp, esp(skipped), ebx, edx, ecx, eax
-    # so the saved-ebp slot lives at [esp+8] right now.
-    mov  [esp+8], eax                 # write the clustered count into ebp's slot
+    # Stack now: [pushfd dword][pushad frame: edi,esi,ebp,esp,ebx,edx,ecx,eax]
+    # pushad pop order on popad: edi, esi, ebp, esp(skipped), ebx, edx, ecx, eax
+    # so the saved-ebp slot is at offset 4 (pushfd) + 8 (edi+esi) = 12.
+    mov  [esp+12], eax                # write the clustered count into ebp's slot
 
+    popfd                             # restore EFLAGS
     popad
 
     # Re-execute the displaced instruction `mov eax, ds:0x10a6438` (sWldMap)
