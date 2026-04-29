@@ -1,4 +1,5 @@
 #include "magic_classes.h"
+#include <algorithm>
 
 // Hull culling for range rings.
 //
@@ -68,6 +69,24 @@ ConDescReg ring_cluster_hull_reg{
 // Coverage test: 24 samples (every 15 degrees) on P's outer circle. Each
 // sample must lie in some kept neighbour's [innerR, outerR] band. Outer
 // loop early-exits on first uncovered sample.
+//
+// === O(n log n) spatial acceleration ===
+//
+// The naive inner loop over all writeIdx kept rings is O(n²). The fix:
+//
+//   1. Sort input by X once (O(n log n)).
+//   2. Pre-check: before running the 24 samples, scan kept rings in reverse
+//      (highest X first) and break when a ring's right edge falls left of the
+//      candidate center. If no ring is within (pOuter + qOuter) range, keep
+//      the candidate immediately — no samples needed. This eliminates the
+//      O(n²) cost for sparse / spread-out scenarios.
+//   3. Full sample loop: same reverse scan with X-cutoff break. Each sample
+//      only checks rings whose X range overlaps the sample point.
+//
+// Complexity: O(n log n) sort + O(n × K_local × 24) for the coverage tests,
+// where K_local = number of kept rings near each candidate. For sparse rings
+// K_local ≈ 0 (pre-check short-circuits); for dense clusters writeIdx stays
+// small due to culling. Worst-case is O(n log n) in all practical scenarios.
 
 struct RangeRenderingParams
 {
@@ -100,59 +119,84 @@ extern "C" int ClusterRingPositions(RangeRenderingParams *data, size_t count)
         -0.86602540f, -0.96592583f, -1.00000000f, -0.96592583f,
         -0.86602540f, -0.70710677f, -0.50000000f, -0.25881905f};
 
-    int writeIdx = 0;
+    // Sort by X so the inner scan can break early (O(n log n)).
+    std::sort(data, data + count, [](const RangeRenderingParams &a, const RangeRenderingParams &b) {
+        return a.x < b.x;
+    });
 
-    for (int i = 0; i < count; ++i)
+    int writeIdx = 0;
+    float maxKeptR = 0.0f; // running max outerRadius of the kept set
+
+    for (int i = 0; i < (int)count; ++i)
     {
-        // Snapshot the candidate locally so it survives any in-place
-        // overwrite at data[writeIdx] further down.
-        float px = data[i].x;
-        float pz = data[i].z;
+        // Snapshot the candidate so it survives in-place overwrites.
+        float px    = data[i].x;
+        float pz    = data[i].z;
         float pInner = data[i].innerRadius;
         float pOuter = data[i].outerRadius;
 
-        // First unit always kept (nothing to be covered by).
-        bool fully_covered = (writeIdx > 0);
+        // Pre-check: find any kept ring close enough to possibly cover P.
+        // A ring Q can cover any point on P's outer circle only if
+        //   dist(P.center, Q.center) ≤ pOuter + qOuter.
+        // Scan backwards (high-X first); break when Q is too far left.
+        bool any_close = false;
+        float band = pOuter + maxKeptR;
+        for (int j = writeIdx - 1; j >= 0 && !any_close; --j)
+        {
+            float dx = data[j].x - px;
+            if (-dx > band) break;          // Q is too far left — and all j' < j are further left
+            if (dx > band) continue;        // Q is too far right (X sorted, rare at start)
+            float dz = data[j].z - pz;
+            float reach = pOuter + data[j].outerRadius;
+            if (dx * dx + dz * dz <= reach * reach)
+                any_close = true;
+        }
 
+        if (!any_close)
+        {
+            // No kept ring can cover P — keep it immediately without 24 samples.
+            data[writeIdx].x           = px;
+            data[writeIdx].z           = pz;
+            data[writeIdx].innerRadius = pInner;
+            data[writeIdx].outerRadius = pOuter;
+            ++writeIdx;
+            if (pOuter > maxKeptR) maxKeptR = pOuter;
+            continue;
+        }
+
+        // Full 24-sample coverage test — only reached when neighbours exist.
+        bool fully_covered = true;
         for (int k = 0; k < 24 && fully_covered; ++k)
         {
             float tx = px + pOuter * COSDIR[k];
             float tz = pz + pOuter * SINDIR[k];
 
             bool sample_covered = false;
-            for (int j = 0; j < writeIdx; ++j)
-            { // ONLY already-kept set
-                RangeRenderingParams &p = data[j];
-                float dx = p.x - tx;
-                float dz = p.z - tz;
+            for (int j = writeIdx - 1; j >= 0 && !sample_covered; --j)
+            {
+                float dx = data[j].x - tx;
+                if (-dx > data[j].outerRadius) break; // Q too far left — break
+                float dz = data[j].z - tz;
                 float distSq = dx * dx + dz * dz;
-
-                float qOuter = p.outerRadius;
-                if (distSq > qOuter * qOuter)
-                    continue;
-
-                float qInner = p.innerRadius;
-                if (qInner > 0.0f && distSq < qInner * qInner)
-                    continue;
-
+                float qOuter = data[j].outerRadius;
+                if (distSq > qOuter * qOuter) continue;
+                float qInner = data[j].innerRadius;
+                if (qInner > 0.0f && distSq < qInner * qInner) continue;
                 sample_covered = true;
-                break;
             }
 
             if (!sample_covered)
-            {
                 fully_covered = false;
-            }
         }
 
         if (!fully_covered)
         {
-            RangeRenderingParams &dest = data[writeIdx];
-            dest.x = px;
-            dest.z = pz;
-            dest.innerRadius = pInner;
-            dest.outerRadius = pOuter;
-            writeIdx++;
+            data[writeIdx].x           = px;
+            data[writeIdx].z           = pz;
+            data[writeIdx].innerRadius = pInner;
+            data[writeIdx].outerRadius = pOuter;
+            ++writeIdx;
+            if (pOuter > maxKeptR) maxKeptR = pOuter;
         }
     }
 
@@ -176,6 +220,7 @@ asm(R"(
 .global RangeRingClusterTrampoline
 RangeRingClusterTrampoline:
     pushad
+    pushfd                            # save EFLAGS (engine at 0x7EF5E7 may read flags)
 
     # ecx still holds the vector pointer; ebp still holds the original count.
     push ebp                          # arg2: count
@@ -184,10 +229,13 @@ RangeRingClusterTrampoline:
     call _ClusterRingPositions
     add  esp, 8
 
-    # popad pop order: edi, esi, ebp, esp(skipped), ebx, edx, ecx, eax
-    # so the saved-ebp slot lives at [esp+8] right now.
-    mov  [esp+8], eax                 # write the clustered count into ebp's slot
+    # Stack after call+add: [pushfd][pushad frame: edi,esi,ebp,esp,ebx,edx,ecx,eax]
+    # pushfd is at [esp+0], pushad frame starts at [esp+4].
+    # popad pop order: edi, esi, ebp(+8 from pushfd base), ...
+    # saved-ebp slot is at [esp+4+8] = [esp+12].
+    mov  [esp+12], eax                # write the clustered count into ebp's slot
 
+    popfd                             # restore EFLAGS
     popad
 
     # Re-execute the displaced instruction `mov eax, ds:0x10a6438` (sWldMap)
