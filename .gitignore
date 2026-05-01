@@ -15,6 +15,5 @@ section.cpp
 
 .vscode
 
-section.ld
 section/main.cpp
 section/main.cxx
