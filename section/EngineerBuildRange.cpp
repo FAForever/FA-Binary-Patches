@@ -109,12 +109,12 @@ asm(
     // Reproduce: add esp, 0xC (cleanup 3 push args)
     "add esp, 0x0C\n"
 
-    // Now tag the navigator (NewMoveTask + SetGoal already ran)
-    "pushad\n"
+    // Now tag the navigator (NewMoveTask + SetGoal already ran).
+    // No need to save scratch registers (EAX/ECX/EDX) — original code at
+    // 0x5F776B only reads EBP (callee-saved by cdecl) before overwriting them.
     "push ebp\n"
     "call _TagNavigatorForBuild\n"
     "add esp, 4\n"
-    "popad\n"
 
     // JMP to shared ++mTaskState (NOT overwritten, safely reached)
     "jmp 0x5F776B\n"
