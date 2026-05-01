@@ -13,6 +13,16 @@
 //
 // Fix: reduce Loop 1 batch size from 1000 to 128, and inject an intermediate
 // RangeMask flush between batches that resets the stencil counter.
+//
+// === Calling Conventions ===
+//
+// The three engine functions called here use a custom register-based thiscall
+// (verified in the engine's call sites at 0x007EF820-0x007EF849):
+//   - 0x007F5DA0: CRenFrame::InitTransformedVerts: this @ EBX
+//   - 0x004059E0: std::string::string: this @ ECX (standard MSVC thiscall)
+//   - 0x007F6030: CRenFrame::Render: this @ EDI
+// A direct C++ call is impossible since no C++ calling convention puts `this`
+// in EBX or EDI. The arguments and calling sequences are hardcoded in asm.
 
 // Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 128
 // (patches the imm32 of the 5-byte 'cmp eax, imm32' instruction at 0x007EF77D)
@@ -38,7 +48,7 @@ frame = 0x10
 i = 0x14
 0x007EF7EA:
     mov     eax, [esp+0x70+idx]
-    mov     edi, [esp+0x70+rangeRenderer]   #
+    mov     edi, [esp+0x70+rangeRenderer]   # load rangeRenderer (CRenFrame container)
     add     edi, 0x4C                       # &rangeRenderer->mFrame
     mov     [esp+0x70+frame], edi
     cvtsi2ss xmm0, dword ptr [eax+0x14]     # height
@@ -50,17 +60,17 @@ i = 0x14
     mov     ebx, edi
     call    0x007F5DA0                   # Moho::CRenFrame::InitTransformedVerts(float,float)
     push    9                            # len
-    push    offset 0x00E3F8E8            # "RangeMask"
+    push    0x00E3F8E8                   # "RangeMask" string address
     mov     ecx, edi                     # this
     call    0x004059E0                   # std::string::string(char const *,uint)
     mov     eax, [esp+0x70+idx]
     push    [eax+0x14]                   # height
     push    [eax+0x10]                   # width
     call    0x007F6030                   # Moho::CRenFrame::Render(int,int)
-    mov     eax, [esp+0x70+i]    #
-    add     eax, esi             #
-    cmp     eax, ebp             #
-    mov     [esp+0x70+i], eax    # i += increment
+    mov     eax, [esp+0x70+i]           # load loop counter
+    add     eax, esi                     # i += increment
+    cmp     eax, ebp                     # compare with end
+    mov     [esp+0x70+i], eax           # store updated counter
     jl      0x7EF774
 L_ExitRangeRender:
     nop;nop
