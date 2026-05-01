@@ -6,6 +6,6 @@ asm(
     "push 5;"
 
     ".section h1; .set h1,0x6F5F96;"
-    "jmp "QU(IssueBuildMobileFix)";"
+    "jmp IssueBuildMobileFix;"
 );
 

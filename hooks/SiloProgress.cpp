@@ -6,10 +6,10 @@ asm(
     "lea eax, [esp+0x18];"
     "push eax;"
     "push edi;"
-    "call "QU(CheckSiloProgress)";"
+    "call CheckSiloProgress;"
     "jmp 0x005CF4CA;"
     
     SECTION(2, 0x005CF030)
-    "jmp "QU(AddSiloEco)";"
+    "jmp AddSiloEco;"
     
 );

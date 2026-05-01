@@ -3,14 +3,14 @@
 asm(
   //HOOK decode
   ".section h0; .set h0,0x6E4150;"
-  "jmp "QU(Moho__CDecoder__DecodeMessage)";"
+  "jmp Moho__CDecoder__DecodeMessage;"
   "nop;"
 
   ".section h1; .set h1,0x74B8B0;"
-  "jmp "QU(EndGame)";"
+  "jmp EndGame;"
 
   ".section h2; .set h2,0x489F90;"
-  "jmp "QU(Gpg_Net_Entry)";"
+  "jmp Gpg_Net_Entry;"
   "nop;"
   "nop;"
 
@@ -21,17 +21,17 @@ asm(
 
   //HOOK recvfrom
   ".section h4; .set h4,0x48A280;"
-  "jmp "QU(_recvfrom)";"
+  "jmp _recvfrom;"
   "nop;"
 
   //HOOK sendto
   ".section h5; .set h5,0x488D80;"
-  "jmp "QU(_sendto)";"
+  "jmp _sendto;"
   "nop;"
   "nop;"
 
   ".section h6; .set h6,0x8984B0;"
-  "jmp "QU(SessionEndGame)";"
+  "jmp SessionEndGame;"
   "nop;"
   "nop;"
   "nop;"
@@ -375,15 +375,15 @@ asm(
   "ret;"
 
   ".section h9; .set h9,0x73D8C0;"
-  "jmp "QU(sim_dispatch)";"
+  "jmp sim_dispatch;"
   "nop;"
 
   ".section h10; .set h10,0x53F010;"
-  "jmp "QU(Update_Pipeline_Stream)";"
+  "jmp Update_Pipeline_Stream;"
   "nop;"
 
   //HOOK user input
   ".section h11; .set h11,0x8704B0;"
-  "jmp "QU(MOHO_USER_INPUT)";"
+  "jmp MOHO_USER_INPUT;"
   "nop;"
 );

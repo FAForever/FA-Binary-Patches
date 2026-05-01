@@ -2,7 +2,7 @@
 asm(
   //HOOK BuildUnit
   ".section h0; .set h0,0x6EFAC9;"
-  "JMP "QU(BuildUnit)";"
+  "JMP BuildUnit;"
   "ADD ESP,4;"
   "xor ecx,ecx;"
   "xor eax,eax;"
@@ -15,11 +15,11 @@ asm(
 
   //HOOK SelectUnit
   ".section h1; .set h1,0x8C05FE;"
-  "JMP "QU(SelectUnit)";"
+  "JMP SelectUnit;"
 
   //HOOK SimArmyCreate
   ".section h2; .set h2,0x6FF3D1;"
-  "JMP "QU(SimArmyCreate)";"
+  "JMP SimArmyCreate;"
   "NOP;"
   "call 0x4059E0;"
   "mov bl,0x28;"

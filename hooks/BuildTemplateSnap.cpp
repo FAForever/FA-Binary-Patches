@@ -10,7 +10,7 @@ asm(
     "NOP;"
     "NOP;"
     SECTION(1, 0x00870044)
-    "jmp "QU(HookHydroCondition)";"
+    "jmp HookHydroCondition;"
     "nop;"
     "nop;"
     "nop;"
