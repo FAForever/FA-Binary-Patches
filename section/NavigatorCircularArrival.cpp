@@ -53,12 +53,13 @@ asm(
     ".global _CircularArrivalCheck\n"
     "_CircularArrivalCheck:\n"
 
-    "pushad\n"
+    // EBX (CAiPathNavigator*) and EBP are callee-saved by cdecl ABI.
+    // EAX/ECX/EDX are scratch — we set them ourselves below or the
+    // overwritten instructions in .Lca_not_build will overwrite them.
     "push ebx\n"
     "call _CheckCircularArrival\n"
     "add esp, 4\n"
     "test eax, eax\n"
-    "popad\n"
     "jz .Lca_not_build\n"
 
     // IN RANGE: signal arrival
