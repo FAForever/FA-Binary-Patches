@@ -1,4 +1,4 @@
-#include "../define.h"
+
 asm(
   //HOOK Check args
   ".section h0; .set h0,0x6CED74;"

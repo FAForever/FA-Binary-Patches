@@ -1,5 +1,5 @@
 #define SECTION(index, address) ".section h"#index"; .set h"#index","#address";"
-#include "../define.h"
+
 
 asm(
     SECTION(0, 0x0086FFF0)

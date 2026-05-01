@@ -1,4 +1,4 @@
-#include "../define.h"
+
 asm(
   //HOOK TeamColor
   ".section h0; .set h0,0x847E51;"

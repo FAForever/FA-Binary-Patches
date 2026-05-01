@@ -1,4 +1,4 @@
-#include "../define.h"
+
 asm(
     //prevent set alpha from resetting color mask
     ".section h0; .set h0,0x789988;"

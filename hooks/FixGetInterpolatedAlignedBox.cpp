@@ -1,4 +1,4 @@
-#include "../define.h"
+
 
 asm(R"(
 .section h0; .set h0,0x086D2C0 #cfunc_CUIWorldMeshGetInterpolatedAlignedBox+0x150
