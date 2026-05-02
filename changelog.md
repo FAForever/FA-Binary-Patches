@@ -363,5 +363,11 @@ These new features have been added in a backwards compatible manner
   - section/SimArmyCreate.cpp
 
 - Add `Unit:ForceAltFootPrint` that forces game to use AltFootprint for the unit (applied to Salem in particular)
+  - hooks/MohoEntityVariableData.hook
   - hooks/EntityGetFootprint.cpp
   - section/EntityGetFootprint.cpp
+  
+- Add `Unit:ForceReclaim(bool)` When 'true' engineer will continue reclaiming even if both (mass and energy) storages are full
+  - hooks/MohoEntityVariableData.hook
+  - hooks/UnitForceReclaim.hook
+  - section/UnitForceReclaim.cpp
