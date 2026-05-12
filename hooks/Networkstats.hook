@@ -1,0 +1,2 @@
+0x0073EFBC:
+    jmp asm__NetworkstatsHook
