@@ -433,53 +433,65 @@ struct fastvector
     T *mEnd;
     T *mCapacity;
 
-    fastvector() {
-        this->mStart = &this->mCapacity;
-        this->mEnd = &this->mCapacity;
-        this->mCapacity = &this->mCapacity;
-    }
+    fastvector() : mStart(nullptr), mEnd(nullptr), mCapacity(nullptr) {}
+
     ~fastvector() {
-        delete[](this->mStart);
+        delete[] mStart;
     }
 
-    T *begin() { return this->mStart; }
-    T *end() { return this->mEnd; }
+    T       *begin()       { return mStart; }
+    T       *end()         { return mEnd; }
+    const T *begin() const { return mStart; }
+    const T *end()   const { return mEnd; }
 
     bool Empty() const {
-        return this->mStart == this->mEnd;
+        return mStart == mEnd;
     }
     size_t Size() const {
-        return (this->mEnd - this->mStart) / sizeof(T);
+        return static_cast<size_t>(mEnd - mStart);
     }
     size_t Capacity() const {
-        return (this->mCapacity - this->mStart) / sizeof(T);
+        return static_cast<size_t>(mCapacity - mStart);
     }
 
-    T &operator[](size_t idx) {
-        return this->mStart[idx];
-    }
+    T       &operator[](size_t idx)       { return mStart[idx]; }
+    const T &operator[](size_t idx) const { return mStart[idx]; }
+
+    T       &Front()       { return *mStart; }
+    const T &Front() const { return *mStart; }
+    T       &Back()        { return *(mEnd - 1); }
+    const T &Back()  const { return *(mEnd - 1); }
+
+    fastvector(const fastvector &)            = delete;
+    fastvector &operator=(const fastvector &) = delete;
 };
 
 template<class T, int N>
 struct fastvector_n : public fastvector<T>
 {
-    // also stores the original capacity at [0] when not in use
-    // (i.e. the zeroeth index in the inline vec)
+    // mOriginalVec marks inline-storage origin.
+    // mInlineVec[0] also encodes original-capacity metadata when heap is active
+    // (see gpg::core::FastVectorN::SaveInlineCapacity_).
     T *mOriginalVec;
-    T mInlineVec[N];
+    T  mInlineVec[N];
 
     fastvector_n() {
-        this->mStart = &this->mInlineVec[0];
-        this->mEnd = &this->mInlineVec[0];
-        this->mCapacity = &this->mInlineVec[N];
-        this->mOriginalVec = &this->mInlineVec;
+        this->mStart    = mInlineVec;
+        this->mEnd      = mInlineVec;
+        this->mCapacity = mInlineVec + N;
+        mOriginalVec    = mInlineVec;
     }
+
     ~fastvector_n() {
-        if (this->mStart != this->mOriginalVec) {
-            delete[](this->mStart);
-            this->mStart = this->mOriginalVec;
+        if (this->mStart != mOriginalVec) {
+            delete[] this->mStart;
         }
+        // Nullify so base ~fastvector() calls delete[] nullptr - safe no-op.
+        // Without this the base dtor would try to free inline stack storage.
+        this->mStart = nullptr;
     }
+
+    // copy/assign already deleted via base
 };
 
 template<class T>
