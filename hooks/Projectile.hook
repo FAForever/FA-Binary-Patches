@@ -1,0 +1,24 @@
+# projectile icon texture
+0x008625A3:
+    mov      byte ptr [esp+0x23], 1
+    cvtsi2ss xmm0, eax; # eax contains half width
+    movss    xmm1, ds:projectile_icon_scale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x48], xmm0 # half width
+    mov      eax, [ecx+0x10]
+    shr      eax, 1
+    cvtsi2ss xmm0, eax;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x44], xmm0 # half height
+    cmp      byte ptr [0x00F57B24], 0
+    nop;nop;nop;nop;nop;nop;nop;nop
+
+
+# projectile icon yellow square
+0x0086269C:
+    mulss    xmm0, ds:0xE4F724 # 0.5
+    mulss    xmm0, ds:projectile_icon_scale
+    movss    dword ptr [esp+0x48], xmm0
+    movss    dword ptr [esp+0x44], xmm0
+    nop;nop;nop
+
