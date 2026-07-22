@@ -70,6 +70,13 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix tracked-unit tread scrolling precision, left/right channel mapping, and intermittent zero-delta stalls.
+
+  - hooks/TreadScrollPhaseSideFix.cpp
+  - hooks/TreadScrollZeroGapBridge.cpp
+  - section/TreadScrollPhaseSideFix.cpp
+  - section/TreadScrollZeroGapBridge.cpp
+
 - Remove lingering transport load factor calcuation at aircraft initialization
 
   - hooks/RemoveTransportLoadFactor.cpp
