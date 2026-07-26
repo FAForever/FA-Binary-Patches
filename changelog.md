@@ -155,7 +155,7 @@ These don't matter except for other assembly patches
 
 ## Improvements
 
-- Allows to use 4GB on x64
+- Complete HEAPMNG page-map coverage and enable free-region coalescing across the 3-4 GiB range on x64.
 
   - hooks/HFix4GB.cpp
 
