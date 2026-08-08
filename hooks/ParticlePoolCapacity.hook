@@ -1,0 +1,10 @@
+# Particle renderer initialization
+# Increase the fixed particle render-buffer descriptor pool from 400 to 4096.
+# Original instruction: mov dword ptr [esp + 0x10], 0x190
+0x004928ED:
+    mov dword ptr [esp + 0x10], 0x1000
+
+# Increase the fixed segment-buffer descriptor pool from 100 to 400.
+# Original instruction: mov dword ptr [esp + 0x10], 0x64
+0x004929B2:
+    mov dword ptr [esp + 0x10], 0x190
