@@ -72,9 +72,9 @@ These don't matter except for other assembly patches
 
 - Fix track texture scrolling for visible enemy tracked units.
 
-  - hooks/ReconBlipTrackScrollFix.cpp
+  - hooks/ReconBlipTrackScrollFix.hook
   - section/ReconBlipTrackScrollFix.cpp
-  - 
+
 - Remove lingering transport load factor calcuation at aircraft initialization
 
   - hooks/RemoveTransportLoadFactor.cpp
