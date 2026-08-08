@@ -72,8 +72,8 @@ These don't matter except for other assembly patches
 
 - Fix tracked-unit tread scrolling precision, left/right channel mapping, and intermittent zero-delta stalls.
 
-  - hooks/TreadScrollPhaseSideFix.cpp
-  - hooks/TreadScrollZeroGapBridge.cpp
+  - hooks/TreadScrollPhaseSideFix.hook
+  - hooks/TreadScrollZeroGapBridge.hook
   - section/TreadScrollPhaseSideFix.cpp
   - section/TreadScrollZeroGapBridge.cpp
 
