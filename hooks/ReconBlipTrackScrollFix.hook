@@ -1,0 +1,5 @@
+# Moho::ReconBlip::BuildSnapshot + 0x1C1
+# Replaces: sub esi, 0xD8
+0x005BF171:
+    jmp @ReconBlipTrackScrollFix
+    nop
