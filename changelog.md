@@ -73,7 +73,7 @@ These don't matter except for other assembly patches
 - Preserve texture-scroll precision by using full-float hardware instance data.
 
   - hooks/DisableFloat16VertexFormatter.hook
-    
+
 - Remove lingering transport load factor calcuation at aircraft initialization
 
   - hooks/RemoveTransportLoadFactor.cpp
