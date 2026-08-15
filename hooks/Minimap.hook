@@ -1,0 +1,11 @@
+# add toggle for rendering range rings in minimap
+0x007D19FF:
+    jmp asm__MinimapRangeRenderHook
+    nop
+    nop
+
+ # disable render of debug info in minimap
+0x007D1BD9:
+    nop;nop;nop;nop
+    nop;nop;nop;nop
+    nop;nop;nop;nop
