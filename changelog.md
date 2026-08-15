@@ -70,6 +70,10 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
+
+  - hooks/RefuelUndockFix.cpp
+
 - Remove lingering transport load factor calcuation at aircraft initialization
 
   - hooks/RemoveTransportLoadFactor.cpp
