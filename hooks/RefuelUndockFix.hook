@@ -1,5 +1,5 @@
-// Moho::CUnitRefuel::TaskTick, carrier TASKSTATE_Waiting (mIsCarrier):
-// relax health == maxHealth to health >= maxHealth
+# Moho::CUnitRefuel::TaskTick, carrier TASKSTATE_Waiting (mIsCarrier)
+# relax health == maxHealth to health >= maxHealth
 0x006217F8:
     jb 0x0062174E
     nop
@@ -7,9 +7,8 @@
     nop
     nop
 
-// Moho::CUnitRefuel::TaskTick, air staging TASKSTATE_Processing:
-// relax health == maxHealth to health >= maxHealth
-// (6-byte rel32 jb fills the hole exactly; a rel8 encoding with nop padding
-//  would also fit, but GAS resolves this jump as rel32)
+# Moho::CUnitRefuel::TaskTick, air staging TASKSTATE_Processing
+# relax health == maxHealth to health >= maxHealth
+# rel32 jb fills the 6-byte hole exactly, hence no nops
 0x00621DF1:
     jb 0x00621E67
