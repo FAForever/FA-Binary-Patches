@@ -1,0 +1,17 @@
+// Moho::CUnitRefuel::TaskTick, carrier TASKSTATE_Waiting (mIsCarrier):
+// relax health == maxHealth to health >= maxHealth
+0x006217F8:
+    jb 0x0062174E
+    nop
+    nop
+    nop
+    nop
+
+// Moho::CUnitRefuel::TaskTick, air staging TASKSTATE_Processing:
+// relax health == maxHealth to health >= maxHealth
+0x00621DF1:
+    jb 0x00621E67
+    nop
+    nop
+    nop
+    nop
