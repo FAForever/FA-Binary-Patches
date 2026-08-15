@@ -1,0 +1,2 @@
+0x0069BDDA:
+    jmp asm__ProjMotionTick
