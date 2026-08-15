@@ -9,9 +9,7 @@
 
 // Moho::CUnitRefuel::TaskTick, air staging TASKSTATE_Processing:
 // relax health == maxHealth to health >= maxHealth
+// (6-byte rel32 jb fills the hole exactly; a rel8 encoding with nop padding
+//  would also fit, but GAS resolves this jump as rel32)
 0x00621DF1:
     jb 0x00621E67
-    nop
-    nop
-    nop
-    nop
