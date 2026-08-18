@@ -11,8 +11,14 @@
 // overflows. Loop 2 draws only the thin EDGE strips (2 quads per ring) and
 // has near-zero per-pixel overdraw, so it does not need patching.
 //
-// Fix: reduce Loop 1 batch size from 1000 to 128, and inject an intermediate
+// Fix: reduce Loop 1 batch size from 1000 to 127, and inject an intermediate
 // RangeMask flush between batches that resets the stencil counter.
+//
+// Why 127 and not 128: the Cast technique (range.fx) increments with
+// StencilWriteMask = 0x7F, so counts accumulate mod 128. A pixel covered by
+// exactly 128 rings of one batch ends at 128 % 128 == 0, and RangeMask
+// (frame.fx, passes on low bits != 0) leaves it unmarked -- the hole returns.
+// 127 is the largest batch for which a covered pixel can never reach 0.
 //
 // === Calling Conventions ===
 //
@@ -24,23 +30,25 @@
 // A direct C++ call is impossible since no C++ calling convention puts `this`
 // in EBX or EDI. The arguments and calling sequences are hardcoded in asm.
 
-// Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 128
+// Loop 1 batch cap: cmp eax, 0x3E8  ->  cmp eax, 127
 // (patches the imm32 of the 5-byte 'cmp eax, imm32' instruction at 0x007EF77D)
 0x007EF77E:
-    .int 128
+    .int 127
 
-// Loop 1 batch ceiling: mov eax, 0x3E8  ->  mov eax, 128
+// Loop 1 batch ceiling: mov eax, 0x3E8  ->  mov eax, 127
 // (patches the imm32 of the 5-byte 'mov eax, imm32' instruction at 0x007EF784)
 0x007EF785:
-    .int 128
+    .int 127
 
 // Inject intermediate RangeMask flush at the bottom of the Loop 1 body.
-// Replaces the 7-byte 'mov eax, [esp+0x84]' with a 5-byte call + 2 NOPs.
-// IntermediateRangeMask reproduces the replaced instruction after the flush.
+// The inline block replaces the original loop tail plus the original final
+// RangeMask sequence, ending exactly at the Loop 2 setup at 0x007EF84E.
 
-
+// This section is 8 bytes after object-section padding, so it must also
+// reproduce the 2-byte 'mov eax, ebp' at 0x007EF774.
 0x007EF76E:
     jle     L_ExitRangeRender
+    mov     eax, ebp
 
 rangeRenderer = 4
 idx = 8
