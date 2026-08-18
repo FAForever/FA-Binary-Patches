@@ -1,0 +1,57 @@
+# unit strategic icon
+0x0085DDB6:
+    cvtsi2ss xmm0, ecx; # ecx contains half width
+    movss    xmm1, ds:iconscale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x3C], xmm0 # half width
+    mov      ecx, [ebx + 0x10] # height
+    shr      ecx, 1
+    cvtsi2ss xmm0, ecx;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x38], xmm0 # half height
+    movss    xmm2, dword ptr [esp + 0x40]
+    nop;nop;nop;nop;nop;nop;nop;nop
+
+# pause icon
+0x0085DEB3:
+    cvtsi2ss xmm0, edx; # edx contains half width
+    movss    xmm1, ds:iconscale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x3C], xmm0 # half width
+    mov      eax, [ebx + 0x10] # height
+    shr      eax, 1
+    cvtsi2ss xmm0, eax;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x38], xmm0 # half height
+    movss    xmm2, dword ptr [esp + 0x40]
+    nop;nop;nop;nop;nop;nop;nop;nop
+
+# stun icon
+0x0085DFAF:
+    cvtsi2ss xmm0, eax; # eax contains half width
+    movss    xmm1, ds:iconscale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x3C], xmm0 # half width
+    mov      eax, [ebx + 0x10] # height
+    shr      eax, 1
+    cvtsi2ss xmm0, eax;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x38], xmm0 # half height
+    mov      eax, [esi + 0x14]
+    nop;nop;nop;nop;nop;nop;nop;nop
+
+# objective underlay
+# Test with 
+# SimLua ArmyBrains[GetFocusArmy()]:GetListOfUnits(categories.ALLUNITS, false, false)[1]:SetStrategicUnderlay'icon_objective_bonus'
+0x0085DCA4:
+    cvtsi2ss xmm0, eax; # eax contains half width
+    movss    xmm1, ds:iconscale
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x3C], xmm0 # half width
+    mov      eax, [ecx + 0x10] # height
+    shr      eax, 1
+    cvtsi2ss xmm0, eax;
+    mulss    xmm0, xmm1
+    movss    dword ptr[esp + 0x38], xmm0 # half height
+    movss    xmm6, dword ptr [esp + 0x40]
+    nop;nop;nop;nop;nop;nop;nop;nop
