@@ -1,0 +1,21 @@
+0x0081EA44:
+    jmp @asm__SplitSelectedUnitsByGivenCategory
+    nop
+    nop
+    
+0x00820227:
+    jmp @asm__targetIsStructureCase_prepareUnitLists
+    nop
+    
+0x00820286:
+    jmp @asm__targetIsStructureCase_issueFactoryCommand
+    nop
+    nop
+    nop
+    nop
+    nop
+    
+0x008203B2:
+    jmp @asm__targetIsMobileCase_issueFactoryCommand
+    nop
+    nop
