@@ -1,0 +1,14 @@
+0x005B34FB:
+    jmp @asm__UnitForceReverseCheck
+    nop
+    nop
+    nop
+    nop
+
+0x005B3578:
+    jmp @asm__BackUpDistanceCheck
+    
+0x005B3566:
+    jmp @asm__MovementTypeIDCheck
+    nop
+    nop
