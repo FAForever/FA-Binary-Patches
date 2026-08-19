@@ -265,5 +265,26 @@ const int _Moho_SSTICommandIssueData_Destructor = 0x0057ABB0;
 // MSVCR80.dll
 #define _memmove_s = 0x00A824E7;
 
+// Navigator / Build Range
+005F7440 CUnitMobileBuildTask::TaskTick(this)
+005AE2D0 CAiPathNavigator::UpdateCurrentPosition(this, pos)
+006190A0 NewMoveTask(SNavGoal* edi, CCommandTask* esi, SOCellPos, CUnitCommand*, int)
+005A2CB0 SNavGoal::SNavGoal(this, SOCellPos)
+005A3ED0 CAiNavigatorLand::SetGoal(this, SNavGoal*)
+0062B780 Unit::PrepareMove(Unit*, Vector3f*, Rect2f*, int, char)
+
+// Unit+0x54C = IAiNavigator* (NOT 0x4B4)
+// CAiNavigatorLand+0x68 = CAiPathNavigator*
+// CAiPathNavigator offsets:
+//   +0x0C mNext (0=arrived, 5/6=moving)
+//   +0x24 mCurrentPos (HPathCell: x=int16 low, z=int16 high)
+//   +0x28 mTargetPos
+//   +0x30 mGoal.mPos1.x0 (set by SetGoal)
+//   +0x34 mGoal.mPos1.z0
+//   +0x40 mGoal.mPos2.x0 (unused by engine, available for tagging)
+//   +0x44 mGoal.mPos2.z0
+//   +0x48 mGoal.mPos2.x1
+//   +0x64 v26 counter
+
 // New unit categories.
 const char* sCQUEMOV = "CQUEMOV";
