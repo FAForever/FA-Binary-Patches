@@ -125,7 +125,7 @@ struct TObject {
   inline TObject() : tt{LUA_TNIL} {}
 };
 
-VALIDATE_SIZE(TObject, 8)
+VALIDATE_SIZE(TObject, 8);
 
 // namespace gpg
 namespace gpg
@@ -150,7 +150,7 @@ public:
   LuaState *m_state;
   int m_stackIndex;
 };
-VALIDATE_SIZE(LuaStackObject, 8)
+VALIDATE_SIZE(LuaStackObject, 8);
 
 extern const char *luaT_typenames[] asm("0x00D474D8");
 
@@ -280,7 +280,7 @@ private:
   LuaObject __Clone(LuaObject &backref) const;
   void RemoveFromUsedList();
 };
-VALIDATE_SIZE(LuaObject, 0x14)
+VALIDATE_SIZE(LuaObject, 0x14);
 
 enum StandardLibraries { LIB_NONE, LIB_BASE, LIB_OSIO };
 class LuaState { // 0x34 bytes
@@ -316,7 +316,7 @@ public:
     LuaObject *m_prev; // only valid when in used list
   } m_headObject, m_tailObject;
 };
-VALIDATE_SIZE(LuaState, 0x34)
+VALIDATE_SIZE(LuaState, 0x34);
 
 lua_State *__cdecl luaV_settable(lua_State *L, const TObject *t,
                                  const TObject *key,

@@ -32,7 +32,7 @@ Vector2f ToVector2f(lua_State *l, int index)
     lua_rawgeti(l, -1, 1);
     res.x = lua_tonumber(l, -1);
     lua_rawgeti(l, -2, 2);
-    res.z = lua_tonumber(l, -1);
+    res.y = lua_tonumber(l, -1);
     lua_pop(l, 3);
     return res;
 }
@@ -53,6 +53,6 @@ void PushVector2(lua_State *l, Vector2f v)
     lua_createtable(l, 2, 0);
     lua_pushnumber(l, v.x);
     lua_rawseti(l, -2, 1);
-    lua_pushnumber(l, v.z);
+    lua_pushnumber(l, v.y);
     lua_rawseti(l, -2, 2);
 }

@@ -1,0 +1,15 @@
+0x007A7858:
+  jmp asm__ShouldAddUnit
+  nop
+
+0x007EF12B:
+  push esp
+  mov ecx, esi
+  call RenderRange__Moho__UserUnit__UserUnit
+  nop
+
+0x005BF011:
+  mov ecx, edi
+  mov edx, eax
+  call Hooked_SyncVisionRange
+  jmp 0x005BF02C

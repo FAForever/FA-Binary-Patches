@@ -16,33 +16,35 @@
 #define g_ConsoleLuaState		GPtr(0x10A6478, LuaState*)
 #define g_Device			GPtr(0x0F8E284, Device*)
 
-GDecl(ui_ProgressBarColor,		0x0F57BB8, int)
-GDecl(ui_SelectTolerance,		0x0F57A90, float)
-GDecl(ui_ExtractSnapTolerance,		0x0F57A94, float)
-GDecl(ui_DisableCursorFixing,		0x10A6464, bool)
-GDecl(ui_RenderIcons,			0x0F57B27, bool)
-GDecl(range_RenderSelected,		0x10A640A, bool)
-GDecl(range_RenderHighlighted,		0x10A640B, bool)
-GDecl(range_RenderBuild,		0x10A6414, bool)
-GDecl(d3d_WindowsCursor,		0x10A636E, bool)
-GDecl(debugSelect,			0x10A645E, bool)
+GDecl(ui_ProgressBarColor,		0x0F57BB8, int);
+GDecl(ui_SelectTolerance,		0x0F57A90, float);
+GDecl(ui_ExtractSnapTolerance,		0x0F57A94, float);
+GDecl(ui_DisableCursorFixing,		0x10A6464, bool);
+GDecl(ui_RenderIcons,			0x0F57B27, bool);
+GDecl(range_RenderSelected,		0x10A640A, bool);
+GDecl(range_RenderHighlighted,		0x10A640B, bool);
+GDecl(range_RenderBuild,		0x10A6414, bool);
+GDecl(d3d_WindowsCursor,		0x10A636E, bool);
+GDecl(debugSelect,			0x10A645E, bool);
 
-CSTR(s_FACTORY,			0xE19824)
-CSTR(s_EXPERIMENTAL,			0xE204B8)
-CSTR(s_ExpectedButGot,			0xE0A220) // "%s\n  expected %d args, but got %d"
-CSTR(s_ExpectedBetweenButGot,		0xE0A270) // "%s\n  expected between %d and %d args, but got %d"
-CSTR(s_Global,				0xE00D90) // "<global>"
-CSTR(s_CMauiBitmap,			0xE37438) // "CMauiBitmap"
-CSTR(s_UserUnit,			0xE4D090) // "UserUnit"
-CSTR(s_ExpectedAGameObject,		0xE09860) // "Expected a game object. (Did you call with '.' instead of ':'?)"
-CSTR(s_GameObjectHasBeenDestroyed,	0xE098A0) // "Game object has been destroyed"
-CSTR(s_IncorrectTypeOfGameObject,	0xE098C0) // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
-CSTR(s_UnknownColor,			0xE07D14) // "Unknown color: %s"
-CSTR(s_c_object,			0xE016DC) // "_c_object"
+CSTR(s_FACTORY,			0xE19824);
+CSTR(s_EXPERIMENTAL,			0xE204B8);
+CSTR(s_ExpectedButGot,			0xE0A220); // "%s\n  expected %d args, but got %d"
+CSTR(s_ExpectedBetweenButGot,		0xE0A270); // "%s\n  expected between %d and %d args, but got %d"
+CSTR(s_Global,				0xE00D90); // "<global>"
+CSTR(s_CMauiBitmap,			0xE37438); // "CMauiBitmap"
+CSTR(s_UserUnit,			0xE4D090); // "UserUnit"
+CSTR(s_ExpectedAGameObject,		0xE09860); // "Expected a game object. (Did you call with '.' instead of ':'?)"
+CSTR(s_GameObjectHasBeenDestroyed,	0xE098A0); // "Game object has been destroyed"
+CSTR(s_IncorrectTypeOfGameObject,	0xE098C0); // "Incorrect type of game object.  (Did you call with '.' instead of ':'?)"
+CSTR(s_UnknownColor,			0xE07D14); // "Unknown color: %s"
+CSTR(s_c_object,			0xE016DC); // "_c_object"
+CSTR(s_addVizError, 0x00E36248); // "Moho::CIntelCounterHandle::AddViz: unsupported counter intel type %i"
+CSTR(s_subVizError, 0x00E36290); // "Moho::CIntelCounterHandle::SubViz: unsupported counter intel type %i"
 
-GDecl(g_ExeVersion1,			0x876666, const int)
-GDecl(g_ExeVersion2,			0x87612d, const int)
-GDecl(g_ExeVersion3,			0x4d3d40, const int)
+GDecl(g_ExeVersion1,			0x876666, const int);
+GDecl(g_ExeVersion2,			0x87612d, const int);
+GDecl(g_ExeVersion3,			0x4d3d40, const int);
 
 void AbortF(wchar_t *fmt, ...) asm("0x9C4940");
 int LogF(const char *fmt, ...) asm("0x937CB0");
@@ -133,9 +135,9 @@ template <typename T> struct basic_string {
   ~basic_string() { clear(); }
 };
 
-VALIDATE_SIZE(string, 0x1C)
+VALIDATE_SIZE(string, 0x1C);
 static_assert(string::sso_size == 0x10);
-VALIDATE_SIZE(wstring, 0x1C)
+VALIDATE_SIZE(wstring, 0x1C);
 static_assert(wstring::sso_size == 0x8);
 
 template <typename T>
