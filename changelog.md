@@ -40,6 +40,11 @@ These don't matter except for other assembly patches
   - hooks/HRangeRings2.cpp
   - section/RangeRings2.cpp
 
+- Range ring hull cull for dense crowds (~16 FPS → ~80 FPS with 600+ units). Drops rings whose whole band is covered by already-kept rings, decided by an exact angular-interval coverage test (perimeter-coverage criterion) — visually lossless, validated against a raster ground truth over 23 layout classes. Opt-in via `ui_RangeRingClusterHull 1`; composes with the 127-batch stencil overflow fix (which stays necessary: kept sets can still exceed 127 overlaps).
+
+  - hooks/RangeRingCluster.hook
+  - section/RangeRingCluster.cpp
+
 - Range ring performance improvement (don't render each ring twice)
 
   - hooks/RangeRings.cpp

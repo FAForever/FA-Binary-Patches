@@ -265,5 +265,13 @@ const int _Moho_SSTICommandIssueData_Destructor = 0x0057ABB0;
 // MSVCR80.dll
 #define _memmove_s = 0x00A824E7;
 
+// Range ring rendering (hull cull patch)
+// func_RenderRings: 0x007EF5A0 — renders N ring positions via stencil pipeline
+// Moho::WeaponExtractor::Range: 0x007EC650 — extracts per-unit weapon ranges
+// sWldMap: 0x010A6438 — global pointer to the world map
+// Ring entry layout: [0]=worldX, [1]=worldZ, [2]=innerRadius, [3]=outerRadius (16 bytes)
+// sub_7F32E0: processes input vector into fill + edge buffers (1 fill + 2 edges per entry)
+// sub_7EDC80: per-entry ring geometry builder called by sub_7F32E0
+
 // New unit categories.
 const char* sCQUEMOV = "CQUEMOV";
