@@ -1,0 +1,14 @@
+
+# change effects to update visibility every tick instead of every 5 ticks
+0x0065C518: #Moho::CEfxEmitter::CanSeeCam+0xF8
+    jmp     .+0xA
+0x00655AD3: #Moho::CEfxBeam::CanSeeCam+0x443
+    jmp     .+0xA
+0x006716DF: #Moho::CEfxTrail::CanSeeCam+0x18F
+    jmp     .+0xA
+
+# change emitter effects to update position every tick instead of every 3 ticks
+0x0065DADE: #Moho::CEfxEmitter::OnTick+0x1E
+    ja      .+0x36
+0x0065DAF0: #Moho::CEfxEmitter::OnTick+0x30
+    jmp     .+0x24
