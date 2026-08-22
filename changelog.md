@@ -158,8 +158,8 @@ These don't matter except for other assembly patches
   - hooks/WayPointArrive.cpp
  
 - Fix camera snapping behind terrain in freecam
-  - hooks/TrueFreeCam
-  - section/TrueFreeCam
+  - hooks/TrueFreeCam.cpp
+  - section/TrueFreeCam.cpp
 
 ## Improvements
 
