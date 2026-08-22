@@ -156,6 +156,10 @@ These don't matter except for other assembly patches
 
 - Fix a crash when units arrive at waypoints
   - hooks/WayPointArrive.cpp
+ 
+- Fix camera snapping behind terrain in freecam
+  - hooks/TrueFreeCam
+  - section/TrueFreeCam
 
 ## Improvements
 
