@@ -1,0 +1,16 @@
+0x00885EC9:
+    call @UI_StateCreate
+
+0x008940A1:
+    call @UI_StateDestroy
+
+
+0x00743AAB:
+    call @SIM_StateCreate
+
+0x00745BCC:
+    call @SIM_StateDestroy
+
+0x0074614A:
+    call @SIM_StateDestroy
+
