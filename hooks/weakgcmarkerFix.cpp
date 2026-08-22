@@ -1,4 +1,4 @@
-#include "../define.h"
+
 
 asm(
     "; arg_0           =  4;"

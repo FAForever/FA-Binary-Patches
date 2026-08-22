@@ -1,8 +1,5 @@
 *.exe*
 /build
-define.h
-patch.ld
-section.cpp
 
 // ida files
 *.ida
@@ -15,6 +12,5 @@ section.cpp
 
 .vscode
 
-section.ld
 section/main.cpp
 section/main.cxx
