@@ -1,0 +1,43 @@
+{
+    "input_exe_path": "ForgedAlliance_base.exe",
+    "output_exe_path": "C:\\ProgramData\\FAForever\\bin\\ForgedAlliance_exxt.exe",
+    "clang_flags": [
+        "-pipe",
+        "-m32",
+        "-O3",
+        "-nostdlib",
+        "-Werror",
+        "-masm=intel",
+        "-std=c++20",
+        "-march=core2",
+        "-D_CRT_SECURE_NO_WARNINGS",
+        "-D_NO_CRT_STDIO_INLINE"
+    ],
+    "gcc_flags": [
+        "-pipe",
+        "-m32",
+        "-Os",
+        "-fno-exceptions",
+        "-nostdlib",
+        "-nostartfiles",
+        "-fpermissive",
+        "-masm=intel",
+        "-std=c++20",
+        "-march=core2",
+        "-mfpmath=both"
+    ],
+    "asm_flags": [
+        "-pipe",
+        "-m32",
+        "-Os",
+        "-fno-exceptions",
+        "-nostdlib",
+        "-nostartfiles",
+        "-w",
+        "-fpermissive",
+        "-masm=intel",
+        "-std=c++20",
+        "-march=core2",
+        "-mfpmath=both"
+    ]
+}

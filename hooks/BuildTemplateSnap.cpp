@@ -1,5 +1,5 @@
 #define SECTION(index, address) ".section h"#index"; .set h"#index","#address";"
-#include "../define.h"
+
 
 asm(
     SECTION(0, 0x0086FFF0)
@@ -10,7 +10,7 @@ asm(
     "NOP;"
     "NOP;"
     SECTION(1, 0x00870044)
-    "jmp "QU(HookHydroCondition)";"
+    "jmp HookHydroCondition;"
     "nop;"
     "nop;"
     "nop;"

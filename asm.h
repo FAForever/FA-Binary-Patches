@@ -1,1 +1,0 @@
-#define SECTION(index, address) ".section h"#index"; .set h"#index","#address";"
