@@ -1,0 +1,26 @@
+
+# Optimize interpolations to not update the entity transform every operation as
+# intended. As given, it stores the interpolation amount, but checks against the
+# interpolation percent. We'll simply slide the interpolation calculation above
+# the check.
+0x008B8CF3: #Moho::UserEntity::GetInterpolatedTransform+0x3
+    push    ebx # this gets left up here but the rest can move down
+    movss   xmm0, dword ptr [esi+0xAC]
+    mulss   xmm0, xmm1
+    movss   xmm1, [0x00DFEC20] # 1.0
+    comiss  xmm1, xmm0
+    ja      SKIP_SET_ONE
+    movaps  xmm0, xmm1
+SKIP_SET_ONE:
+    xorps   xmm1, xmm1
+    comiss  xmm1, xmm0
+    movaps  xmm6, xmm0
+    movss   [esp+0x4], xmm6
+    jbe     SKIP_SET_ZERO
+    movaps  xmm6, xmm1
+    movss   [esp+0x4], xmm6
+SKIP_SET_ZERO:
+    ucomiss xmm6, dword ptr [esi+0x140]
+    lahf
+    test    ah, 0x44
+    jnp     0x008B8DF5
