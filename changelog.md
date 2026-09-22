@@ -70,6 +70,13 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix tracked-unit tread scrolling precision, left/right channel mapping, and intermittent zero-delta stalls.
+
+  - hooks/TreadScrollPhaseSideFix.hook
+  - hooks/TreadScrollZeroGapBridge.hook
+  - section/TreadScrollPhaseSideFix.cpp
+  - section/TreadScrollZeroGapBridge.cpp
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook

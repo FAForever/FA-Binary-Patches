@@ -1,0 +1,9 @@
+# Keep the deterministic phase rebase separate from the complete WorldMesh
+# copy-block hook. TreadScrollZeroGapBridge owns all four mapped output stores.
+0x008B9033:
+    jmp @TreadScrollPhaseRebase
+    nop
+    nop
+    nop
+    nop
+    nop
