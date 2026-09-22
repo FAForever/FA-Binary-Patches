@@ -1,0 +1,4 @@
+# Keep hardware instancing enabled while disabling the Float16 formatter.
+# 0x00F324B4 = allowFloat16; 0x00F324B5 = allowInstancing.
+0x00F324B4:
+    .byte 0x00
