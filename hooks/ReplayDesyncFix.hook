@@ -1,0 +1,5 @@
+hasCommandSource = -0x8E
+0x0053C71E:
+    mov     byte ptr [esp + 0x0A4 + hasCommandSource], 1
+    jmp     0x0053C7D7
+    nop
