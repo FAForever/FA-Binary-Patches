@@ -57,7 +57,7 @@ public:
             static_assert(!std::is_same_v<T, T>, "Not supported type!");
     }
 };
-VALIDATE_SIZE(ConDescReg<TConFunc>, 0x10)
+VALIDATE_SIZE(ConDescReg<TConFunc>, 0x10);
 
 //int v;
 //ConDescReg myConIntV{"name", "desc", &v};
