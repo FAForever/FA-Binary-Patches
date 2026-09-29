@@ -1,4 +1,12 @@
 # Keep hardware instancing enabled while disabling the Float16 formatter.
 # 0x00F324B4 = allowFloat16; 0x00F324B5 = allowInstancing.
+#
+# Reconstructed-source cross-check (Draiget/faf-re, audited 2026-09-29):
+# sMeshAllowFloat16 and sMeshAllowInstancing are independent bytes, both
+# defaulting to 1. CON_mesh_Rebatch writes them independently. The D3D9
+# Float16 formatter requires both instancing and MeshFloat16Enabled(), while
+# the full-float hardware formatter remains available with instancing enabled.
+# The recovered Float16 formatter packs the interpolated MeshInstance scroll
+# pair through PackFloat2ToHalf2; this patch changes only the default selector.
 0x00F324B4:
     .byte 0x00
