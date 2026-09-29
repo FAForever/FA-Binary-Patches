@@ -6,6 +6,20 @@
 //   after confirmed movement, both source tread deltas can become exactly zero
 //   for several simulation updates even though the unit continues moving. The
 //   render path remains active and faithfully displays the zero source deltas.
+
+//
+// Reconstructed-source cross-check (Draiget/faf-re, audited 2026-09-29):
+//   UserEntity::UpdateEntityData is recovered at 0x008B8EB0. Its replicated
+//   Entity variable-data block begins at UserEntity + 0x50, so the two Vec2
+//   scroll lanes are +0xD0/+0xD4 and +0xD8/+0xDC. The same function publishes
+//   them to MeshInstance::scroll1 / scroll2 at +0x94..+0xA0, matching this
+//   bridge's source and destination fields.
+//   CTextureScroller::Tick is also recovered and runs before Unit motion in
+//   Entity::TaskTick. The currently recovered source confirms the pipeline and
+//   offsets, but does not yet isolate a single upstream branch that explains
+//   the telemetry-captured multi-update simultaneous exact-zero sequences.
+//   The zero-gap policy below therefore remains a bounded, telemetry-driven
+//   mitigation; it is not presented as a source-level root-cause repair.
 //
 // Policy:
 //   - require the same WorldMesh and UserEntity pointers;
