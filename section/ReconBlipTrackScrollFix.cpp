@@ -1,9 +1,9 @@
 // Forward the source Unit's four texture-scroll values into the
-// ReconBlip Entity snapshot.
+// entity-update record published by ReconBlip::SyncInterface.
 //
 // Hook context at 0x005BF171:
 //   EDI = ReconBlip
-//   ESI = snapshot builder argument before conversion to Entity snapshot base
+//   ESI = sync/update builder argument before conversion to the entity-update base
 //
 // ReconBlip + 0x270 stores the encoded source Unit reference.
 // A valid reference is converted to the full Unit pointer by subtracting 4.
@@ -15,7 +15,7 @@
 //   Unit + 0x10C = Entity + 0x104
 //
 // The destination fields are the corresponding scroll values in the
-// Entity snapshot built for the ReconBlip.
+// outgoing Entity variable-data update for the ReconBlip.
 
 extern "C" __attribute__((naked)) void ReconBlipTrackScrollFix()
 {
