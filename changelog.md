@@ -70,6 +70,10 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix repairing a damaged shield unit regenerating its shield while the shield is off
+
+  - hooks/ShieldRepairRegenFix.hook
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook

@@ -1,0 +1,27 @@
+# Moho::CBuildTaskHelper::UpdateWorkProgress, SHIELD focus unit with a focus entity
+# ShieldIsOn was only checked when the focus unit was at full health, so repairing
+# a damaged unit regenerated its shield even while the shield was off.
+# Always check ShieldIsOn; when it is off, return true for an undamaged unit as
+# before, and skip the shield regen block for a damaged one.
+# bl holds focusDamaged (loaded at 0x005F5FEB), which the fuel block reads.
+# The focus unit WeakPtr null check is dropped to make room: the unit was
+# already dereferenced unchecked above (0x005F5F5E).
+# Jumps to absolute addresses always assemble to rel32, so the shield on case
+# jumps short to the local label that ends the hook at 0x005F6015.
+0x005F5FEF:
+    mov     ecx, [esi]          # focus unit WeakPtr
+    add     ecx, 4              # (WeakPtr - 4) + 8: the unit's CScriptObject
+    push    0x00E1F7BC          # "ShieldIsOn"
+    call    0x005F48A0          # Moho::CScriptObject::RunScript_Bool
+    test    al, al
+    jnz     1f                  # shield on: regen block
+    test    bl, bl
+    jz      0x005F5C4D          # undamaged: return true
+    jmp     0x005F60D4          # damaged: skip regen, continue repairing
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+1:
