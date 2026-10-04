@@ -905,7 +905,7 @@ struct Unit : WeakObject
 	void *workValues; // +0x8
 	bool Flag;
 	// at 0x53C
-	float WorkRate;
+	float ResourceConsumed; // Readonly, fraction of requested resources granted
 	// at 0x544
 	void *IAiAttacker;
 	void *IAiCommandDispatch;
