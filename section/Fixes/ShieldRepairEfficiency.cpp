@@ -1,8 +1,6 @@
 // Shield repair amount was regenRate * buildRate / regenAssistMult regardless of
 // how much of its requested resources the builder got. Scale it by the builder's
-// ResourceConsumed like build progress is. Not by build progress itself: that is
-// also divided by the unit's BuildTime, and halved again for a damaged unit, on
-// top of the regenAssistMult doubling that already splits buildpower 1/2.
+// ResourceConsumed like build progress is.
 void ShieldRepairEfficiency()
 {
     asm(
