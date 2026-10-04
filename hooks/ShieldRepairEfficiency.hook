@@ -1,0 +1,11 @@
+# Moho::CBuildTaskHelper::UpdateWorkProgress, shield regen AdjustHealth amount
+# Scale shield repair by the builder's resource efficiency
+0x005F60AD:
+    jmp     @ShieldRepairEfficiency
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop

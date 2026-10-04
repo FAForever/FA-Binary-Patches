@@ -74,6 +74,11 @@ These don't matter except for other assembly patches
 
   - hooks/ShieldRepairRegenFix.hook
 
+- Fix shield repair being fully effective when the builder has insufficient resources
+
+  - hooks/ShieldRepairEfficiency.hook
+  - section/Fixes/ShieldRepairEfficiency.cpp
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook
