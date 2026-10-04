@@ -1,0 +1,5 @@
+// Hook in CUnitMobileBuildTask::TaskTick state 0
+// Replaces the 3x push 0 before NewMoveTask (6 bytes)
+0x005F7754:
+    jmp @EngineerBuildRangeHook
+    nop
