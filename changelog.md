@@ -70,6 +70,10 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Preserve texture-scroll precision by disabling the Float16 hardware instance formatter while keeping hardware instancing enabled.
+
+  - hooks/DisableFloat16VertexFormatter.hook
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook
