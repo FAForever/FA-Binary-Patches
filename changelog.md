@@ -70,6 +70,11 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix track texture scrolling for visible enemy tracked units.
+
+  - hooks/ReconBlipTrackScrollFix.hook
+  - section/ReconBlipTrackScrollFix.cpp
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook
