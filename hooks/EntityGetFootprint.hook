@@ -8,3 +8,21 @@
     jmp @asm__GetFootprint
     nop
     nop
+
+
+// Serialize our new fields:
+
+# Moho::SSTIEntityVariableData::MemberDeserialize+0x2AE
+0x00559DAE:
+    mov     edx, [eax+0x24] # `gpg::ReadArchive->ReadBool` to `gpg::ReadArchive->ReadInt`
+
+# Moho::SSTIEntityVariableData::MemberSerialize+0x21D
+0x0055A11D:
+    mov     edx, [eax+0x24] # `gpg::WriteArchive->WriteBool` to `gpg::WriteArchive->WriteInt`
+
+# Moho::SSTIEntityVariableData::operator=()+0x146
+0x0067A526:
+    mov     edx, dword ptr [esi+0x0A4] # was `movzx` from byte ptr
+    nop                                # `movzx` was a larger instruction
+    mov     [ebx+0x0A4], edx           # was `dl`
+
