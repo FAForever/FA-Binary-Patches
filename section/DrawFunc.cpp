@@ -111,7 +111,8 @@ namespace Moho
 
         void ResetBatcher(void *batcher)
         {
-            *(char *)((int *)batcher + 285) = 0;
+            // mRebuildComposite, the bool at byte offset 285 of the 0x124 byte CD3DPrimBatcher
+            *((char *)batcher + 285) = 0;
         }
 
         struct Texture
