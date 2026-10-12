@@ -70,6 +70,14 @@ struct list
 VALIDATE_SIZE(list<unk_t>, 0xC)
 
 template <typename T>
+struct shared_ptr
+{ // 0x8 bytes, boost::shared_ptr
+	T *px;
+	void *pi; // reference counter
+};
+VALIDATE_SIZE(shared_ptr<unk_t>, 0x8)
+
+template <typename T>
 struct linked_list
 { // 0x8 bytes
 	T *next;
@@ -194,6 +202,33 @@ struct EngineStats // : class Stats<class Moho::StatItem>
 struct Camera // : RCamCamera
 {			  // 0x007A7972, 0x858 bytes
 };
+
+struct CD3DPrimBatcher
+{ // 0x007F6BCB, 0x124 bytes
+	void *textureBatcher;
+	void *vertexSheets[3];
+	int curVertexSheet;
+	void *indexSheet;
+	// at 0x18
+	vector<unk_t> vertices; // 0x18 byte vertices
+	vector<uint16_t> primitives;
+	int mode;
+	// at 0x3C
+	shared_ptr<void> dynamicTexSheet;
+	shared_ptr<void> texture;
+	Vector2f p2;
+	Vector2f p1;
+	// at 0x5C
+	float viewMatrix[16];
+	float projectionMatrix[16];
+	float composite[16];
+	// at 0x11C
+	bool resetComposite;
+	bool rebuildComposite; // Flush sets the composite shader matrix when false
+	// at 0x120
+	float alphaMultiplier;
+};
+VALIDATE_SIZE(CD3DPrimBatcher, 0x124)
 
 struct CMauiControl : CScriptObject
 { // 0x004C6F8A, 0x11C bytes
