@@ -11,7 +11,7 @@ void _DrawQuad(
     Vector3f *a2,
     Vector3f *ecx0,
     Vector3f *esi0,
-    void *batcher,
+    CD3DPrimBatcher *batcher,
     Vector3f *a6)
 {
     asm("push %[a6];"
@@ -32,7 +32,7 @@ void _DrawRect(
     Vector3f *v2,
     unsigned int color,
     float thickness,
-    void *batcher,
+    CD3DPrimBatcher *batcher,
     Vector3f *v3,
     void *heightmap,
     float f2)
@@ -62,7 +62,7 @@ void DrawRect(
     Vector3f v2,
     uint32_t color,
     float f1,
-    void *batcher,
+    CD3DPrimBatcher *batcher,
     Vector3f v3,
     void *heightmap,
     float f2)
@@ -72,7 +72,7 @@ void DrawRect(
 
 float THICKNESS = 0.1;
 extern unsigned int CIRCLE_COLOR;
-void _DrawCircle(void *batcher, Vector3f *pos, float radius, float thickness, uint32_t color, Vector3f *orientation)
+void _DrawCircle(CD3DPrimBatcher *batcher, Vector3f *pos, float radius, float thickness, uint32_t color, Vector3f *orientation)
 {
     THICKNESS = thickness;
     CIRCLE_COLOR = color;
@@ -107,11 +107,11 @@ namespace Moho
     }
     namespace CPrimBatcher
     {
-        __stdcall void *FlushBatcher(void *batcher) asm("0x0043A140");
+        __stdcall void *FlushBatcher(CD3DPrimBatcher *batcher) asm("0x0043A140");
 
-        void ResetBatcher(void *batcher)
+        void ResetBatcher(CD3DPrimBatcher *batcher)
         {
-            *(char *)((int *)batcher + 285) = 0;
+            batcher->rebuildComposite = false;
         }
 
         struct Texture
@@ -129,7 +129,7 @@ namespace Moho
             return t;
         }
 
-        void __stdcall SetTexture(void *batcher, Texture *texture)
+        void __stdcall SetTexture(CD3DPrimBatcher *batcher, Texture *texture)
         {
             asm(
                 "call 0x4386A0;"
@@ -139,7 +139,7 @@ namespace Moho
                 : "edx", "ecx", "eax");
         }
 
-        void __stdcall SetViewProjMatrix(void *batcher, void *matrix)
+        void __stdcall SetViewProjMatrix(CD3DPrimBatcher *batcher, void *matrix)
         {
             asm(
                 "push %[matrix];"
@@ -191,7 +191,7 @@ void *_worldview = nullptr;
 // UI_Lua DrawRect()
 int LuaDrawRect(lua_State *l)
 {
-    int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
+    CD3DPrimBatcher *batcher = *(CD3DPrimBatcher **)(((int *)g_WRenViewport) + 2135);
     if (batcher == nullptr || _worldview == nullptr)
     {
         return 0;
@@ -224,7 +224,7 @@ UIRegFunc DrawRectReg{"UI_DrawRect", "UI_DrawRect(pos:vector, size:float, color:
 
 int LuaDrawCircle(lua_State *l)
 {
-    int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
+    CD3DPrimBatcher *batcher = *(CD3DPrimBatcher **)(((int *)g_WRenViewport) + 2135);
     if (batcher == nullptr || _worldview == nullptr)
     {
         return 0;
@@ -263,7 +263,7 @@ Vector3f FindNormalVector(const Vector3f &p1, const Vector3f &p2)
 
 int LuaDrawLine(lua_State *l)
 {
-    int *batcher = *(int **)(((int *)g_WRenViewport) + 2135);
+    CD3DPrimBatcher *batcher = *(CD3DPrimBatcher **)(((int *)g_WRenViewport) + 2135);
     if (batcher == nullptr || _worldview == nullptr)
     {
         return 0;
@@ -308,7 +308,7 @@ UIRegFunc DrawLineReg{"UI_DrawLine", "UI_DrawLine(pos1:vector, pos2:vector, colo
 float delta_frame = 0;
 
 // offset +284 from CUIWorldView
-void __thiscall CustomDraw(void *_this, void *batcher)
+void __thiscall CustomDraw(void *_this, CD3DPrimBatcher *batcher)
 {
     // void *wldmap = IWldTerrainRes::GetWldMap();
     // void *terrain = IWldTerrainRes::GetTerrainRes(wldmap);
