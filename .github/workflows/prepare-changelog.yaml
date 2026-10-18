@@ -1,0 +1,101 @@
+
+
+# This workflow creates a pull request for the release changelog based on the snippets.
+# The changelog gets generated based on the master branch.
+
+name: Prepare release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-changelog:
+    name: Create changelog of master branch
+    uses: ./.github/workflows/combine-snippets.yaml
+    with:
+      branch: master
+
+  release-preparation:
+    name: Prepare files for patch
+    runs-on: ubuntu-latest
+    needs: generate-changelog
+    steps:
+      - name: Checkout FA repository
+        uses: actions/checkout@v6
+        with:
+          repository: FAForever/fa
+          path: fa
+          ssh-key: ${{ secrets.SSH_FAFOREVER_MACHINE_USER }}
+          ref: develop
+
+      - name: Determine next patch version
+        id: version
+        run: |
+          CURRENT_VERSION=$(grep 'Version' fa/lua/version.lua | grep -o '[0-9]\+')
+          NEXT_VERSION=$((CURRENT_VERSION + 1))
+          echo "old_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout FA-Binary-Patches repository
+        uses: actions/checkout@v6
+        with:
+          ssh-key: ${{ secrets.SSH_FAFOREVER_MACHINE_USER }}
+          ref: master
+
+      - name: Create branch
+        id: branch
+        run: |
+          BRANCH="changelog${{ steps.version.outputs.version }}"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+            echo "Branch '$BRANCH' already exists. Aborting workflow."
+            exit 1
+          fi
+          git checkout -b "$BRANCH"
+
+      - name: Download changelog artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: changelog-patch
+          path: changelog/snippets
+
+      - name: Add links to the file
+        run: |
+          ./.github/workflows/scripts/bash/changelog-links.sh changelog/snippets FAForever FA-Binary-Patches github.com
+
+      - name: Append changelog
+        working-directory: changelog/snippets
+        run: |
+          sed -i "s/XYZW/${{ steps.version.outputs.version }}/g" changelog-patch.md
+          sed -i '/^# Changelog/r changelog-patch.md' ${{ github.workspace }}/changelog.md
+          
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add ${{ github.workspace }}/changelog.md
+          git commit -m "Add Markdown changelog for version ${{ steps.version.outputs.version }}"
+
+      - name: Remove snippets
+        run: |
+          rm -f changelog/snippets/*.md
+          git add changelog/snippets
+          git commit -m "Delete changelog snippets"
+
+      - name: Push branch
+        run: |
+          git push origin "${{ steps.branch.outputs.branch }}"
+
+      - name: Create Pull Request
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const version = "${{ steps.version.outputs.version }}";
+            const branch = "${{ steps.branch.outputs.branch }}";
+            
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Changelog ${version}`,
+              head: branch,
+              base: "master",
+              body: `Automated changelog for game version ${version}.`
+            });
