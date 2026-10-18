@@ -29,7 +29,7 @@ on:
   workflow_dispatch:
     inputs:
       modName:
-        description: "modName"
+        description: "Deploy to X. Uses the corresponding staging branch."
         required: true
         default: "fafdevelop"
         type: choice
@@ -45,9 +45,10 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        branch: staging/${{ github.event.inputs.modName }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -78,14 +79,3 @@ jobs:
           "https://api.faforever.com/exe/upload" -F "modName=${{ github.event.inputs.modName }}" -F "apiKey=${{ secrets.apiKey }}"
           -F "file=@ForgedAlliance_exxt.exe"
 
-      # Upon succesful upload, create a release in the repository
-      - name: Create a Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          commit: ${{ github.sha }}
-          tag: ${{ github.event.inputs.modName }}_${{ github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generateReleaseNotes: true
