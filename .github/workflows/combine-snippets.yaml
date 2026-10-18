@@ -1,0 +1,42 @@
+
+
+# This workflow compiles the changelog snippets into a single new Markdown file.
+
+name: Documentation - Generate changelog
+
+on:
+  workflow_dispatch:
+
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+        description: The branch to use to compile the changelog snippets from
+
+jobs:
+  generate-changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Update environment path
+        run: |
+          echo "${{ github.workspace }}/.github/workflows/scripts/bash" >> $GITHUB_PATH
+
+      - name: Create the changelog file
+        working-directory: changelog/snippets
+        env:
+          REFERENCE: ${{ inputs.branch || github.head_ref || github.ref_name }}
+        run: |
+          changelog-combine.sh
+
+      - name: Add the changelog as an artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: changelog
+          path: |
+            changelog/snippets/combined.md
