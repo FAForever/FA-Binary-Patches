@@ -1,0 +1,5 @@
+0x004CEE33:
+    call @lua_dochecksum
+
+0x00914BD7: # we omit source file name for string.dump and LuaDumpBinary for now
+    xor eax, eax
