@@ -1,0 +1,5 @@
+// Hook in CAiPathNavigator::UpdateCurrentPosition before the cell-equality
+// arrival check. Replaces: mov ecx,[ebx+1C]; mov eax,[ebx+24] (6 bytes)
+0x005AE485:
+    jmp @CircularArrivalCheck
+    nop
