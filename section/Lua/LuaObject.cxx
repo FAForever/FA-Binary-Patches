@@ -183,6 +183,10 @@ void LuaObject::SetObject(const LuaObject &key, const LuaObject &value) const
 //   key_obj.tt = LUA_TSTRING;
 // }
 
+void LuaObject::SetObject(const char *key, const LuaObject &value) const
+{
+    SetObject(key, &value);
+}
 void LuaObject::SetObject(int key, const LuaObject &value) const
 {
     TObject key_obj{key};
