@@ -1,0 +1,13 @@
+# Moho::AudioEngine::AudioEngine
+# Replace the call to func_AudioInitialize with a version that also sizes the
+# 3D DSP buffers from XACT's final mix channel mask
+0x004D9588:
+    mov     eax, [esi]
+    push    eax
+    call    @X3DAudioInitializeSized
+    add     esp, 4
+    jmp     0x004D959C
+    nop
+    nop
+    nop
+    nop
