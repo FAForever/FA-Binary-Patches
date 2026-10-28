@@ -79,6 +79,11 @@ These don't matter except for other assembly patches
   - hooks/ShieldRepairEfficiency.hook
   - section/Fixes/ShieldRepairEfficiency.cpp
 
+- Fix 3D sounds having no distance attenuation or surround panning, writing past their buffers, and failing with "SND: XACT3DApply failed" on 7.1 and 5.1 surround devices
+
+  - hooks/X3DAudioChannelCount.hook
+  - section/Fixes/X3DAudioChannelCount.cxx
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook
