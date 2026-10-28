@@ -52,16 +52,27 @@ SHARED int X3DAudioInitializeSized(char *impl)
     alignas(4) char format[0x28];
     using GetFinalMixFormatFn = __stdcall int (*)(void *, void *);
     auto getFinalMixFormat = (*(GetFinalMixFormatFn **)engine)[kGetFinalMixFormatSlot];
-    if (getFinalMixFormat(engine, format) < 0)
+    int formatResult = getFinalMixFormat(engine, format);
+    if (formatResult < 0)
+    {
+        WarningF("SND: GetFinalMixFormat failed (0x%08X), 3D sound may not work", formatResult);
         return result;
+    }
 
     unsigned mask = *(unsigned *)(format + kWaveFormatChannelMask);
     unsigned channels = 0;
     for (; mask; mask &= mask - 1)
         ++channels;
 
+    // X3DAudio writes one coefficient for an empty mask, which still fits
+    if (channels == 0)
+    {
+        WarningF("SND: output device reported no speaker channel mask, 3D sound may not work");
+        return result;
+    }
+
     auto settings = (Moho::Audio3DDspSettings *)(impl + kImplDspSettings);
-    if (channels == 0 || channels == settings->dstChannelCount)
+    if (channels == settings->dstChannelCount)
         return result;
 
     AudioOperatorDelete(settings->delayTimes);

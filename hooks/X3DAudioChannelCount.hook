@@ -11,3 +11,9 @@
     nop
     nop
     nop
+
+# func_InitSound
+# Speaker modes above 7 take the silent stereo path like the others. The 3D
+# buffers are resized from XACT's final mix mask, so the mode no longer matters
+0x004D8E17:
+    .byte   0x77, 0x0E  # ja short 0x004D8E27
