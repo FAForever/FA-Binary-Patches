@@ -823,6 +823,7 @@ struct CommandQueue
 
 struct UnitWeapon //: CScriptEvent
 {				  // 0x006D3114, 0x188 bytes
+	using Type = ObjectType<0x10C7214, 0xF6DC1C>;
 	void *vtable;
 	// at 0x10
 	void *vtable2;
