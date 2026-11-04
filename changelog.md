@@ -79,6 +79,11 @@ These don't matter except for other assembly patches
   - hooks/ShieldRepairEfficiency.hook
   - section/Fixes/ShieldRepairEfficiency.cpp
 
+- Fix projectiles falling below the map forever. Projectiles below height 0 impact.
+
+  - hooks/ProjectileMotionTick.hook
+  - section/Fixes/ProjectileMotionTick.cpp
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook
