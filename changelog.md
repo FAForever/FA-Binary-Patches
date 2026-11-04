@@ -79,7 +79,7 @@ These don't matter except for other assembly patches
   - hooks/ShieldRepairEfficiency.hook
   - section/Fixes/ShieldRepairEfficiency.cpp
 
-- Fix projectiles falling below the map forever. Projectiles below height 0 impact. Projectiles with `CollideSurface = false` are not affected.
+- Fix projectiles outside the map never hitting the ground. The terrain extends outwards from the map edge, so they impact at the height of the nearest map edge. Projectiles with `CollideSurface = false` are not affected.
 
   - hooks/ProjectileMotionTick.hook
   - section/Fixes/ProjectileMotionTick.cpp
