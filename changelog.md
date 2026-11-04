@@ -79,7 +79,7 @@ These don't matter except for other assembly patches
   - hooks/ShieldRepairEfficiency.hook
   - section/Fixes/ShieldRepairEfficiency.cpp
 
-- Fix projectiles falling below the map forever. Projectiles below height 0 impact.
+- Fix projectiles falling below the map forever. Projectiles below height 0 impact. Projectiles with `CollideSurface = false` are not affected.
 
   - hooks/ProjectileMotionTick.hook
   - section/Fixes/ProjectileMotionTick.cpp
