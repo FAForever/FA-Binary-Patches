@@ -235,6 +235,7 @@ LuaObjectFinalize
 00898DC0 UserFindEntityChainById(ecx* entities, ebx* id, eax* result)
 008B05E0 ISSUE_Command
 008B0180 GiveOrder(list<UserUnit*>*, unused void*, out int?, struct?)
+0083DDA0 UI_GetCommandMode
 
 const int LuaStackObject__GetBoolean = 0x415560;
 
