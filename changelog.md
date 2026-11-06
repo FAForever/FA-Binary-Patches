@@ -1,11 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- Add `ui_ExplicitReclaimMode` and `ui_ExplicitReclaimCameraDistance` for a
-  configurable explicit-reclaim picking distance while contextual right-click
-  reclaim remains at the original distance.
-
 All notable changes to this project will be documented in this file. Unlike other changelogs, this particular changelog is not in chronological order. Instead the changes that are similar are grouped together.
 
 ## Signature patches
@@ -218,6 +212,13 @@ These don't matter except for other assembly patches
   - hooks/StopReclaimWhenPaused.cpp
   - section/StopReclaimWhenPaused.cpp
   - section/selectionPriority.cpp
+
+- Add `ui_ExplicitReclaimMode` and `ui_ExplicitReclaimCameraDistance` for a
+  configurable explicit-reclaim picking distance while contextual right-click
+  reclaim remains at the original distance.
+
+  - hooks/ReclaimCameraDistance.cpp
+  - section/ReclaimCameraDistance.cpp
 
 - Allows changing army of ACUs
 
