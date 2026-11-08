@@ -70,6 +70,11 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix streaming sounds (music, voice lines, some unit and explosion sounds) failing with "SND: Error playing cue ... XACT: Invalid arg" on drives with 4096-byte sectors, and the crash on exit that follows
+
+  - hooks/StreamingWaveBankSectorSize.hook
+  - section/Fixes/StreamingWaveBankSectorSize.cxx
+
 - Fix repairing a damaged shield unit regenerating its shield while the shield is off
 
   - hooks/ShieldRepairRegenFix.hook
