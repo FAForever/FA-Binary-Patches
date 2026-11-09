@@ -213,9 +213,8 @@ These don't matter except for other assembly patches
   - section/StopReclaimWhenPaused.cpp
   - section/selectionPriority.cpp
 
-- Add `ui_ExplicitReclaimMode` and `ui_ExplicitReclaimCameraDistance` for a
-  configurable explicit-reclaim picking distance while contextual right-click
-  reclaim remains at the original distance.
+- Add `ui_ReclaimCameraDistance` for a configurable reclaim picking distance.
+  The value defaults to the original distance of 150.
 
   - hooks/ReclaimCameraDistance.cpp
   - section/ReclaimCameraDistance.cpp

@@ -1,31 +1,19 @@
 #include "global.h"
 #include "magic_classes.h"
 
-bool explicitReclaimMode asm("explicitReclaimMode") = false;
-float explicitReclaimCameraDistance asm("explicitReclaimCameraDistance") = 150.0f;
+float reclaimCameraDistance asm("reclaimCameraDistance") = 150.0f;
 
-// Returns the extended distance only while the UI has explicitly entered the
-// reclaim command mode. Contextual right-click reclaim continues to read the
-// engine's original distance (150) from 0x00E4F988.
+// Loads the reclaim distance selected by UI Lua. Lua restores the vanilla
+// distance of 150 whenever explicit reclaim command mode is not active.
 extern "C" __attribute__((naked)) void LoadReclaimCameraDistance()
 {
     asm volatile(
-        "CMP BYTE PTR [explicitReclaimMode],0;"
-        "JE 1f;"
-        "FLD DWORD PTR [explicitReclaimCameraDistance];"
-        "RET;"
-        "1:;"
-        "FLD DWORD PTR [0x00E4F988];"
+        "FLD DWORD PTR [reclaimCameraDistance];"
         "RET;"
     );
 }
 
-ConDescReg<bool> ExplicitReclaimModeConsole{
-    "ui_ExplicitReclaimMode",
-    "Use ui_ExplicitReclaimCameraDistance while explicit reclaim command mode is active",
-    &explicitReclaimMode};
-
-ConDescReg<float> ExplicitReclaimCameraDistanceConsole{
-    "ui_ExplicitReclaimCameraDistance",
-    "Camera distance for issuing explicit reclaim orders",
-    &explicitReclaimCameraDistance};
+ConDescReg<float> ReclaimCameraDistanceConsole{
+    "ui_ReclaimCameraDistance",
+    "Camera distance for issuing reclaim orders",
+    &reclaimCameraDistance};
