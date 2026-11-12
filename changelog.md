@@ -70,6 +70,10 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Preserve texture-scroll precision by disabling the Float16 hardware instance formatter while keeping hardware instancing enabled.
+
+  - hooks/DisableFloat16VertexFormatter.hook
+
 - Fix repairing a damaged shield unit regenerating its shield while the shield is off
 
   - hooks/ShieldRepairRegenFix.hook
