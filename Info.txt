@@ -265,5 +265,16 @@ const int _Moho_SSTICommandIssueData_Destructor = 0x0057ABB0;
 // MSVCR80.dll
 #define _memmove_s = 0x00A824E7;
 
+// Lifebar render path (LifebarFilter patch)
+// Moho::CWldSession::RenderStrategicIcons: 0x0085B6E0 — strategic icon + lifebar pass
+// sub_85EED0: 0x0085EED0 — lifebar batch enqueue, custom callcnv:
+//   eax = lifebar entry pointer (a 64-byte stack buffer)
+//   ecx = std::vector<...>* (lifebar batch destination)
+// sub_85CD40: 0x0085CD40 — per-entry lifebar drawing function. Reads
+//   v18 = *(float **)eax0 (entry[0] -> unit data ptr)
+//   v18[26] = current HP, v18[27] = max HP
+//   bar fill fraction = v18[26] / v18[27]
+// Patch site: 0x0085C09F — `call sub_85EED0` inside the lifebar block
+
 // New unit categories.
 const char* sCQUEMOV = "CQUEMOV";
