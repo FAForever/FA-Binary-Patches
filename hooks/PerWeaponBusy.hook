@@ -1,0 +1,16 @@
+// Per-weapon busy flag. The Lua binding (UnitWeapon:SetWeaponBusy) is
+// registered into the sim function table by section/PerWeaponBusy.cpp;
+// the only patched code site is the CanFire gate below.
+
+// UnitWeapon::CanFire: test the weapon's own busy byte (+0xF1) instead of
+// calling the unit-level busy virtual (edi = weapon). 13 bytes + 6 nops
+// fill the 19-byte virtual-call lane.
+0x006D4CA2:
+    cmp byte ptr [edi+0xF1], 0
+    jne 0x006D51E9
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop

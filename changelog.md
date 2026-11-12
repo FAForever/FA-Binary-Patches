@@ -70,6 +70,11 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix one weapon firing salvo locking all sibling weapons of the unit
+
+  - hooks/PerWeaponBusy.hook
+  - section/PerWeaponBusy.cpp
+
 - Fix repairing a damaged shield unit regenerating its shield while the shield is off
 
   - hooks/ShieldRepairRegenFix.hook
