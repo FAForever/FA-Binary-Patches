@@ -1,0 +1,19 @@
+# Moho::RWaveBankResStreaming::LoadBank
+# Replace the CreateFileA call with one that drops FILE_FLAG_NO_BUFFERING for a
+# bank the drive can't read unbuffered. eax is the resolved path, edi the bank name
+0x004DAE51:
+    push    edi
+    push    eax
+    call    @OpenStreamingWaveBank
+    add     esp, 8
+    jmp     0x004DAE6A
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
