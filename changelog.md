@@ -70,6 +70,13 @@ These don't matter except for other assembly patches
 
 ## Bugs
 
+- Fix tracked-unit tread scrolling precision, left/right channel mapping, and intermittent zero-delta stalls.
+
+  - hooks/TreadScrollPhaseSideFix.hook
+  - hooks/TreadScrollZeroGapBridge.hook
+  - section/TreadScrollPhaseSideFix.cpp
+  - section/TreadScrollZeroGapBridge.cpp
+
 - Fix repairing a damaged shield unit regenerating its shield while the shield is off
 
   - hooks/ShieldRepairRegenFix.hook

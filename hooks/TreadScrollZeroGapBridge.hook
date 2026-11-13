@@ -1,0 +1,4 @@
+# Replace the straight-line UserEntity -> WorldMesh tread copy block.
+# TreadScrollZeroGapBridge resumes at 0x008B92C4.
+0x008B9284:
+    jmp @TreadScrollZeroGapBridge
