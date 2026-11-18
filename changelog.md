@@ -84,6 +84,11 @@ These don't matter except for other assembly patches
   - hooks/X3DAudioChannelCount.hook
   - section/Fixes/X3DAudioChannelCount.cxx
 
+- Fix projectiles outside the map never hitting the ground. The terrain extends outwards from the map edge, so they impact at the height of the nearest map edge. Projectiles with `CollideSurface = false` are not affected.
+
+  - hooks/FixCollisions.cpp
+  - section/Fixes/ProjectileMapEdgeCollision.cpp
+
 - Fix aircraft never undocking from air staging platforms / carriers when stored health is above max health
 
   - hooks/RefuelUndockFix.hook

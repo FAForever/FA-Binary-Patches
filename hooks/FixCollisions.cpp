@@ -243,14 +243,16 @@ TERRAIN_CHECK:
 	call    Vector3f__IsntNaN
 	# I have no idea why this is called twice, but it needs to be here
 	call    Vector3f__IsntNaN
-	# if there's no terrain collision, proceed with the scheduled callbacks
+	# if there's no terrain collision, check the terrain extended from the map
+	# edge (no terrain is found outside the map), then proceed with the
+	# scheduled callbacks
 	test    al, al
 	# restore `distMoved`
 	movss   xmm3, dword ptr [waterHitDist]
 	movss   xmm1, [esp+0x230+segment+radius]
 	mulss   xmm1, dword ptr [two]
 	movss   [esp+0x230+distMoved], xmm1
-	jz      short CHECK_LAYER_CHANGE
+	jz      )" QU(ProjectileMapEdgeCollision) R"(
 	xorps   xmm1, xmm1
 	movss   xmm0, dword ptr [edi+impactInterp]
 	comiss  xmm1, xmm0
