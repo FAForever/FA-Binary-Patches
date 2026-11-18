@@ -79,6 +79,11 @@ These don't matter except for other assembly patches
   - hooks/ShieldRepairEfficiency.hook
   - section/Fixes/ShieldRepairEfficiency.cpp
 
+- Fix 3D sounds having no distance attenuation or surround panning, writing past their buffers, and failing with "SND: XACT3DApply failed" on 7.1 and 5.1 surround devices
+
+  - hooks/X3DAudioChannelCount.hook
+  - section/Fixes/X3DAudioChannelCount.cxx
+
 - Fix projectiles outside the map never hitting the ground. The terrain extends outwards from the map edge, so they impact at the height of the nearest map edge. Projectiles with `CollideSurface = false` are not affected.
 
   - hooks/FixCollisions.cpp
