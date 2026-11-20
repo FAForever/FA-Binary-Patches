@@ -177,6 +177,11 @@ These don't matter except for other assembly patches
 
 ## Improvements
 
+- Allow transports assisting a ferry route to share ownership of that route.
+
+  - hooks/FerryAssist.hook
+  - section/FerryAssist.cpp
+
 - Increase the fixed particle render-buffer pool from 400 to 4096 entries and the segment-buffer pool from 100 to 400 entries.
 
   - hooks/ParticlePoolCapacity.hook

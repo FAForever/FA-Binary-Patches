@@ -44,6 +44,15 @@ GDecl(g_ExeVersion1,			0x876666, const int)
 GDecl(g_ExeVersion2,			0x87612d, const int)
 GDecl(g_ExeVersion3,			0x4d3d40, const int)
 
+// Ferry task and command queue routines. The command queue routines use
+// custom calling conventions and require assembly wrappers at their call sites.
+constexpr uintptr_t CUnitFerryTaskGetUnitCommandsAddress = 0x0060EB50;
+constexpr uintptr_t CreateCUnitFerryTaskAddress = 0x0060F7E0;
+constexpr uintptr_t DestroyWeakCommandLinksAddress = 0x005A2270;
+constexpr uintptr_t InsertCommandToUnitQueueAddress = 0x006EDCB0;
+constexpr uintptr_t RemoveFirstCommandFromUnitQueueAddress = 0x006EDE70;
+constexpr uintptr_t EngineFreeAddress = 0x00957A60;
+
 void AbortF(wchar_t *fmt, ...) asm("0x9C4940");
 int LogF(const char *fmt, ...) asm("0x937CB0");
 int WarningF(const char *fmt, ...) asm("0x937D30");

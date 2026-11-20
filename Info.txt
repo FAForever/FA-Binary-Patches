@@ -267,3 +267,11 @@ const int _Moho_SSTICommandIssueData_Destructor = 0x0057ABB0;
 
 // New unit categories.
 const char* sCQUEMOV = "CQUEMOV";
+
+Ferry task and command queue
+0060EB50 CUnitFerryTask::GetUnitCommands(CUnitFerryTask*, vector<SCommand>*): stdcall
+0060F7E0 CreateCUnitFerryTask(CCommandTask*, Unit*): cdecl
+005A2270 Destroy weak CUnitCommand links: ECX = begin, EDX = end
+006EDCB0 CUnitCommandQueue::InsertCommandToQueue: EAX = command, EBX = queue, stack = index
+006EDE70 CUnitCommandQueue::RemoveFirstCommandFromQueue: stack = queue
+00957A60 free+2, used to release ferry command vector storage: cdecl

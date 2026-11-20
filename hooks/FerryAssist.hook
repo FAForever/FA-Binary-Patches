@@ -1,0 +1,18 @@
+# Moho::CUnitFerryTask::GetUnitCommands call sites
+# Resolve the existing ferry route, then allow an assisting transport to join it.
+0x0060ED96:
+    call @GetFerryCommandsAndPromoteAssistant
+
+0x0060EEF1:
+    call @GetFerryCommandsAndPromoteAssistant
+
+0x0060F0E9:
+    call @GetFerryCommandsAndPromoteAssistant
+
+# Moho::CUnitGuardTask::TaskTick ferry-task creation call sites
+# Construct the normal task, then attempt promotion before its pickup cycle.
+0x0061465B:
+    call @CreateFerryTaskAndPromoteAssistant
+
+0x0061466F:
+    call @CreateFerryTaskAndPromoteAssistant

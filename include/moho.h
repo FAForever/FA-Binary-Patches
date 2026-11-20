@@ -734,6 +734,17 @@ struct Prop : Entity
 };
 
 struct CUnitCommand;
+struct CUnitCommandQueue;
+
+// Verified offsets into partially mapped engine objects.
+constexpr uintptr_t CUnitCommandTypeOffset = 0x98;
+constexpr uintptr_t UnitCommandQueueOffset = 0x4B4;
+
+enum class UnitCommandType : uint32_t
+{
+	Guard = 15,
+	Ferry = 17,
+};
 struct CCommandTask
 { // 0x34 bytes
 	void *vtable;
@@ -746,6 +757,25 @@ struct CCommandTask
 	// at 0x28
 	// CCommandTask *prevTask; -0x2C
 };
+
+// Only the fields used by the ferry-assistance patch are currently known.
+// routeUnitLink and beaconLink point four bytes into their linked objects.
+struct CUnitFerryTask
+{
+	uint8_t reserved00[0x1C];
+	Unit *assistant;
+	uint8_t reserved20[0x18];
+	bool followsBeacon;
+	uint8_t reserved39[0x0F];
+	void *routeUnitLink;
+	uint8_t reserved4C[0x0C];
+	void *beaconLink;
+};
+
+static_assert(offsetof(CUnitFerryTask, assistant) == 0x1C);
+static_assert(offsetof(CUnitFerryTask, followsBeacon) == 0x38);
+static_assert(offsetof(CUnitFerryTask, routeUnitLink) == 0x48);
+static_assert(offsetof(CUnitFerryTask, beaconLink) == 0x58);
 
 struct CUnitMobileBuildTask : CCommandTask
 { // 0xE8 bytes
@@ -806,20 +836,26 @@ struct CUnitCommand : CScriptObject
 
 struct SCommand
 {						// 0x8 bytes
-	void *CUnitCommand; // +0x4
-	void *nil;
+	void *weakCommandLink; // CUnitCommand + 4
+	void *reserved04;
 };
 
-struct CommandQueue
+VALIDATE_SIZE(SCommand, 0x8)
+
+struct CUnitCommandQueue
 { // 0x28 bytes
-	void *unk1;
-	void *unk2;
-	Unit *Owner;
-	vector<SCommand> Commands;
-	void *unk3;
-	void *unk4;
-	bool unk5;
+	void *reserved00;
+	void *reserved04;
+	Unit *owner;
+	vector<SCommand> commands;
+	void *reserved1C;
+	void *reserved20;
+	bool reserved24;
 };
+
+VALIDATE_SIZE(CUnitCommandQueue, 0x28)
+static_assert(offsetof(CUnitCommandQueue, owner) == 0x08);
+static_assert(offsetof(CUnitCommandQueue, commands) == 0x0C);
 
 struct UnitWeapon //: CScriptEvent
 {				  // 0x006D3114, 0x188 bytes
